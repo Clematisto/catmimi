@@ -1,0 +1,4066 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<meta name="color-scheme" content="only light">
+<meta name="theme-color" content="#E7F0F6">
+<title>莫兰迪猫舍 · 云养猫日记</title>
+<style>
+@property --h { syntax:"<length>"; inherits:false; initial-value:0px; }
+:root{
+  color-scheme:light;   /* 老浏览器兜底 */
+  color-scheme:only light;   /* 禁用 UA 自动深色（Chrome Auto Dark / 强制深色） */
+  --ink:#4E6373; --sub:#8CA3B3; --panel:rgba(255,255,255,.92);
+  --line:#DFE9F0;
+  --slab:#CBDEEA; --slab-deep:#BCD3E2;
+}
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{height:100%}
+/* 强制浅色：html 底色兜底（含下拉回弹露出的画布区域），防止暗黑模式手机把根画布涂黑 */
+html{background:#E7F0F6}
+@media (prefers-color-scheme:dark){
+  :root{color-scheme:light;color-scheme:only light}
+  html{background:#E7F0F6}
+}
+body{
+  font-family:"PingFang SC","Microsoft YaHei","Segoe UI",system-ui,sans-serif;
+  color:var(--ink); user-select:none; overflow-x:hidden;
+  background:
+    radial-gradient(1100px 700px at 75% -10%, #D6E8F4 0%, rgba(214,232,244,0) 60%),
+    radial-gradient(900px 600px at -10% 110%, #E4EEF5 0%, rgba(228,238,245,0) 55%),
+    linear-gradient(165deg,#E7F0F6 0%,#F6FAFC 55%,#EDF4F8 100%);
+  min-height:100vh;
+}
+#stage{perspective:1600px;perspective-origin:50% 12%;max-width:1340px;margin:0 auto;padding:18px 24px 44px}
+#app[hidden]{display:none}
+
+/* ================= 顶栏（悬浮 3D 板） ================= */
+header{
+  display:flex;align-items:center;gap:12px;padding:12px 18px;margin-bottom:18px;
+  border-radius:20px;background:linear-gradient(180deg,#FFFFFF,#F2F8FB);
+  box-shadow:0 10px 0 -2px var(--slab),0 24px 34px rgba(120,155,180,.24),inset 0 1px 0 #fff;
+}
+.logo{font-size:21px;font-weight:800;letter-spacing:1.5px;
+  text-shadow:0 1px 0 #fff,0 2px 3px rgba(140,170,195,.35)}
+.clock{margin-left:auto;display:flex;gap:8px;align-items:center;background:#EFF6FA;
+  border-radius:14px;padding:7px 14px;font-size:13px;
+  box-shadow:inset 0 2px 4px rgba(120,150,175,.18),0 1px 0 #fff}
+.chip{background:#E4EEF5;border-radius:999px;padding:3px 10px;font-size:12px;color:#6C8296}
+.icon{width:42px;height:42px;border-radius:14px;font-size:17px;padding:0;
+  display:flex;align-items:center;justify-content:center}
+
+/* ================= 3D 立体按钮 ================= */
+.btn3d{
+  position:relative;border:none;cursor:pointer;font-family:inherit;color:var(--ink);
+  background:linear-gradient(180deg,#FFFFFF,#EDF4F9);border-radius:16px;padding:10px 14px;
+  font-weight:600;font-size:14px;
+  box-shadow:0 6px 0 var(--slab),0 12px 20px rgba(125,155,175,.25),inset 0 2px 0 #fff,inset 0 -3px 5px rgba(150,180,200,.14);
+  transition:transform .09s,box-shadow .09s,filter .15s,opacity .2s;
+}
+.btn3d:hover{filter:brightness(1.04)}
+.btn3d:active{transform:translateY(5px);
+  box-shadow:0 1px 0 var(--slab),0 4px 8px rgba(125,155,175,.22),inset 0 2px 0 #fff}
+.btn3d[disabled],.btn3d.disabled{opacity:.55;cursor:not-allowed;transform:none;filter:grayscale(.7) brightness(.9)}
+.btn3d.disabled:hover{filter:grayscale(.7) brightness(.9)}
+.btn3d.primary{background:linear-gradient(180deg,#C4DDEC,#A3C6DC);color:#3E586B;
+  box-shadow:0 7px 0 #8FB4CB,0 14px 22px rgba(125,160,185,.35),inset 0 2px 0 rgba(255,255,255,.75)}
+.btn3d.primary:active{transform:translateY(6px);box-shadow:0 1px 0 #8FB4CB}
+.btn3d.food{background:linear-gradient(180deg,#FBF0E4,#F3DFC9);box-shadow:0 6px 0 #DEC2A3,0 12px 20px rgba(180,150,115,.25),inset 0 2px 0 #fff}
+.btn3d.food:active{box-shadow:0 1px 0 #DEC2A3}
+.btn3d.water{background:linear-gradient(180deg,#E5F2FB,#CBE4F3);box-shadow:0 6px 0 #A9CBE0,0 12px 20px rgba(120,160,190,.25),inset 0 2px 0 #fff}
+.btn3d.water:active{box-shadow:0 1px 0 #A9CBE0}
+.btn3d.play{background:linear-gradient(180deg,#FCEDEF,#F4D9DE);box-shadow:0 6px 0 #DCB4BC,0 12px 20px rgba(185,140,150,.25),inset 0 2px 0 #fff}
+.btn3d.play:active{box-shadow:0 1px 0 #DCB4BC}
+.btn3d.clean{background:linear-gradient(180deg,#F4F1E3,#EAE4CE);box-shadow:0 6px 0 #CFC5A4,0 12px 20px rgba(165,155,115,.25),inset 0 2px 0 #fff}
+.btn3d.clean:active{box-shadow:0 1px 0 #CFC5A4}
+.btn3d.climb{background:linear-gradient(180deg,#EBF3E6,#DBEAD2);box-shadow:0 6px 0 #B9CFA8,0 12px 20px rgba(140,165,120,.25),inset 0 2px 0 #fff}
+.btn3d.climb:active{box-shadow:0 1px 0 #B9CFA8}
+.btn3d.nap{background:linear-gradient(180deg,#ECE9F6,#DCD7EC);box-shadow:0 6px 0 #BCB4D6,0 12px 20px rgba(150,140,180,.25),inset 0 2px 0 #fff}
+.btn3d.nap:active{box-shadow:0 1px 0 #BCB4D6}
+.btn3d.danger{background:linear-gradient(180deg,#F8E5E3,#F0D2CF);box-shadow:0 6px 0 #DCB3AF,0 12px 18px rgba(190,130,125,.25),inset 0 2px 0 #fff;color:#9A5F58}
+.btn3d.danger:active{box-shadow:0 1px 0 #DCB3AF}
+
+/* ================= 主布局（左右底部齐平） ================= */
+main{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:stretch}
+
+/* ================= 3D 立体房间（XYZ 空间） ================= */
+.scene{
+  --roomH:710px;                 /* 3D 房间高度；场景可向下拉伸，但房间始终固定这么高 */
+  --floorExt:20%;                /* 地面网格向镜头方向延伸的长度（占地板高度比例） */
+  position:relative;min-height:var(--roomH);border-radius:30px;overflow:hidden;
+  perspective:1250px;perspective-origin:50% 184.6px;   /* =26%×710，拉伸后保持灭点不变 */
+  background:linear-gradient(180deg,#CFE3F0,#DCEBF4);
+  box-shadow:0 14px 0 -4px var(--slab),0 34px 50px rgba(115,150,175,.32),inset 0 1px 0 rgba(255,255,255,.8);
+  grid-column:1;grid-row:1;align-self:start;   /* 高度由 syncSceneHeight() 对齐互动按钮卡片底部 */
+}
+aside{grid-column:2;grid-row:1}
+/* 固定 3D 正视角（微俯视地面） */
+.room{
+  --camx:57deg; --camy:0deg;
+  position:absolute;left:0;top:0;width:100%;height:var(--roomH);transform-style:preserve-3d;
+  transform:rotateX(var(--camx)) rotateY(var(--camy));
+}
+.floor{
+  position:absolute;left:-3%;top:24%;width:106%;height:84%;
+  transform-style:preserve-3d;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.5) 0 2px,rgba(255,255,255,0) 2px 54px),
+    repeating-linear-gradient(90deg,rgba(190,212,228,.35) 0 2px,rgba(190,212,228,0) 2px 72px),
+    linear-gradient(180deg,#DCE9F2 0%,#E3EEF5 40%,#D5E4EE 100%);
+}
+.floor::after{content:"";position:absolute;inset:0;pointer-events:none;
+  background:radial-gradient(120% 90% at 50% 0%,rgba(90,120,145,.20),rgba(90,120,145,0) 45%)}
+/* 地面网格向镜头方向延伸：与地板共面（floor 内 top:100%），透视自动接续。
+   background-size 设成与渐变同周期（横 72 / 竖 54），配合
+   background-position 上移一个地板高度，保证接缝处网格相位连续不断线。 */
+.floor::before{
+  content:"";position:absolute;left:0;right:0;top:100%;height:var(--floorExt,20%);
+  pointer-events:none;
+  background:
+    repeating-linear-gradient(0deg,rgba(255,255,255,.5) 0 2px,rgba(255,255,255,0) 2px 54px),
+    repeating-linear-gradient(90deg,rgba(190,212,228,.35) 0 2px,rgba(190,212,228,0) 2px 72px),
+    linear-gradient(180deg,#D5E4EE 0%,#CFE1EC 100%);
+  background-size:72px 54px,72px 54px,100% 100%;
+  background-position:0 calc(var(--roomH) * -0.84),0 0,0 0;
+}
+/* 四周实体边框墙，中间镂空展示天气 */
+.wall-b{
+  position:absolute;left:-3%;width:106%;height:340px;bottom:76%;
+  transform-origin:bottom center;transform:rotateX(-90deg);
+  background:transparent;
+  overflow:hidden;
+}
+.wall-b::before{
+  content:"";position:absolute;inset:0;
+  background:transparent;
+  border:36px solid #C8DAE8;
+  box-shadow:inset 0 4px 12px rgba(255,255,255,.35),inset 0 -8px 16px rgba(120,155,185,.15);
+  pointer-events:none;z-index:8;
+}
+.wall-b::after{
+  content:"";position:absolute;
+  left:38px;right:38px;top:38px;bottom:38px;
+  border:6px solid rgba(200,218,232,.35);
+  pointer-events:none;z-index:8;
+}
+/* 天空蒙版（与 .sky 一起挪到 .sky-pane 内） */
+.sky-pane{
+  /* 放到 scene 层级，脱离 .room 的 preserve-3d 与 .wall-b 的 overflow:hidden 拍平。
+     关键修复：避免 .sky 的 2D 拍平面片绘制顺序覆盖 cat/bubble。
+     此处用覆盖整个 scene 的方式，让 3D 元素（墙、地板、猫）正常盖在天空之上 */
+  position:absolute;left:0;right:0;top:0;bottom:0;z-index:5;
+  pointer-events:none;overflow:hidden}
+.sky-tint{position:absolute;left:36px;right:36px;top:36px;bottom:36px;
+  background:linear-gradient(180deg,rgba(230,240,248,.12) 0%,rgba(230,240,248,.04) 100%);
+  pointer-events:none;z-index:4}
+/* 大雾 */
+.fog-layer{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity 2s}
+.fog-layer.on{opacity:1}
+.fog-band{position:absolute;left:-20%;width:140%;height:30%;
+  background:linear-gradient(180deg,rgba(200,215,230,0),rgba(200,215,230,.6),rgba(200,215,230,0));
+  animation:fogDrift linear infinite}
+.fog-band.f1{top:10%;animation-duration:18s}
+.fog-band.f2{top:42%;animation-duration:24s;animation-delay:-6s}
+.fog-band.f3{top:70%;animation-duration:20s;animation-delay:-12s}
+.fog-layer.night-fog .fog-band{
+  background:linear-gradient(180deg,rgba(60,70,90,0),rgba(60,70,90,.55),rgba(60,70,90,0))}
+.sky{position:absolute;inset:0;overflow:hidden;transition:background 2s;
+  z-index:6}
+.sun{position:absolute;left:22%;top:18%;width:36px;height:36px;border-radius:50%;background:#FFE7A8;
+  box-shadow:0 0 24px 8px rgba(255,230,160,.65);transition:opacity 1.2s,left 3s,top 3s}
+.moon{position:absolute;left:70%;top:14%;width:28px;height:28px;border-radius:50%;background:#EDEFF4;
+  box-shadow:inset -6px -4px 0 #C9D2E2;opacity:0;transition:opacity 1.2s}
+.stars{position:absolute;left:0;top:0;right:0;bottom:0;z-index:0;
+  opacity:0;transition:opacity 1.2s;pointer-events:none}
+.star-dot{position:absolute;border-radius:50%;background:radial-gradient(circle,#fff 0%,rgba(255,255,255,.6) 40%,transparent 70%);animation:starBlink ease-in-out infinite alternate}
+@keyframes starBlink{from{opacity:.3;transform:scale(.7)}to{opacity:1;transform:scale(1.2)}}
+/* 云朵：底部胶囊 + 顶部两个圆弧凸起（左大右小），伪元素按 --cw/--ch 等比缩放 */
+.cloud{position:absolute;background:#fff;border-radius:999px;z-index:1;
+  opacity:.6;transition:opacity 1.2s}
+.cloud::before,.cloud::after{content:"";position:absolute;background:inherit;border-radius:50%}
+.cloud::before{width:calc(var(--ch)*1.9);height:calc(var(--ch)*1.9);
+  left:calc(var(--cw)*.14);top:calc(var(--ch)*-1.05)}
+.cloud::after{width:calc(var(--ch)*1.3);height:calc(var(--ch)*1.3);
+  left:calc(var(--cw)*.5);top:calc(var(--ch)*-.7)}
+.c1{--cw:64px;--ch:18px;width:var(--cw);height:var(--ch);left:50%;top:32%;animation:cloudDrift 38s linear infinite}
+.c2{--cw:42px;--ch:13px;width:var(--cw);height:var(--ch);left:20%;top:55%;animation:cloudDrift 52s linear infinite reverse}
+.c3{--cw:55px;--ch:16px;width:var(--cw);height:var(--ch);left:75%;top:45%;animation:cloudDrift 44s linear infinite}
+@keyframes cloudDrift{from{transform:translateX(0)}to{transform:translateX(120px)}}
+/* 天气粒子层 */
+.weather-layer{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 1.5s}
+.weather-layer.on{opacity:1}
+/* 下雨 */
+.rain-drop{position:absolute;width:2.5px;
+  background:linear-gradient(180deg,transparent 0%,rgba(140,185,220,.85) 40%,rgba(120,170,210,.6) 100%);
+  border-radius:0 0 2px 2px;animation:rainFall linear infinite}
+@keyframes rainFall{
+  0%{transform:translateY(-30px);opacity:0}
+  8%{opacity:1}
+  92%{opacity:.8}
+  100%{transform:translateY(400px);opacity:0}
+}
+/* 下雪 */
+.snow-flake{position:absolute;color:rgba(255,255,255,.95);font-size:12px;opacity:0;
+  animation:snowFall linear infinite;pointer-events:none;
+  text-shadow:0 0 4px rgba(200,220,240,.5)}
+@keyframes snowFall{
+  0%{transform:translateY(-20px) translateX(0) rotate(0deg);opacity:0}
+  8%{opacity:1}
+  50%{transform:translateY(180px) translateX(30px) rotate(180deg);opacity:.9}
+  92%{opacity:.7}
+  100%{transform:translateY(400px) translateX(-10px) rotate(360deg);opacity:0}
+}
+/* 闪电 */
+.lightning-flash{position:absolute;inset:0;z-index:7;pointer-events:none;
+  background:rgba(200,220,255,.9);opacity:0;transition:opacity .04s}
+/* 朝霞/晚霞光晕 */
+.glow-overlay{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity 2s}
+.glow-overlay.on{opacity:1}
+/* 彩虹 */
+/* 彩虹：7色同心弧（红橙黄绿蓝靛紫，从外到内） */
+.rainbow-arc{position:absolute;left:15%;top:10%;width:70%;height:50%;
+  pointer-events:none;z-index:3;opacity:0;transition:opacity 2s}
+.rainbow-arc.on{opacity:1}
+.rainbow-band{position:absolute;left:0;right:0;bottom:0;
+  border-radius:50% 50% 0 0;border-style:solid;border-bottom:none;
+  box-sizing:border-box}
+.rainbow-band.b1{inset:0;border-width:10px;border-color:#ff0000}
+.rainbow-band.b2{inset:10px;border-width:10px;border-color:#ff8800}
+.rainbow-band.b3{inset:20px;border-width:10px;border-color:#ffff00}
+.rainbow-band.b4{inset:30px;border-width:10px;border-color:#00cc00}
+.rainbow-band.b5{inset:40px;border-width:10px;border-color:#0066ff}
+.rainbow-band.b6{inset:50px;border-width:10px;border-color:#4400cc}
+.rainbow-band.b7{inset:60px;border-width:10px;border-color:#8800ff}
+/* 流星 */
+.meteor{position:absolute;width:2px;height:2px;background:#fff;border-radius:50%;
+  box-shadow:0 0 6px 2px rgba(200,220,255,.8);opacity:0;
+  animation:meteorFall linear infinite}
+.meteor::after{content:"";position:absolute;bottom:0;right:0;
+  width:80px;height:1px;background:linear-gradient(270deg,rgba(200,220,255,.9),transparent);
+  transform-origin:100% 100%;transform:rotate(45deg)}
+@keyframes meteorFall{
+  0%{transform:translate(0,0);opacity:0}
+  5%{opacity:1}
+  70%{opacity:.8}
+  100%{transform:translate(300px,400px);opacity:0}
+}
+/* 激光 */
+.laser-beam{position:absolute;width:100%;height:2px;opacity:.6;
+  transform-origin:0 0;animation:laserSweep ease-in-out infinite alternate}
+.laser-beam::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(90deg,transparent,currentColor 20%,currentColor 80%,transparent);
+  filter:blur(1px)}
+.laser-beam::after{content:"";position:absolute;inset:-2px;
+  background:linear-gradient(90deg,transparent,currentColor 20%,currentColor 80%,transparent);
+  opacity:.3;filter:blur(4px)}
+@keyframes laserSweep{
+  0%{transform:rotate(-15deg)}
+  100%{transform:rotate(15deg)}
+}
+/* 满月 */
+.fullmoon{position:absolute;left:65%;top:8%;width:52px;height:52px;border-radius:50%;
+  background:radial-gradient(circle at 40% 40%,#FFFDE8 0%,#F0E8C0 60%,#E0D8B0 100%);
+  box-shadow:0 0 30px 12px rgba(255,255,200,.35),0 0 60px 24px rgba(255,255,200,.15);
+  pointer-events:none;z-index:4;opacity:0;transition:opacity 2s}
+.fullmoon.on{opacity:1}
+.fullmoon .crater{position:absolute;border-radius:50%;background:rgba(180,170,140,.25)}
+.fullmoon .crater.c1{width:8px;height:8px;left:14px;top:12px}
+.fullmoon .crater.c2{width:6px;height:6px;left:28px;top:20px}
+.fullmoon .crater.c3{width:5px;height:5px;left:18px;top:30px}
+.fullmoon .crater.c4{width:7px;height:7px;left:35px;top:32px}
+.wall-l{
+  position:absolute;top:24%;bottom:-8%;left:-3%;width:330px;
+  transform:translateX(-100%) rotateY(90deg);
+  transform-origin:right center;
+  background:linear-gradient(180deg,#C4D9E8,#CFE2EF);
+  border-bottom:8px solid #B2C9DA;
+}
+.wall-r{
+  position:absolute;top:24%;bottom:-8%;right:-3%;width:330px;
+  transform:translateX(100%) rotateY(-90deg);
+  transform-origin:left center;
+  background:linear-gradient(180deg,#CBDDEA,#D3E4F0);
+  border-bottom:8px solid #B6CCDD;
+}
+
+/* 墙面挂饰样式保留给室内装饰 */
+/* 地上多层木质猫爬架 */
+.cattree{width:130px;height:240px;z-index:3}
+.ct-base{position:absolute;left:4px;bottom:0;width:122px;height:13px;border-radius:6px;
+  background:linear-gradient(180deg,#E0D0B2 0%,#CBBA98 70%,#B9A886 100%);
+  box-shadow:inset 0 2px 3px rgba(255,255,255,.5),inset 0 -4px 6px rgba(150,125,90,.35),0 6px 10px rgba(110,145,170,.3)}
+.ct-condo{position:absolute;left:22px;bottom:13px;width:66px;height:46px;border-radius:8px;
+  background:linear-gradient(180deg,#E0D0B2,#CCB890);
+  box-shadow:inset -5px -4px 8px rgba(150,125,90,.35),inset 4px 3px 5px rgba(255,255,255,.4),0 4px 8px rgba(110,145,170,.25)}
+.ct-arch{position:absolute;left:50%;bottom:0;transform:translateX(-50%);width:36px;height:32px;
+  border-radius:18px 18px 0 0;background:linear-gradient(180deg,#4E453B,#3B342C);
+  box-shadow:inset 0 3px 5px rgba(0,0,0,.4)}
+.ct-post{position:absolute;left:56px;bottom:59px;width:16px;height:150px;border-radius:7px;
+  background:
+    repeating-linear-gradient(180deg,rgba(140,115,80,.35) 0 3px,rgba(0,0,0,0) 3px 9px),
+    linear-gradient(90deg,#D9C7A4,#E8DAC0 50%,#CDBA96);
+  box-shadow:inset -3px 0 5px rgba(150,125,90,.4),inset 2px 0 3px rgba(255,255,255,.5)}
+.ct-plank{position:absolute;height:10px;border-radius:5px;
+  background:linear-gradient(180deg,#E8D9BC 0%,#D5C3A0 70%,#C3B08C 100%);
+  box-shadow:0 3px 0 #B7A47E,inset 0 1px 0 #F6EEDC,0 7px 10px rgba(100,135,162,.3)}
+.ct-plank.p1{left:8px;bottom:64px;width:114px}
+.ct-plank.p2{left:28px;bottom:120px;width:76px}
+.ct-plank.p3{left:38px;bottom:176px;width:58px}
+.ct-ball{position:absolute;left:88px;bottom:142px;width:2px;height:34px;
+  background:linear-gradient(180deg,#8FBF8F,#6FA06F)}
+.ct-ball .hangball{position:absolute;left:50%;bottom:-14px;transform:translateX(-50%);width:24px;height:24px;border-radius:50%;
+  background:repeating-linear-gradient(135deg,#7EB8D8 0px,#7EB8D8 3px,#A8D4EA 3px,#A8D4EA 6px);
+  box-shadow:inset -3px -4px 6px rgba(80,130,170,.4),0 3px 6px rgba(100,135,160,.3)}
+.ct-ball .hangball{top:auto;bottom:-16px}
+/* 跑步机 */
+.treadmill{width:130px;height:90px;z-index:3}
+/* 跑步带平台 */
+.tm-belt{position:absolute;left:0;right:0;bottom:0;height:28px;border-radius:6px;z-index:2;
+  background:linear-gradient(180deg,#555 0%,#444 50%,#3a3a3a 100%);
+  box-shadow:inset 0 2px 4px rgba(255,255,255,.1),0 4px 8px rgba(80,80,80,.3)}
+/* 跑步带纹理（滚动条纹） */
+.tm-belt::before{content:"";position:absolute;left:4px;right:4px;top:6px;bottom:6px;border-radius:3px;
+  background:repeating-linear-gradient(90deg,rgba(80,80,80,.5) 0px,rgba(80,80,80,.5) 4px,rgba(60,60,60,.5) 4px,rgba(60,60,60,.5) 8px);
+  animation:beltMove .8s linear infinite}
+@keyframes beltMove{from{background-position:0 0}to{background-position:8px 0}}
+/* 底座 */
+.tm-plate{position:absolute;left:-4px;right:-4px;bottom:0;height:10px;border-radius:4px;
+  background:linear-gradient(180deg,#888,#666);
+  box-shadow:inset 0 1px 2px rgba(255,255,255,.2),0 2px 4px rgba(0,0,0,.2)}
+/* 前柱 */
+.tm-pillar{position:absolute;right:10px;bottom:10px;width:8px;height:72px;border-radius:4px;
+  background:linear-gradient(90deg,#999,#777,#999);
+  box-shadow:inset -1px 0 2px rgba(0,0,0,.2),inset 1px 0 2px rgba(255,255,255,.15)}
+/* 控制台 */
+.tm-console{position:absolute;right:2px;top:0;width:40px;height:42px;border-radius:6px;
+  background:linear-gradient(180deg,#333,#222);
+  box-shadow:inset 0 1px 3px rgba(255,255,255,.1),0 2px 6px rgba(0,0,0,.3)}
+/* 屏幕 */
+.tm-screen{position:absolute;left:6px;top:6px;right:6px;height:18px;border-radius:3px;
+  background:linear-gradient(180deg,#1a3a2a,#0f2a1a);
+  box-shadow:inset 0 1px 3px rgba(0,0,0,.5)}
+.tm-screen::after{content:"";position:absolute;left:4px;top:4px;width:8px;height:8px;border-radius:1px;
+  background:#2a6a3a;opacity:.8;animation:screenBlink 1.5s ease-in-out infinite alternate}
+@keyframes screenBlink{from{opacity:.5}to{opacity:1}}
+/* 按钮 */
+.tm-btns{position:absolute;left:8px;bottom:4px;right:8px;display:flex;gap:3px;justify-content:center}
+.tm-btn{width:6px;height:6px;border-radius:50%;background:#555;box-shadow:inset 0 1px 1px rgba(255,255,255,.2)}
+.tm-btn.on{background:#4a8}
+/* 扶手 */
+.tm-rail{position:absolute;left:8px;right:48px;top:24px;height:4px;border-radius:2px;z-index:1;
+  background:linear-gradient(180deg,rgba(180,180,180,.6),rgba(140,140,140,.4));
+  box-shadow:0 1px 1px rgba(0,0,0,.1)}
+/* 扶手立杆（连接横杠到底座） */
+.tm-rail-post{position:absolute;width:4px;border-radius:2px;z-index:1;
+  background:linear-gradient(90deg,rgba(160,160,160,.5),rgba(130,130,130,.4));
+  top:24px;bottom:0}
+.tm-rail-post.lp{left:8px}
+.tm-rail-post.rp{right:48px}
+
+/* 挂画（左墙） */
+.art{position:absolute;right:44px;top:60px;width:58px;height:68px;border-radius:10px;
+  background:linear-gradient(180deg,#FFFFFF,#F0F6FA);display:flex;align-items:center;justify-content:center;
+  box-shadow:0 6px 0 -2px #C4D7E5,inset 0 1px 0 #fff,0 12px 16px rgba(100,135,162,.25)}
+.art i{width:34px;height:44px;border-radius:6px;background:linear-gradient(160deg,#D8E9F4,#F3E2DC);
+  display:flex;align-items:center;justify-content:center;color:#E8AFB6;font-style:normal;font-size:17px;
+  box-shadow:inset 0 2px 5px rgba(120,150,175,.3)}
+
+/* 地板上的立体物件（公告牌：面向相机，随透视缩放） */
+.billboard{
+  position:absolute;left:calc(var(--ox)*1%);top:calc(var(--oy)*1%);
+  transform:translate(-50%,-96%) translateZ(var(--oh,0px))
+            rotateX(calc(-1*var(--camx,57deg))) rotateY(calc(-1*var(--camy,0deg)));
+  transform-origin:50% 100%;
+}
+.flat{position:absolute;left:calc(var(--ox)*1%);top:calc(var(--oy)*1%);
+  transform:translate(-50%,-50%) rotateX(calc(-1*var(--camx,57deg)));
+  transform-origin:50% 50%;
+  transform-style:flat}
+
+/* 碗 */
+.bowl{width:82px;height:44px;z-index:3}
+.bowl.front{z-index:7}
+.bowl::before{content:"";position:absolute;inset:0;border-radius:10px 10px 26px 26px;
+  background:linear-gradient(180deg,#FAFDFE 0%,#E2EDF4 55%,#D3E2EC 100%);
+  box-shadow:inset 0 -7px 0 #C3D6E3,inset 0 4px 5px #fff,0 8px 0 -3px #B9CEDD,0 14px 14px rgba(105,140,165,.15)}
+.bfill{position:absolute;left:7px;right:7px;bottom:7px;height:0%;border-radius:7px 7px 16px 16px;transition:height .5s}
+.foodfill{background:#DFAE74;background-image:radial-gradient(circle,#C4944A 1.5px,transparent 2px);background-size:8px 7px}
+.waterfill{background:linear-gradient(180deg,#C6E0F2,#9FC6E0)}
+.bico{position:absolute;left:50%;top:-16px;transform:translateX(-50%);font-size:16px;
+  filter:drop-shadow(0 3px 2px rgba(110,140,165,.35))}
+
+/* 猫砂盆 */
+.litterbox{width:144px;height:68px;z-index:3}
+.lb-back{position:absolute;top:0;left:0;right:0;height:50px;border-radius:14px 14px 0 0;
+  background:linear-gradient(180deg,#F6FAFD,#E2EDF5);border:2px solid #C6D9E6;border-bottom:none;
+  box-shadow:inset 0 -6px 8px -4px rgba(120,150,175,.3)}
+.lb-sand{position:absolute;left:8px;right:8px;bottom:10px;height:32px;border-radius:6px;
+  background:#EFE7D3;background-image:radial-gradient(#DCD0B2 1.6px,transparent 2px);background-size:9px 7px;
+  box-shadow:inset 0 5px 7px rgba(140,125,90,.35),inset 0 -3px 4px rgba(255,255,255,.6)}
+.dirt{display:none;position:absolute;width:9px;height:6px;border-radius:50%;background:#8A7A5E}
+.d1{left:22%;top:38%}.d2{left:48%;top:58%}.d3{left:68%;top:30%}
+.litterbox.dirty .dirt{display:block}
+.lb-front{position:absolute;bottom:0;left:0;right:0;height:27px;border-radius:8px 8px 14px 14px;
+  background:linear-gradient(180deg,#FAFDFE,#DFEAF2);border:2px solid #C6D9E6;
+  box-shadow:0 6px 0 -2px #B9CEDD,0 10px 10px rgba(105,140,165,.28)}
+.lb-stink{position:absolute;left:50%;top:-16px;transform:translateX(-50%);font-size:18px;opacity:0;
+  transition:opacity .6s;animation:stink 2.2s ease-in-out infinite}
+.litterbox.stinky .lb-stink{opacity:.75}
+@keyframes stink{0%,100%{transform:translate(-50%,0)}50%{transform:translate(-50%,-7px)}}
+
+/* ===== 新猫窝系统 ===== */
+.house-decor{position:absolute;pointer-events:none}
+/* 五级猫窝统一宽度：全部以 Lv1 纸箱宽度 130px 为基准等比缩放，高度按各自宽高比自适应。
+   缩放系数 = 130/原宽。模型绝对定位贴容器底边并水平居中（left:50% + translateX(-50%)），
+   缩放原点取底部中心，所以缩放后底边始终与容器底边重合、水平居中，不会偏移或悬空 */
+.h-lv1,.h-lv2,.h-lv3,.h-lv4,.h-lv5{position:absolute;left:50%;bottom:0;
+  transform-origin:bottom center}
+/* Lv1 纸皮箱 */
+.h-lv1{width:130px;height:85px;transform:translateX(-50%) scale(1)}
+.h-lv1 .bx-body{position:absolute;left:0;right:0;bottom:0;height:86%;
+  border-radius:6px 6px 4px 4px;
+  background:linear-gradient(180deg,#E7CFA7 0%,#D8B98A 55%,#C6A271 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.55),inset 0 -7px 9px rgba(150,115,70,.35),
+             0 6px 0 -2px #AF8E5E,0 13px 15px rgba(105,138,164,.26)}
+.h-lv1 .bx-flap{position:absolute;top:1%;width:54%;height:20%;border-radius:3px;
+  background:linear-gradient(180deg,#F1DDBE 0%,#DCBE93 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 3px 6px rgba(120,95,60,.28)}
+.h-lv1 .bx-flap.l{left:-3%;transform:rotate(-9deg)}
+.h-lv1 .bx-flap.r{right:-3%;transform:rotate(9deg)}
+.h-lv1 .bx-tape{position:absolute;left:45%;top:0;bottom:0;width:10%;
+  background:linear-gradient(90deg,rgba(242,234,216,.9),rgba(224,211,186,.92));
+  box-shadow:0 0 3px rgba(150,120,80,.25)}
+.h-lv1 .bx-hole{position:absolute;left:26%;right:26%;bottom:0;height:62%;
+  border-radius:50% 50% 5% 5%/62% 62% 5% 5%;
+  background:linear-gradient(180deg,#8C6A3D,#5C4324);
+  box-shadow:inset 0 7px 11px rgba(0,0,0,.45),inset 0 -3px 6px rgba(255,220,170,.22)}
+/* Lv2 棉麻小帐篷 */
+.h-lv2{width:155px;height:175px;transform:translateX(-50%) scale(.8387)}
+.h-lv2 .tt-svg{position:absolute;inset:0;width:100%;height:100%;display:block;
+  filter:drop-shadow(0 7px 8px rgba(105,138,164,.3))}
+/* Lv3 绒面小沙发 */
+.h-lv3{width:170px;height:110px;transform:translateX(-50%) scale(.7647)}
+.h-lv3 .sf-back{position:absolute;left:5%;right:5%;top:0;height:68%;
+  border-radius:18px 18px 6px 6px;
+  background:linear-gradient(180deg,#2D5A4A 0%,#1E4A3A 40%,#1A3D30 100%);
+  box-shadow:inset 0 4px 0 rgba(255,255,255,.15),inset 0 -10px 15px rgba(0,0,0,.25),
+             0 7px 0 -2px #152E25,0 15px 20px rgba(20,50,40,.35)}
+.h-lv3 .sf-back::before{content:"";position:absolute;left:8%;right:8%;top:12%;bottom:15%;
+  border-radius:12px;border:2px solid rgba(200,180,120,.3);
+  pointer-events:none}
+.h-lv3 .sf-tuft{position:absolute;left:18%;right:18%;top:30%;height:12px;
+  display:flex;align-items:center;justify-content:space-between}
+.h-lv3 .sf-tuft i{width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#E8D5A0,#C4A870);
+  box-shadow:0 1px 3px rgba(0,0,0,.4),inset 0 1px 1px rgba(255,255,255,.4)}
+.h-lv3 .sf-seat{position:absolute;left:1%;right:1%;bottom:15%;height:44%;
+  border-radius:12px;
+  background:linear-gradient(180deg,#3A6B5A 0%,#2A5A4A 45%,#1E4A3A 100%);
+  box-shadow:inset 0 4px 0 rgba(255,255,255,.12),inset 0 -8px 12px rgba(0,0,0,.2),
+             0 6px 0 -2px #152E25,0 13px 18px rgba(20,50,40,.3)}
+.h-lv3 .sf-cush{position:absolute;left:15%;right:15%;bottom:36%;height:30%;
+  border-radius:10px;
+  background:radial-gradient(ellipse at 50% 35%,#F5E6C8 0%,#E8D4A8 60%,#D4C090 100%);
+  box-shadow:inset 0 6px 10px rgba(180,150,90,.35),0 3px 4px rgba(255,255,255,.5)}
+.h-lv3 .sf-arm{position:absolute;bottom:13%;width:18%;height:50%;
+  border-radius:18px 18px 6px 6px;
+  background:linear-gradient(180deg,#2D5A4A 0%,#1E4A3A 45%,#1A3D30 100%);
+  box-shadow:inset 0 3px 0 rgba(255,255,255,.12),inset -4px 0 8px rgba(0,0,0,.18),
+             0 6px 0 -2px #152E25,0 11px 15px rgba(20,50,40,.28)}
+.h-lv3 .sf-arm.l{left:-1%}
+.h-lv3 .sf-arm.r{right:-1%}
+.h-lv3 .sf-arm::after{content:"";position:absolute;left:50%;top:8%;transform:translateX(-50%);
+  width:50%;height:82%;border-radius:999px;
+  background:linear-gradient(180deg,rgba(255,255,255,.08),rgba(255,255,255,.02))}
+.h-lv3 .sf-pillow{position:absolute;left:20%;bottom:38%;width:40px;height:40px;   /* 固定正方形：避免按容器 170×110 的百分比算出椭圆 */
+  border-radius:50%;transform:rotate(-8deg);transform-style:flat;
+  background:radial-gradient(circle at 40% 35%,#E85050 0%,#D04040 50%,#B83030 100%);
+  box-shadow:inset 0 4px 8px rgba(255,255,255,.3),inset 0 -4px 8px rgba(0,0,0,.2),
+             0 4px 8px rgba(20,50,40,.25)}
+.h-lv3 .sf-pillow::before{content:"";position:absolute;left:50%;top:50%;transform:translate(-50%,-50%);
+  width:80%;height:80%;border-radius:50%;
+  background:conic-gradient(from 0deg,rgba(255,255,255,.15) 0deg,transparent 30deg,
+    rgba(255,255,255,.1) 60deg,transparent 90deg,rgba(255,255,255,.12) 120deg,transparent 150deg,
+    rgba(255,255,255,.08) 180deg,transparent 210deg,rgba(255,255,255,.15) 240deg,transparent 270deg,
+    rgba(255,255,255,.1) 300deg,transparent 330deg)}
+.h-lv3 .sf-pillow::after{content:"";position:absolute;right:-15%;bottom:10%;
+  width:20%;height:40%;border-radius:0 50% 50% 0;
+  background:linear-gradient(90deg,#D04040,#B83030);
+  transform:rotate(25deg);
+  box-shadow:inset 0 2px 3px rgba(255,255,255,.2)}
+.h-lv3 .sf-leg{position:absolute;bottom:0;width:8%;height:17%;border-radius:0 0 999px 999px;
+  background:linear-gradient(180deg,#D4A860 0%,#B8903A 50%,#A07828 100%);
+  box-shadow:0 2px 4px rgba(20,50,40,.35)}
+.h-lv3 .sf-leg.l{left:9%}
+.h-lv3 .sf-leg.r{right:9%}
+/* Lv4 双层木屋小楼 */
+.h-lv4{width:195px;height:220px;transform:translateX(-50%) scale(.6667)}
+.h-lv4 .cb-chim{position:absolute;right:13%;top:3%;width:11%;height:23%;
+  border-radius:3px;
+  background:linear-gradient(180deg,#BE8B84 0%,#94625C 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.35),inset -3px 0 5px rgba(90,60,55,.3),
+             0 3px 5px rgba(105,138,164,.28)}
+.h-lv4 .cb-smoke{position:absolute;right:16%;top:-1.5%;
+  width:9px;height:9px;border-radius:50%;
+  background:rgba(255,255,255,.7);animation:smoke 3.6s ease-in-out infinite}
+.h-lv4 .cb-smoke.s2{right:18%;animation-delay:1.2s}
+@keyframes smoke{
+  0%  {opacity:0;transform:translate(0,0) scale(.5)}
+  25% {opacity:.65}
+  100%{opacity:0;transform:translate(-11px,-22px) scale(1.7)}
+}
+.h-lv4 .cb-up{position:absolute;left:9%;right:9%;top:31%;height:29%;border-radius:4px;
+  background:
+    repeating-linear-gradient(180deg,rgba(140,105,65,.16) 0 2px,rgba(0,0,0,0) 2px 15px),
+    linear-gradient(180deg,#F4E3C5 0%,#DCC29B 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6),inset 0 -6px 9px rgba(140,105,65,.28)}
+.h-lv4 .cb-win{position:absolute;left:50%;top:15%;transform:translateX(-50%);
+  width:30%;height:72%;
+  border-radius:46% 46% 4% 4%/36% 36% 3% 3%;
+  background:linear-gradient(180deg,#F4FAFE 0%,#D2E2EE 62%,#BCD0E1 100%);
+  border:3px solid #B18F63;
+  box-shadow:inset 0 3px 5px rgba(90,120,145,.38),0 2px 3px rgba(120,95,60,.2)}
+.h-lv4 .cb-win::before{content:"";position:absolute;left:50%;top:8%;bottom:2%;
+  width:2px;background:#B18F63;transform:translateX(-50%)}
+.h-lv4 .cb-win::after{content:"";position:absolute;top:46%;left:0;right:0;
+  height:2px;background:#B18F63}
+.h-lv4 .cb-bal{position:absolute;left:1%;right:1%;top:58%;height:6%;border-radius:4px;
+  background:linear-gradient(180deg,#ECDAB8 0%,#CBB088 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 5px 0 -2px #AE8F63}
+.h-lv4 .cb-rail{position:absolute;left:7%;right:7%;top:51%;height:9%;
+  background:repeating-linear-gradient(90deg,#B3895B 0 3px,rgba(0,0,0,0) 3px 13%)}
+.h-lv4 .cb-rail::before{content:"";position:absolute;left:-4%;right:-4%;top:0;
+  height:4px;border-radius:999px;background:#A87F52}
+.h-lv4 .cb-down{position:absolute;left:0;right:0;top:63%;height:29%;
+  background:
+    repeating-linear-gradient(180deg,rgba(138,103,63,.18) 0 2px,rgba(0,0,0,0) 2px 17px),
+    linear-gradient(180deg,#EFDDBE 0%,#D3B78F 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.55),inset 0 -8px 11px rgba(140,105,65,.3),
+             0 7px 0 -2px #AA8A61,0 15px 19px rgba(105,138,164,.28)}
+.h-lv4 .cb-door{position:absolute;left:36%;right:36%;bottom:0;height:82%;
+  border-radius:46% 46% 4% 4%/36% 36% 3% 3%;
+  background:linear-gradient(180deg,#775F47 0%,#493927 100%);
+  box-shadow:inset 0 7px 11px rgba(0,0,0,.5),inset 0 -3px 6px rgba(255,220,175,.2)}
+.h-lv4 .cb-lamp{position:absolute;right:12%;top:20%;
+  width:10px;height:10px;border-radius:50%;
+  background:radial-gradient(circle at 40% 34%,#FFF6D2 0%,#EFCA66 100%);
+  box-shadow:0 0 11px 4px rgba(255,222,145,.55),0 2px 3px rgba(90,70,40,.3)}
+.h-lv4 .cb-base{position:absolute;left:-5%;right:-5%;bottom:-1%;height:9%;border-radius:6px;
+  background:linear-gradient(180deg,#E0D7CA 0%,#BFB4A4 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6),0 4px 0 -2px #A79C8B}
+.h-lv4 .cb-roof{position:absolute;left:-12%;right:-12%;top:0;height:37%;
+  filter:drop-shadow(0 7px 7px rgba(105,138,164,.32))}
+.h-lv4 .cb-roof svg{position:absolute;inset:0;width:100%;height:100%;display:block}
+/* 木屋左侧侧影：平行于地面3D网格中rotateX(57deg)扭曲后的"相对垂直线"
+   （即跑步机右侧延伸出的那条斜线）。DOM顺序在.h-lv4之前，右边缘被房子自然掩盖。
+   透明度从下往上渐变：底部不透明 → 顶部全透明 */
+.cb-side-shadow{
+  position:absolute;
+  left:-18%;top:20%;bottom:20%;
+  width:22px;
+  border-radius:6px 2px 2px 6px;
+  background:linear-gradient(0deg,
+    rgba(70,95,125,.2) 0%,
+    rgba(70,95,125,.12) 45%,
+    rgba(70,95,125,0) 100%);
+  filter:blur(2.5px);
+  pointer-events:none;
+  transform:rotate(57deg);
+  transform-origin:center bottom;
+}
+/* Lv5 皇家城堡窝 */
+.h-lv5{width:220px;height:250px;transform:translateX(-50%) scale(.5909)}
+.h-lv5 .rc-step{position:absolute;left:6%;right:6%;bottom:0;height:9%;
+  border-radius:6px 6px 10px 10px;
+  background:linear-gradient(180deg,#E9DABD,#CDB68E);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.6),inset 0 -4px 6px rgba(150,120,80,.35),0 5px 0 -2px #B69B70}
+.h-lv5 .rc-base{position:absolute;left:0;right:0;bottom:5%;height:20%;
+  border-radius:10px;
+  background:linear-gradient(180deg,#F1E4CC 0%,#DCC59B 55%,#C6AB7E 100%);
+  box-shadow:inset 0 2px 0 rgba(255,255,255,.7),inset 0 -6px 8px rgba(150,120,80,.35),
+             0 7px 0 -2px #B1945E,0 15px 19px rgba(105,138,164,.28)}
+.h-lv5 .rc-emblem{position:absolute;left:50%;bottom:9%;transform:translateX(-50%);
+  font-size:18px;color:#B99A5E;text-shadow:0 1px 0 rgba(255,255,255,.7)}
+.h-lv5 .rc-matt{position:absolute;left:12%;right:12%;bottom:23%;height:20%;
+  border-radius:12px;
+  background:linear-gradient(180deg,#C8AFD3 0%,#AE92BE 55%,#9477A5 100%);
+  box-shadow:inset 0 3px 0 rgba(255,255,255,.45),inset 0 -6px 8px rgba(90,65,110,.35),
+             inset 0 0 0 2px rgba(219,192,136,.8),0 5px 0 -2px #806488}
+.h-lv5 .rc-pillow{position:absolute;left:26%;right:26%;bottom:34%;height:11%;
+  border-radius:9px;
+  background:linear-gradient(180deg,#F8F1E3,#E3D6BE);
+  box-shadow:inset 0 2px 0 #fff,0 3px 5px rgba(90,70,110,.25)}
+.h-lv5 .rc-pillar{position:absolute;bottom:22%;top:28%;width:7%;border-radius:999px;
+  background:linear-gradient(90deg,#B99A5E 0%,#EBDAAA 45%,#C8A86A 100%);
+  box-shadow:0 3px 5px rgba(105,138,164,.25)}
+.h-lv5 .rc-pillar.l{left:1%}
+.h-lv5 .rc-pillar.r{right:1%}
+.h-lv5 .rc-pillar::before,.h-lv5 .rc-pillar::after{content:"";position:absolute;left:-32%;right:-32%;height:8%;
+  border-radius:3px;
+  background:linear-gradient(180deg,#EBDAAA,#BFA05F);box-shadow:0 2px 3px rgba(130,105,60,.35)}
+.h-lv5 .rc-pillar::before{top:0}
+.h-lv5 .rc-pillar::after{bottom:0}
+.h-lv5 .rc-canopy{position:absolute;left:-2%;right:-2%;top:5%;height:24%;
+  border-radius:14px 14px 0 0;
+  background:linear-gradient(180deg,#CBADD8 0%,#AE92BE 100%);
+  box-shadow:inset 0 3px 0 rgba(255,255,255,.4),inset 0 -5px 8px rgba(90,65,110,.28)}
+.h-lv5 .rc-scallop{position:absolute;left:-2%;right:-2%;top:27.5%;height:5.5%;
+  background:radial-gradient(circle at 50% 0,#AE92BE 48%,rgba(0,0,0,0) 50%) 0 0/12.5% 200% repeat-x}
+.h-lv5 .rc-drape{position:absolute;top:29%;bottom:34%;width:11%;
+  border-radius:0 0 15px 15px;
+  background:linear-gradient(180deg,#B99FC8,#9B81AD);
+  box-shadow:inset 0 3px 6px rgba(90,65,110,.3)}
+.h-lv5 .rc-drape.l{left:-1%}
+.h-lv5 .rc-drape.r{right:-1%}
+.h-lv5 .rc-tas{position:absolute;top:29%;width:5%;height:9%;border-radius:999px;
+  background:linear-gradient(180deg,#E5CF8B,#BD9B56);
+  box-shadow:0 2px 3px rgba(130,105,60,.35)}
+.h-lv5 .rc-tas.l{left:3%}
+.h-lv5 .rc-tas.r{right:3%}
+.h-lv5 .rc-crown{position:absolute;left:50%;top:-9%;transform:translateX(-50%);width:32%;height:14%;
+  background:linear-gradient(180deg,#F1DD9F,#C8A556);
+  clip-path:polygon(0% 100%,0% 30%,20% 60%,35% 8%,50% 45%,65% 8%,80% 60%,100% 30%,100% 100%);
+  filter:drop-shadow(0 3px 3px rgba(130,105,60,.4))}
+.h-lv5 .rc-crown::after{content:"";position:absolute;left:50%;bottom:10%;transform:translateX(-50%);
+  width:15%;height:26%;border-radius:50%;
+  background:radial-gradient(circle at 35% 30%,#F7CDD4,#D88D9D);
+  box-shadow:0 0 0 2px rgba(200,165,86,.9);
+  animation:sparkle 2.6s ease-in-out infinite}
+@keyframes sparkle{
+  0%,100%{opacity:.6;transform:translateX(-50%) scale(1)}
+  50%    {opacity:1;transform:translateX(-50%) scale(1.2)}
+}
+/* 现代平板电视机 + 木质电视柜 */
+.tv-item{position:relative;width:90px;height:90px;z-index:3}
+.tv-body{position:absolute;left:0;right:0;bottom:40px;height:46px;border-radius:4px;
+  background:linear-gradient(180deg,#2A2A2A 0%,#1A1A1A 50%,#222 100%);
+  border:1px solid #333;
+  box-shadow:0 2px 8px rgba(0,0,0,.3)}
+.tv-screen{position:absolute;left:3px;top:3px;right:3px;bottom:3px;border-radius:2px;
+  background:#4A86B8;overflow:hidden;
+  box-shadow:inset 0 0 20px rgba(0,0,0,.6)}
+.tv-screen::before{content:"";position:absolute;inset:0;
+  background:linear-gradient(135deg,rgba(255,255,255,.08) 0%,transparent 50%);
+  pointer-events:none}
+.tv-screen-content{position:absolute;inset:0;opacity:0;transition:opacity .5s;pointer-events:none}
+.tv-screen-content.on{opacity:1}
+.tv-program{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+  font-size:10px;color:#fff;text-align:center;padding:2px}
+.tv-scanlines{position:absolute;inset:0;pointer-events:none;
+  background:repeating-linear-gradient(0deg,rgba(255,255,255,.03) 0px,rgba(255,255,255,.03) 1px,rgba(0,0,0,.08) 2px,rgba(0,0,0,.08) 3px)}
+.tv-stand{position:absolute;left:50%;bottom:30px;transform:translateX(-50%);
+  width:30px;height:10px;
+  background:linear-gradient(180deg,#333,#222);
+  border-radius:0 0 2px 2px}
+.tv-stand::before{content:"";position:absolute;bottom:0;left:50%;transform:translateX(-50%);
+  width:40px;height:4px;
+  background:linear-gradient(180deg,#444,#333);
+  border-radius:0 0 2px 2px}
+.tv-cabinet{position:absolute;left:-5px;right:-5px;bottom:8px;height:22px;border-radius:4px 4px 0 0;
+  background:linear-gradient(180deg,#E0D0B2 0%,#CBBA98 70%,#B9A886 100%);
+  border:1px solid #B9A886;border-bottom:none;
+  box-shadow:inset 0 2px 3px rgba(255,255,255,.4),inset 0 -3px 5px rgba(150,125,90,.3)}
+.tv-leg{position:absolute;bottom:0;width:10px;height:16px;border-radius:0 0 3px 3px;
+  background:linear-gradient(180deg,#B9A886,#A89876);
+  box-shadow:0 2px 3px rgba(0,0,0,.15);
+  transform-origin:top center;z-index:0}
+.tv-leg.l{left:10px;transform:rotate(12deg)}
+.tv-leg.r{right:10px;transform:rotate(-12deg)}
+.tv-cabinet{z-index:1}
+.tv-led{position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  width:4px;height:4px;border-radius:50%;
+  background:#4CAF50;
+  box-shadow:0 0 4px #4CAF50}
+.tv-shadow{position:absolute;left:50%;bottom:0;transform:translateX(-50%);
+  width:90%;height:4px;border-radius:50%;background:rgba(0,0,0,.1);filter:blur(2px)}
+/* 仙人掌造型的猫爬架（备用样式） */
+.fishtank{width:110px;height:150px;z-index:3}
+.ft-stand{position:absolute;left:4px;bottom:0;width:102px;height:26px;border-radius:8px 8px 12px 12px;
+  background:linear-gradient(180deg,#DAC7AA,#C2AC8C);
+  box-shadow:inset 0 3px 4px rgba(255,255,255,.45),inset 0 -5px 7px rgba(150,120,90,.4),0 6px 10px rgba(110,145,170,.28)}
+.ft-glass{position:absolute;left:8px;bottom:22px;width:94px;height:96px;border-radius:10px 10px 14px 14px;overflow:hidden;
+  background:linear-gradient(180deg,rgba(214,234,246,.5) 0%,rgba(150,196,224,.72) 100%);
+  border:3px solid rgba(196,218,232,.95);
+  box-shadow:inset 0 5px 12px rgba(90,130,160,.35),0 5px 9px rgba(110,145,170,.25)}
+.ft-water{position:absolute;inset:0;background:linear-gradient(180deg,rgba(140,190,222,.25),rgba(110,165,205,.4))}
+.ft-weed{position:absolute;bottom:0;width:8px;border-radius:4px;background:linear-gradient(180deg,#9DBE97,#7FA07A);
+  transform-origin:bottom;animation:weedSway 3s ease-in-out infinite alternate}
+.ft-weed.w1{left:10px;height:36px}
+.ft-weed.w2{left:76px;height:28px;animation-delay:.8s}
+.ft-weed.w3{left:42px;height:44px;animation-delay:1.5s}
+.ft-weed.w4{left:60px;height:20px;animation-delay:2.2s}
+.ft-weed.w5{left:24px;height:32px;animation-delay:.4s}
+/* 珊瑚 */
+.ft-coral{position:absolute;right:6px;bottom:0;width:18px;height:28px;
+  background:radial-gradient(ellipse at 50% 100%,#E87070 0%,#D05050 50%,#B83030 100%);
+  border-radius:6px 6px 3px 3px;
+  box-shadow:inset 2px 2px 4px rgba(255,200,200,.3),-2px 0 4px rgba(180,40,40,.2)}
+.ft-coral::before{content:"";position:absolute;left:-6px;top:6px;width:12px;height:18px;
+  background:radial-gradient(ellipse at 50% 100%,#F09070,#D06050);
+  border-radius:5px 5px 2px 2px}
+.ft-coral::after{content:"";position:absolute;right:-4px;top:10px;width:10px;height:14px;
+  background:radial-gradient(ellipse at 50% 100%,#E88060,#C85040);
+  border-radius:4px 4px 2px 2px}
+/* 石头 */
+.ft-stone{position:absolute;bottom:0;border-radius:50% 50% 45% 45%;
+  background:linear-gradient(160deg,#A0A8A8,#808888 50%,#686E6E);
+  box-shadow:inset 2px 2px 3px rgba(200,210,210,.3),inset -2px -2px 3px rgba(60,70,70,.3)}
+.ft-stone.s1{left:4px;width:16px;height:10px}
+.ft-stone.s2{left:24px;width:12px;height:8px;background:linear-gradient(160deg,#98A0A0,#787E7E 50%,#606666)}
+.ft-stone.s3{left:40px;width:10px;height:7px;background:linear-gradient(160deg,#A8B0B0,#888E8E 50%,#707676)}
+@keyframes weedSway{from{transform:rotate(-6deg)}to{transform:rotate(7deg)}}
+.ft-fish{position:absolute;top:28px;left:10px;font-size:20px;
+  transition:left 1.1s ease-in-out,transform .5s;
+  animation:ftSwim 9s ease-in-out infinite;
+  filter:drop-shadow(0 2px 2px rgba(60,100,140,.4))}
+@keyframes ftSwim{
+  0%{left:8px;transform:scaleX(1)}
+  45%{left:54px;transform:scaleX(1)}
+  50%{left:56px;transform:scaleX(-1)}
+  95%{left:10px;transform:scaleX(-1)}
+  100%{left:8px;transform:scaleX(1)}}
+/* 第二条鱼（小，橙色，慢速） */
+.ft-fish2{top:50px;left:50px;font-size:14px;animation:ftSwim2 12s ease-in-out infinite;
+  filter:drop-shadow(0 1px 2px rgba(180,100,40,.4))!important}
+@keyframes ftSwim2{
+  0%{left:50px;transform:scaleX(-1)}
+  40%{left:12px;transform:scaleX(-1)}
+  45%{left:10px;transform:scaleX(1)}
+  90%{left:60px;transform:scaleX(1)}
+  100%{left:50px;transform:scaleX(-1)}}
+/* 第三条鱼（大，金色，中速） */
+.ft-fish3{top:14px;left:30px;font-size:26px;animation:ftSwim3 7s ease-in-out infinite;
+  filter:drop-shadow(0 2px 3px rgba(200,160,60,.5))!important}
+@keyframes ftSwim3{
+  0%{left:30px;transform:scaleX(1)}
+  48%{left:60px;transform:scaleX(1)}
+  52%{left:62px;transform:scaleX(-1)}
+  96%{left:14px;transform:scaleX(-1)}
+  100%{left:30px;transform:scaleX(1)}}
+.ft-bub{position:absolute;border:1.5px solid rgba(255,255,255,.8);border-radius:50%;
+  width:6px;height:6px;bottom:16px;opacity:0;animation:bubUp 3.4s ease-in infinite}
+.ft-bub.b1{left:26px}
+.ft-bub.b2{left:44px;animation-delay:1.2s;width:4px;height:4px}
+.ft-bub.b3{left:58px;animation-delay:2.1s;width:5px;height:5px}
+@keyframes bubUp{0%{transform:translateY(0);opacity:0}25%{opacity:.9}100%{transform:translateY(-64px);opacity:0}}
+/* 摸鱼：单爪扒拉 + 身体前倾弹跳 */
+.swat-paw{display:none}
+.cat-wrap.swat .swat-paw{display:block}
+.cat-wrap.swat .paw-down{display:none}
+.cat-wrap.swat .cat-svg{animation:swatBounce .45s ease-in-out infinite}
+@keyframes swatBounce{0%,100%{transform:translateY(0)}50%{transform:translateY(-13px)}}
+.act-wide{grid-column:1/-1;flex-direction:row;justify-content:center;gap:8px}
+.btn3d.patrol{background:linear-gradient(180deg,#EDF3F8,#DDE9F2);box-shadow:0 6px 0 #BFD4E2,0 12px 20px rgba(125,155,180,.25),inset 0 2px 0 #fff}
+.btn3d.patrol:active{box-shadow:0 1px 0 #BFD4E2}
+.cactus{width:96px;height:150px;z-index:3}
+.cc-trunk{position:absolute;left:35px;bottom:20px;width:26px;height:104px;border-radius:13px;
+  background:linear-gradient(90deg,#8FAE8C 0%,#A9C4A4 45%,#93B291 100%);
+  box-shadow:inset -4px 0 6px rgba(90,120,90,.35),inset 3px 0 4px rgba(255,255,255,.35),0 6px 10px rgba(110,145,170,.25)}
+.cc-line{position:absolute;top:10px;bottom:10px;width:2px;border-radius:2px;background:rgba(70,105,70,.28)}
+.cc-line.l1{left:8px}.cc-line.l2{right:8px}
+.cc-arm{position:absolute;bottom:74px;width:66px;height:44px}
+.cc-arm-l{left:-13px}
+.cc-arm-r{left:43px;transform:scaleX(-1)}
+.cc-h{position:absolute;left:12px;bottom:6px;width:34px;height:16px;border-radius:9px;
+  background:linear-gradient(180deg,#A9C4A4,#8FAE8C);
+  box-shadow:inset -3px 2px 4px rgba(90,120,90,.3),inset 2px 1px 3px rgba(255,255,255,.35)}
+.cc-v{position:absolute;left:32px;bottom:14px;width:15px;height:38px;border-radius:8px;
+  background:linear-gradient(90deg,#8FAE8C,#A9C4A4 55%,#93B291);
+  box-shadow:inset -3px 0 4px rgba(90,120,90,.3),inset 2px 0 3px rgba(255,255,255,.35)}
+.cc-plank{position:absolute;left:2px;bottom:66px;width:92px;height:9px;border-radius:5px;
+  background:linear-gradient(180deg,#E3D3B4,#CFBC98);
+  box-shadow:0 3px 0 #B7A47E,0 6px 8px rgba(100,135,162,.28)}
+.cc-pot{position:absolute;left:20px;bottom:0;width:56px;height:24px;border-radius:4px 4px 10px 10px;
+  background:linear-gradient(180deg,#D9B8A6 0%,#C9A48E 100%);
+  box-shadow:inset 0 -5px 8px rgba(150,110,90,.4),inset 0 3px 4px rgba(255,255,255,.45),0 5px 9px rgba(110,145,170,.3)}
+.cc-rim{position:absolute;left:-5px;top:-6px;width:66px;height:12px;border-radius:7px;
+  background:linear-gradient(180deg,#E4C8B6,#D3AF9A);
+  box-shadow:inset 0 -3px 4px rgba(150,110,90,.35),0 2px 4px rgba(150,110,90,.25)}
+.cc-flower{position:absolute;left:41px;top:-4px;width:14px;height:14px;border-radius:50%;
+  background:radial-gradient(circle at 40% 35%,#F5CBD6,#E39BAC);
+  box-shadow:0 0 0 3px #A9C4A4,0 3px 6px rgba(100,135,162,.3)}
+.rug{width:190px;height:96px;border-radius:50%;
+  background:radial-gradient(ellipse at 50% 45%,#E9F2F8 0%,#D9E7F0 70%,#CBDDCA 100%);
+  box-shadow:inset 0 0 0 5px rgba(190,212,228,.55),0 6px 10px rgba(110,145,170,.22)}
+
+/* 逗猫棒（屏幕空间跟随光标，羽毛尖端=鼠标位置） */
+.teaser{display:none;position:absolute;width:40px;height:112px;z-index:7;pointer-events:none;
+  transform-origin:20px 100px;
+  animation:wig .5s ease-in-out infinite alternate}
+.teaser.on{display:block}
+.stick{position:absolute;left:19px;top:6px;width:5px;height:96px;border-radius:4px;
+  background:linear-gradient(90deg,#E4D3B6,#C4AE8D);transform:rotate(9deg);transform-origin:top center;
+  box-shadow:2px 2px 3px rgba(110,140,165,.3)}
+.feather{position:absolute;left:6px;top:-8px;font-size:30px;transform:rotate(-14deg)}
+@keyframes wig{from{transform:rotate(-4deg)}to{transform:rotate(5deg)}}
+.scene.playing{cursor:none}
+
+/* ---------- 猫咪（地面公告牌，可沿 Y 轴升高） ---------- */
+.cat-wrap{width:150px;z-index:9;cursor:pointer;
+  transform:translate(-50%,-96%) translateZ(var(--h,0px))
+            rotateX(calc(-1*var(--camx,57deg))) rotateY(calc(-1*var(--camy,0deg)));
+  transform-origin:50% 100%;
+  transition:left 1.15s ease-in-out,top 1.15s ease-in-out,--h .55s cubic-bezier(.35,1.5,.55,1);
+}
+.cat-shadow{width:96px;height:26px;border-radius:50%;transform:translate(-50%,-50%);
+  background:radial-gradient(ellipse,rgba(80,105,125,.32) 0%,rgba(80,105,125,0) 68%);
+  transition:left 1.15s ease-in-out,top 1.15s ease-in-out,opacity .4s;pointer-events:none}
+/* 逗猫追踪时影子与猫同速 */
+.cat-shadow.fast{transition:left .45s ease-out,top .45s ease-out,opacity .3s}
+.cat-flip{transition:transform .3s}
+.cat-flip.face-l{transform:scaleX(-1)}
+.cat-view{width:100%;display:block}
+.cat-view.cat-back{display:none}
+.cat-wrap.back .cat-view.cat-front{display:none}
+.cat-wrap.back .cat-view.cat-back{display:block}
+.cat-svg{width:100%;display:block}
+.tail-g{transform-box:view-box;transform-origin:150px 168px;animation:sway 3.4s ease-in-out infinite}
+@keyframes sway{0%,100%{transform:rotate(-4deg)}50%{transform:rotate(7deg)}}
+.body-g{transform-box:view-box;transform-origin:110px 186px;animation:breathe 3.6s ease-in-out infinite}
+@keyframes breathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(1.025)}}
+.eyes-open{transform-box:fill-box;transform-origin:center;animation:blink 4.6s infinite}
+@keyframes blink{0%,93.5%,100%{transform:scaleY(1)}96%{transform:scaleY(.06)}}
+.ear-l-g,.ear-r-g{transform-box:view-box;transition:transform .35s}
+.ear-l-g{transform-origin:88px 62px}.ear-r-g{transform-origin:132px 62px}
+.cat-wrap.sad .ear-l-g{transform:rotate(-14deg)}
+.cat-wrap.sad .ear-r-g{transform:rotate(14deg)}
+.pupil{transform-box:fill-box;transform-origin:center;transition:transform .3s}
+.cat-wrap.sad .pupil{transform:translateY(2.5px)}
+.mouth-sad{display:none}
+.cat-wrap.sad .mouth-happy{display:none}
+.cat-wrap.sad .mouth-sad{display:block}
+.eyes-closed{display:none}
+.cat-wrap.sleeping .eyes-open,.cat-wrap.sleeping .mouth-g,.cat-wrap.sleeping .blush{display:none}
+.cat-wrap.sleeping .eyes-closed{display:block}
+.cat-wrap.sleeping .body-g{animation:sbreathe 2.6s ease-in-out infinite}
+@keyframes sbreathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.94)}}
+.cat-wrap.eating .head-g,.cat-wrap.drinking .head-g{transform-box:view-box;transform-origin:110px 60px;
+  animation:nom .55s ease-in-out infinite}
+.cat-wrap.drinking .head-g{animation-duration:.8s}
+@keyframes nom{0%,100%{transform:translateY(0) rotate(0)}50%{transform:translateY(9px) rotate(2.5deg)}}
+/* 猫条：双手捧着吃 */
+.cat-wrap.treat-eat .cat-svg{animation:treatHold .6s ease-in-out infinite}
+.cat-wrap.treat-eat .head-g{transform-box:view-box;transform-origin:110px 60px;
+  animation:nom .45s ease-in-out infinite}
+@keyframes treatHold{0%,100%{transform:translateY(0) rotate(0)}30%{transform:translateY(-4px) rotate(-2deg)}60%{transform:translateY(6px) rotate(1.5deg)}}
+@keyframes treatFloat{from{transform:translateY(0) rotate(-5deg)}to{transform:translateY(-4px) rotate(5deg)}}
+.cat-wrap.potty .head-g{transform-box:view-box;transform-origin:110px 60px;animation:nom .4s ease-in-out infinite}
+.cat-wrap.potty .tail-g{transform-origin:150px 150px;animation:tailUp 2.4s ease-in-out infinite}
+@keyframes tailUp{0%,100%{transform:rotate(10deg)}50%{transform:rotate(20deg)}}
+.cat-wrap.playing .cat-svg,.cat-wrap.climbing .cat-svg{animation:pounce .5s ease-in-out infinite alternate;transform-origin:center bottom}
+@keyframes pounce{from{transform:translateY(0)}to{transform:translateY(-26px) scale(1.03,.97)}}
+/* 欢呼表情：举爪 + ^^眼 + 开口笑 + 跳跃 */
+.cheer-only{display:none}
+.cat-wrap.cheer .cheer-only{display:block}
+.cat-wrap.cheer .eyes-open,.cat-wrap.cheer .mouth-g{display:none}
+.cat-wrap.cheer .paw-down{display:none}
+.cat-wrap.cheer .cat-svg{animation:cheerJump .55s ease-in-out infinite}
+@keyframes cheerJump{0%,100%{transform:translateY(0) scale(1,1)}30%{transform:translateY(-30px) scale(1.02,.96)}60%{transform:translateY(0) scale(1.05,.93)}}
+/* 逗猫模式下猫的追踪移动更灵敏 */
+.cat-wrap.playing{transition:left .45s ease-out,top .45s ease-out,--h .24s cubic-bezier(.35,1.5,.55,1)}
+.cat-wrap.walking .cat-svg{animation:hop .36s ease-in-out infinite}
+@keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
+
+.zzz{display:none;position:absolute;right:2px;top:-4px;width:44px;height:44px;pointer-events:none}
+.cat-wrap.sleeping .zzz{display:block}
+.zzz span{position:absolute;color:#8FA9BC;font-weight:700;opacity:0;animation:rise2 2.2s ease-out infinite}
+.zzz span:nth-child(1){font-size:12px;left:0;animation-delay:0s}
+.zzz span:nth-child(2){font-size:15px;left:10px;animation-delay:.7s}
+.zzz span:nth-child(3){font-size:18px;left:22px;animation-delay:1.4s}
+@keyframes rise2{0%{transform:translateY(8px);opacity:0}30%{opacity:.9}100%{transform:translateY(-26px);opacity:0}}
+
+.bubble{
+  /* scene 级 fixed 定位：脱离 3D 排序，由 JS 每帧根据猫的屏幕位置调整。
+     关键修复：原实现嵌在 cat-wrap（3D billboard）里，气泡 z≈-135 被墙/地板深度排序压住 */
+  position:fixed;left:0;top:0;
+  background:#fff;border:1.5px solid #D9E6EF;color:#5B7183;padding:7px 12px;border-radius:14px;font-size:13px;
+  white-space:nowrap;opacity:0;transition:opacity .25s;z-index:35;pointer-events:none;
+  box-shadow:0 5px 0 rgba(190,210,224,.6),0 8px 14px rgba(110,140,165,.2);
+  /* translate(-50%,-100%) 把气泡的左下角锚到 (left,top)；--bx 控制箭头水平偏移（猫相对气泡中心的偏移） */
+  --bx:0px;
+  transform:translate(-50%,-100%) scale(.6);transform-origin:center bottom}
+.bubble.on{opacity:1;transform:translate(-50%,-100%) scale(1)}
+.bubble::after{content:"";position:absolute;left:calc(50% + var(--bx,0px));bottom:-6px;width:10px;height:10px;background:#fff;
+  border-right:1.5px solid #D9E6EF;border-bottom:1.5px solid #D9E6EF;transform:translateX(-50%) rotate(45deg)}
+
+.night{position:absolute;inset:0;z-index:20;pointer-events:none;opacity:0;transition:opacity 1s;
+  background:linear-gradient(180deg,rgba(56,74,116,.34),rgba(56,74,116,.1))}
+
+/* 粒子 & 提示 */
+.pt{position:absolute;font-size:18px;z-index:30;pointer-events:none;animation:rise 1.2s ease-out forwards}
+@keyframes rise{from{transform:translateY(0);opacity:1}to{transform:translateY(-58px);opacity:0}}
+.toasts{position:absolute;left:50%;bottom:calc(100% - var(--roomH) + 12px);transform:translateX(-50%);
+  display:flex;flex-direction:column;align-items:center;gap:6px;z-index:40;pointer-events:none;
+  width:max-content;max-width:94%}
+.toast{background:rgba(255,255,255,.95);border:1px solid #DCE8F0;color:#5B7183;font-size:13px;
+  padding:8px 14px;border-radius:999px;box-shadow:0 4px 0 rgba(190,210,224,.55),0 8px 14px rgba(110,140,165,.22);
+  animation:tin .3s ease;white-space:nowrap}
+.toast.out{opacity:0;transition:.3s}
+@keyframes tin{from{opacity:0;transform:translateY(8px)}to{opacity:1}}
+.hint3d{position:absolute;left:14px;top:12px;z-index:15;font-size:11.5px;color:#7C94A6;
+  background:rgba(255,255,255,.72);padding:4px 10px;border-radius:999px;
+  box-shadow:0 2px 6px rgba(110,140,165,.2);pointer-events:none}
+
+/* ---------- 随机事件：捡物卡片 / 走丢横幅 / 病号徽章 / 朋友猫 ---------- */
+.event-card{position:absolute;left:50%;bottom:70px;transform:translateX(-50%) translateY(12px);opacity:0;
+  transition:.3s;z-index:46;background:#fff;border:1.5px solid #D9E6EF;border-radius:18px;padding:12px 18px;
+  text-align:center;width:max-content;box-shadow:0 10px 22px rgba(110,140,165,.3)}
+.event-card.on{opacity:1;transform:translateX(-50%) translateY(0)}
+.ev-emoji{font-size:32px;display:block;filter:drop-shadow(0 3px 3px rgba(110,140,165,.35))}
+.ev-name{font-size:13px;color:#5B7183;margin:5px 0 9px}
+.ev-btns{display:flex;gap:10px;justify-content:center}
+.ev-btns .btn3d{padding:7px 16px;font-size:13px}
+.ev-lost{position:absolute;top:44px;left:50%;transform:translateX(-50%);z-index:46;display:none;
+  background:linear-gradient(180deg,#FBE3DE,#F6D2CC);border:1.5px solid #E8B7B0;color:#A05B52;
+  padding:10px 16px;border-radius:14px;text-align:center;width:max-content;
+  box-shadow:0 8px 16px rgba(160,90,80,.25)}
+.ev-lost.on{display:block}
+.ev-lost b{display:block;margin-bottom:7px;font-size:14px}
+.sick-badge{display:none;position:absolute;right:-2px;top:-18px;font-size:18px;transform:rotate(14deg);
+  filter:drop-shadow(0 2px 2px rgba(110,140,165,.4))}
+.cat-wrap.sick .sick-badge{display:block}
+.mouse-run{position:absolute;z-index:6;font-size:22px;animation:mouseRun 1.1s linear forwards}
+@keyframes mouseRun{from{left:6%}50%{top:62%}to{left:88%}}
+/* 蝴蝶：波浪飞行，中速 */
+.butterfly-fly{position:absolute;z-index:6;font-size:20px;animation:butterflyFly 2.8s ease-in-out forwards;pointer-events:none}
+@keyframes butterflyFly{
+  0%{left:5%;top:42%;transform:rotate(-5deg)}
+  15%{top:32%;transform:rotate(8deg)}
+  30%{top:45%;transform:rotate(-8deg)}
+  45%{top:30%;transform:rotate(10deg)}
+  60%{top:44%;transform:rotate(-6deg)}
+  75%{top:34%;transform:rotate(7deg)}
+  100%{left:90%;top:40%;transform:rotate(-4deg)}
+}
+/* 甲虫：地面慢爬，略带摇晃 */
+.beetle-crawl{position:absolute;z-index:6;font-size:20px;animation:beetleCrawl 2.4s linear forwards;pointer-events:none}
+@keyframes beetleCrawl{
+  0%{left:88%;top:72%;transform:scaleX(-1)}
+  25%{top:74%}
+  50%{top:71%}
+  75%{top:73%}
+  100%{left:4%;top:72%;transform:scaleX(-1)}
+}
+/* 鸟：高空快速飞过 */
+.bird-fly{position:absolute;z-index:6;font-size:18px;animation:birdFly 0.9s linear forwards;pointer-events:none}
+@keyframes birdFly{
+  0%{left:92%;top:18%;transform:scaleX(-1)}
+  50%{top:16%}
+  100%{left:2%;top:19%;transform:scaleX(-1)}
+}
+.friend-shadow{position:absolute;left:66%;top:50%;width:78px;height:22px;border-radius:50%;z-index:3;
+  opacity:0;transform:translate(-50%,-50%);pointer-events:none;
+  background:radial-gradient(ellipse,rgba(80,105,125,.3) 0%,rgba(80,105,125,0) 68%);
+  transition:left 1.15s ease-in-out,top 1.15s ease-in-out,opacity .5s}
+.friend-shadow.on{opacity:1}
+.friend-shadow.fast{transition:left .5s ease-out,top .5s ease-out,opacity .3s}
+.friend-cat{position:absolute;left:66%;top:50%;width:118px;z-index:7;pointer-events:none;opacity:0;
+  transform:translate(-50%,-96%) rotateX(calc(-1*var(--camx,57deg)));transform-origin:50% 100%;
+  transition:opacity .6s,left 1.15s ease-in-out,top 1.15s ease-in-out}
+.friend-cat.playing{transition:opacity .6s,left .5s ease-out,top .5s ease-out}
+.friend-flip{transition:transform .3s}
+.friend-flip.face-l{transform:scaleX(-1)}
+.friend-tag{position:absolute;left:50%;top:-30px;transform:translateX(-50%);font-size:11px;
+  background:rgba(255,255,255,.94);border:1px solid #DCE8F0;color:#5B7183;padding:2px 9px;
+  border-radius:999px;white-space:nowrap;pointer-events:none}
+.friend-cat.walking .cat-svg{animation:hop .36s ease-in-out infinite}
+.friend-cat.playing .cat-svg{animation:pounce .5s ease-in-out infinite alternate;transform-origin:center bottom}
+.friend-cat.eating .head-g,.friend-cat.drinking .head-g{transform-box:view-box;transform-origin:110px 60px;
+  animation:nom .55s ease-in-out infinite}
+.friend-cat.drinking .head-g{animation-duration:.8s}
+.friend-cat.potty .head-g{transform-box:view-box;transform-origin:110px 60px;animation:nom .4s ease-in-out infinite}
+.coll-act{width:100%;margin-top:10px;padding:9px 6px;font-size:13px}
+/* 收藏册弹窗（默认隐藏） */
+#collModal,#shopModal{position:fixed;inset:0;z-index:125;display:none;align-items:center;justify-content:center;
+  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+#collModal.on,#shopModal.on{display:flex}
+/* 收藏册弹窗 */
+.coll-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;max-height:320px;overflow:auto}
+.coll-item{border-radius:12px;padding:10px 4px 8px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;
+  border:2px solid transparent;position:relative}
+.coll-item:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.coll-item .ci-e{font-size:24px;display:block}
+.coll-item .ci-n{font-size:11px;color:#5B7183;margin-top:3px;display:block}
+.coll-item .ci-c{font-size:10px;color:#8CA3B3}
+.coll-item .ci-r{font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px;display:inline-block;margin-top:3px}
+.coll-item .ci-price{font-size:10px;color:#8CA3B3;margin-top:2px}
+.coll-item .ci-sell{position:absolute;top:4px;right:4px;font-size:10px;background:rgba(200,80,70,.85);color:#fff;
+  border:none;border-radius:6px;padding:2px 5px;cursor:pointer;opacity:0;transition:opacity .2s}
+.coll-item:hover .ci-sell{opacity:1}
+.coll-item.rarity-gold{animation:goldGlow 2s ease-in-out infinite alternate}
+.coll-item.rarity-purple{animation:purpleGlow 2.5s ease-in-out infinite alternate}
+@keyframes goldGlow{from{box-shadow:0 0 8px rgba(212,168,67,.3)}to{box-shadow:0 0 18px rgba(212,168,67,.6)}}
+@keyframes purpleGlow{from{box-shadow:0 0 6px rgba(155,107,198,.2)}to{box-shadow:0 0 14px rgba(155,107,198,.45)}}
+.coll-empty{grid-column:1/-1;color:var(--sub);font-size:13px;padding:16px 0}
+/* 猫币 HUD */
+.coin-display{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:#D4A843;
+  background:linear-gradient(135deg,#FFF8E7,#FFEFC0);padding:3px 10px;border-radius:999px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 4px rgba(180,150,80,.2)}
+.coin-display .coin-icon{font-size:15px}
+/* 商店弹窗 */
+.shop-tabs{display:flex;gap:6px;margin-bottom:10px}
+.shop-tab{flex:1;padding:6px;border:2px solid #DCE8F0;border-radius:10px;background:#F2F8FC;
+  text-align:center;font-size:12px;cursor:pointer;transition:all .15s}
+.shop-tab.active{border-color:#A3C6DC;background:#D5ECF8;font-weight:700}
+.shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-height:300px;overflow:auto}
+.shop-item{background:#F2F8FC;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;
+  border:2px solid transparent;transition:all .15s}
+.shop-item:hover{border-color:#A3C6DC;transform:translateY(-2px)}
+.shop-item.owned{opacity:.5;cursor:default}
+.shop-item .si-e{font-size:24px;display:block}
+.shop-item .si-n{font-size:11px;color:#5B7183;margin-top:2px;display:block}
+.shop-item .si-price{font-size:11px;color:#D4A843;font-weight:700;margin-top:3px}
+.shop-item .si-owned{font-size:10px;color:#5A9E6F;margin-top:3px}
+.shop-item .si-desc{font-size:10px;color:#8CA3B3}
+.shop-item.locked{opacity:.4;cursor:not-allowed}
+@keyframes starGlow{from{opacity:.6;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
+.med-act{grid-column:1/-1;flex-direction:row;gap:8px}
+.btn3d.pill{background:linear-gradient(180deg,#FBE3E0,#F3C9C4);box-shadow:0 6px 0 #DCACA6,0 12px 18px rgba(190,120,110,.25),inset 0 2px 0 #fff}
+.btn3d.pill:active{box-shadow:0 1px 0 #DCACA6}
+
+/* ---------- 右侧面板 ---------- */
+aside{display:flex;flex-direction:column;gap:18px}
+.card:last-child{flex:1;display:flex;flex-direction:column}
+.card:last-child .hint{margin-top:auto}
+.card{
+  background:linear-gradient(180deg,#FFFFFF,#F4F9FC);border:1px solid var(--line);border-radius:22px;padding:17px;
+  box-shadow:0 10px 0 -3px var(--slab),0 26px 40px rgba(115,150,175,.28),inset 0 1px 0 #fff;
+}
+.cat-title{display:flex;align-items:center;gap:8px;font-size:17px}
+.age-row{display:flex;justify-content:space-between;color:var(--sub);font-size:12.5px;margin:7px 0 6px}
+.xpbar{height:9px;background:#E4EEF5;border-radius:99px;overflow:hidden;margin-bottom:13px;
+  box-shadow:inset 0 2px 3px rgba(120,150,175,.25)}
+.xpbar i{display:block;height:100%;width:0;background:linear-gradient(90deg,#A9CBDF,#C0DAEA);border-radius:99px;transition:width .4s}
+.stat{display:grid;grid-template-columns:22px 40px 1fr 34px;align-items:center;gap:8px;margin:9px 0;font-size:12.5px}
+.si{font-size:15px}
+.sn{color:#6C8296}
+.bar{height:11px;background:#E7F0F6;border-radius:99px;overflow:hidden;
+  box-shadow:inset 0 2px 3px rgba(120,150,175,.28),0 1px 0 #fff}
+.bar i{display:block;height:100%;width:50%;border-radius:99px;transition:width .45s;
+  box-shadow:inset 0 -2px 3px rgba(255,255,255,.45),inset 0 2px 2px rgba(255,255,255,.4)}
+.bar i.low{animation:pulse 1s infinite}
+@keyframes pulse{50%{opacity:.45}}
+.sv{text-align:right;font-size:12px;color:#7A90A2}
+.f-hunger{background:linear-gradient(180deg,#F4D3AE,#E9BD8C)}
+.f-thirst{background:linear-gradient(180deg,#BBDAF0,#9CC4E2)}
+.f-clean{background:linear-gradient(180deg,#C6DAB6,#AEC79C)}
+.f-mood{background:linear-gradient(180deg,#EEC8D4,#DFA9BC)}
+.f-energy{background:linear-gradient(180deg,#CDC3E2,#B5A8D2)}
+.acts-grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.act{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px;border-radius:16px;font-size:14px}
+.act em{font-style:normal;font-size:22px;filter:drop-shadow(0 2px 1px rgba(110,140,165,.3))}
+.act-sub{font-size:11px;color:#8CA3B3;font-weight:400}
+.hint{margin-top:12px;font-size:12px;color:var(--sub);line-height:1.7}
+
+/* 开关 */
+.switch{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:#5F7488}
+.switch input{display:none}
+.track{width:40px;height:22px;border-radius:99px;background:#DCE7EF;position:relative;transition:.25s;
+  box-shadow:inset 0 2px 4px rgba(120,150,175,.3),0 1px 0 #fff}
+.knob{position:absolute;top:2px;left:2px;width:18px;height:18px;border-radius:50%;background:#fff;transition:.25s;
+  box-shadow:0 2px 4px rgba(100,130,155,.4),inset 0 -2px 2px rgba(150,180,200,.25)}
+.switch input:checked + .track{background:#9EC5DA}
+.switch input:checked + .track .knob{left:20px}
+
+/* ================= 猫窝大门（多存档选择） ================= */
+#gateOverlay{position:fixed;inset:0;z-index:120;display:flex;align-items:center;justify-content:center;
+  background:
+    radial-gradient(1000px 600px at 70% -10%, #D2E6F3 0%, rgba(210,230,243,0) 60%),
+    linear-gradient(160deg,#DFECF4,#F3F8FB 55%,#E7F0F6);
+  padding:20px;overflow:auto}
+.gate-card{background:linear-gradient(180deg,#FFFFFF,#F2F8FB);border:1px solid #E2ECF3;border-radius:28px;
+  padding:26px 30px;max-width:640px;width:100%;text-align:center;
+  transform:perspective(1200px) rotateX(2deg);
+  box-shadow:0 18px 0 -6px var(--slab),0 44px 70px rgba(105,145,172,.35),inset 0 1px 0 #fff;
+  animation:cardIn .7s cubic-bezier(.2,.8,.3,1)}
+.gate-card h1{font-size:26px;letter-spacing:2px;text-shadow:0 2px 0 rgba(190,212,228,.5)}
+.gate-card .sub{color:var(--sub);font-size:13px;margin:8px 0 14px}
+.gate-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.gate-slot{position:relative;border:none;background:linear-gradient(180deg,#F8FBFD,#EDF4F9);border-radius:18px;
+  padding:14px 10px 12px;min-height:190px;cursor:pointer;transition:.18s;font-family:inherit;color:var(--ink);
+  box-shadow:0 5px 0 var(--slab),0 9px 14px rgba(125,160,185,.2),inset 0 1px 0 #fff}
+.gate-slot:hover{filter:brightness(1.03)}
+.gate-slot:active{transform:translateY(3px);box-shadow:0 2px 0 var(--slab)}
+.gate-slot.occupied{background:linear-gradient(180deg,#F2F8FC,#E3EFF7)}
+.gate-slot.empty{background:linear-gradient(180deg,#F6F9FB,#EDF3F7);box-shadow:0 5px 0 #DDE8F0;
+  border:2px dashed #C9DCE9;color:#9DB2C2}
+.gate-slot .mini{height:64px;display:flex;align-items:flex-end;justify-content:center}
+.gate-slot .mini svg{width:64px}
+.gate-slot .g-name{font-weight:700;font-size:14.5px;margin-top:4px}
+.gate-slot .g-info{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.6}
+.gate-slot .g-empty{font-size:26px;margin-top:26px}
+.gate-slot .g-empty-t{font-size:13px;color:#9DB2C2;margin-top:10px}
+.gate-del{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:none;
+  background:#F3E0DE;color:#B97F76;font-size:13px;cursor:pointer;line-height:1}
+.gate-del:hover{background:#ECCFCB}
+
+/* ================= 开始界面（选猫领养） ================= */
+#startOverlay{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;
+  background:
+    radial-gradient(1000px 600px at 70% -10%, #D2E6F3 0%, rgba(210,230,243,0) 60%),
+    linear-gradient(160deg,#DFECF4,#F3F8FB 55%,#E7F0F6);
+  padding:20px;overflow:auto}
+.start-card{background:linear-gradient(180deg,#FFFFFF,#F2F8FB);border:1px solid #E2ECF3;border-radius:28px;
+  padding:26px 30px;max-width:580px;width:100%;text-align:center;max-height:94vh;overflow:auto;
+  transform:perspective(1200px) rotateX(2deg);
+  box-shadow:0 18px 0 -6px var(--slab),0 44px 70px rgba(105,145,172,.35),inset 0 1px 0 #fff;
+  animation:cardIn .7s cubic-bezier(.2,.8,.3,1)}
+@keyframes cardIn{from{opacity:0;transform:perspective(1200px) rotateX(12deg) translateY(60px)}}
+.start-card h1{font-size:27px;letter-spacing:2px;text-shadow:0 2px 0 rgba(190,212,228,.5)}
+.start-card .sub{color:var(--sub);font-size:13px;margin:8px 0 12px;line-height:1.7}
+.field-label{display:block;text-align:left;font-size:13px;color:#6C8296;margin:14px 0 8px;font-weight:600}
+#nameInput{width:100%;padding:12px 15px;border-radius:15px;border:none;font-size:15px;
+  color:var(--ink);background:#EFF6FA;outline:none;font-family:inherit;user-select:text;
+  box-shadow:inset 0 3px 6px rgba(120,150,175,.22),0 1px 0 #fff}
+#nameInput:focus{box-shadow:inset 0 3px 6px rgba(120,150,175,.22),0 0 0 2.5px #A9CBDF}
+.breed-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.breed-item{border:none;background:linear-gradient(180deg,#F8FBFD,#EDF4F9);border-radius:16px;
+  padding:9px 4px 7px;cursor:pointer;transition:.18s;font-family:inherit;color:var(--ink);
+  box-shadow:0 5px 0 var(--slab),0 9px 14px rgba(125,160,185,.2),inset 0 1px 0 #fff}
+.breed-item:hover{filter:brightness(1.03)}
+.breed-item:active{transform:translateY(4px);box-shadow:0 1px 0 var(--slab)}
+.breed-item.sel{background:linear-gradient(180deg,#EDF6FB,#DDEBF4);
+  box-shadow:0 5px 0 #9EC5DA,0 9px 14px rgba(125,160,185,.28),inset 0 0 0 2px #9EC5DA,inset 0 1px 0 #fff}
+.breed-item .mini{height:54px;display:flex;align-items:flex-end;justify-content:center}
+.breed-item .mini svg{width:58px}
+.breed-item span{display:block;font-size:12px;color:#5F7488;margin-top:4px}
+.big{width:100%;margin-top:22px;padding:15px;font-size:17px;border-radius:18px}
+.gate-back{margin-top:12px;font-size:13px;width:auto;display:inline-block;padding:8px 20px;border-radius:12px}
+/* 删除确认弹窗（需输入四位密码） */
+#delModal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;
+  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+#delModal.on{display:flex}
+#delModal .modal-card{width:min(380px,92vw)}
+.del-title{font-size:17px;margin-bottom:6px}
+.del-sub{font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:4px}
+#delInput{width:100%;margin-top:10px;padding:12px 15px;border-radius:14px;border:none;font-size:20px;
+  letter-spacing:12px;text-align:center;color:var(--ink);background:#EFF6FA;outline:none;font-family:inherit;
+  box-shadow:inset 0 3px 6px rgba(120,150,175,.22),0 1px 0 #fff}
+#delInput:focus{box-shadow:inset 0 3px 6px rgba(120,150,175,.22),0 0 0 2.5px #E3A7A2}
+#delErr{min-height:18px;margin-top:8px;font-size:12.5px;color:#C0726A}
+#delErr.shake{animation:shakeX .4s}
+@keyframes shakeX{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+
+/* ================= 设置弹窗 ================= */
+#setModal{position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;
+  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+#setModal.on{display:flex}
+.modal-card{background:linear-gradient(180deg,#FFFFFF,#F2F8FB);border-radius:24px;padding:22px 24px;
+  width:min(440px,92vw);max-height:92vh;overflow:auto;
+  box-shadow:0 14px 0 -4px var(--slab),0 40px 70px rgba(90,120,145,.4),inset 0 1px 0 #fff;
+  animation:cardIn .4s cubic-bezier(.2,.8,.3,1)}
+.modal-card h2{font-size:18px;margin-bottom:6px}
+.set-row{display:flex;justify-content:space-between;align-items:center;margin:14px 0;font-size:14px}
+.modal-btns{display:flex;gap:12px;margin-top:18px}
+.modal-btns .btn3d{flex:1}
+#nameInput2{flex:1;margin-left:12px;padding:9px 12px;border-radius:12px;border:none;font-size:14px;
+  color:var(--ink);background:#EFF6FA;outline:none;font-family:inherit;user-select:text;
+  box-shadow:inset 0 2px 5px rgba(120,150,175,.22)}
+
+@media (max-width:920px){
+  /* 顶栏尽量窄 */
+  #stage{padding:8px 10px 24px}
+  header{padding:5px 10px;margin-bottom:8px;gap:8px;border-radius:14px;
+    box-shadow:0 6px 0 -2px var(--slab),0 14px 20px rgba(120,155,180,.2),inset 0 1px 0 #fff}
+  .logo{font-size:16px;letter-spacing:.5px;text-shadow:none}
+  .clock{padding:3px 9px;font-size:11px;border-radius:10px;gap:5px}
+  .icon{width:32px;height:32px;border-radius:10px;font-size:14px}
+  /* 声音/设置图标去掉立体（3D）效果，改平 */
+  .btn3d.icon{box-shadow:inset 0 0 0 1px #D8E4ED}
+  .btn3d.icon:active{transform:none}
+  /* 单列 + 场景收窄（aside 修正到场景下方第二行，避免落入隐式第二列） */
+  main{position:relative;grid-template-columns:1fr;gap:10px;padding-top:164px}
+  aside{grid-column:1;grid-row:2}
+  .scene{--roomH:400px;height:400px;perspective-origin:50% 26%}
+  .cat-wrap{width:140px}
+  /* 猫爬架随房间高度等比缩放：避免移动端窄房时被场景顶部 overflow:hidden 裁掉。
+     3D 包围盒跟着缩（width/height=缩放后），内层模型用 transform: scale() 等价缩放，
+     沿用项目既定的「容器尺寸=缩放后尺寸 + 内层 scale」模式（见 memory）。 */
+  .cattree{width:73px;height:135px}
+  .ct-wrap{position:absolute;left:50%;bottom:0;width:130px;height:240px;
+    transform:translateX(-50%) scale(.5634);
+    transform-origin:bottom center;transform-style:flat}
+  /* 互动栏提到状态栏之前（对换位置） */
+  aside{gap:10px}
+  #actsCard{order:-1}
+  .card{padding:12px;border-radius:18px}
+  /* 状态栏上移到猫舍名称栏下方（从 aside 抽出，绝对定位到 main 顶部）+ 尽量缩窄 */
+  aside > .card:first-of-type{
+    position:absolute;top:0;left:0;right:0;
+    height:154px;overflow:hidden;
+    padding:8px 12px;border-radius:16px;
+    box-shadow:0 6px 0 -2px var(--slab),0 14px 20px rgba(115,150,175,.22),inset 0 1px 0 #fff;
+  }
+  aside > .card:first-of-type .cat-title{font-size:14.5px;gap:6px}
+  aside > .card:first-of-type .age-row{font-size:10.5px;margin:3px 0 4px}
+  aside > .card:first-of-type .xpbar{height:5px;margin-bottom:5px}
+  aside > .card:first-of-type .stat{margin:2px 0;font-size:10.5px;
+    grid-template-columns:20px 30px 1fr 26px;gap:6px}
+  aside > .card:first-of-type .si{font-size:12.5px}
+  aside > .card:first-of-type .bar{height:7px}
+  aside > .card:first-of-type .sv{font-size:10.5px}
+  /* 互动按钮：去掉 emoji 图标、纯文字、4 个一排、文字放大 */
+  .acts-grid{grid-template-columns:repeat(4,1fr);gap:6px}
+  .act{flex-direction:row;justify-content:center;align-items:center;gap:4px;
+    padding:9px 2px;font-size:13px;border-radius:12px;white-space:nowrap;line-height:1}
+  .act em{display:none}
+  .act-sub{font-size:10px}
+  .hint{margin-top:8px;font-size:11px}
+  .card:last-child{flex:none}
+  /* 极窄屏：顶栏防换行 + 按钮 3 个一排防文字挤压 */
+  @media (max-width:360px){
+    header{flex-wrap:nowrap}
+    .logo{font-size:14px}
+    .clock{font-size:10px;padding:3px 7px}
+    .acts-grid{grid-template-columns:repeat(3,1fr)}
+  }
+}
+</style>
+</head>
+<body>
+<div id="stage">
+
+<!-- 游戏 -->
+<div id="app" hidden>
+  <header>
+    <div class="logo">🐱 莫兰迪猫舍</div>
+    <div class="clock">
+      <span id="clockDay">第 1 天</span>
+      <span id="clockTime">08:00 🌅</span>
+    </div>
+    <button class="btn3d icon" id="muteBtn" title="音效开关">🔊</button>
+    <button class="btn3d icon" id="setBtn" title="设置">⚙️</button>
+  </header>
+  <main>
+    <section class="scene" id="scene">
+      <div class="room" id="room">
+        <div class="wall-b">
+          <div class="sky-pane">
+            <div class="sky" id="sky">
+              <div class="sun" id="sun"></div>
+              <div class="moon" id="moon"></div>
+              <div class="fullmoon" id="fullmoon"><div class="crater c1"></div><div class="crater c2"></div><div class="crater c3"></div><div class="crater c4"></div></div>
+              <div class="stars" id="stars"></div>
+              <div class="cloud c1"></div><div class="cloud c2"></div><div class="cloud c3"></div>
+              <div class="rainbow-arc" id="rainbowArc"><div class="rainbow-band b1"></div><div class="rainbow-band b2"></div><div class="rainbow-band b3"></div><div class="rainbow-band b4"></div><div class="rainbow-band b5"></div><div class="rainbow-band b6"></div><div class="rainbow-band b7"></div></div>
+              <div class="glow-overlay" id="glowOverlay"></div>
+              <div class="weather-layer" id="weatherLayer"></div>
+              <div class="fog-layer" id="fogLayer"></div>
+              <div class="lightning-flash" id="lightningFlash"></div>
+            </div>
+            <div class="sky-tint"></div>
+          </div>
+        </div>
+        <div class="wall-l"><div class="art"><i>♥</i></div></div>
+        <div class="wall-r"></div>
+        <div class="floor" id="floor">
+          <div class="billboard fishtank" id="fishtank" style="--ox:14;--oy:30">
+            <div class="ft-stand"></div>
+            <div class="ft-glass">
+              <div class="ft-water"></div>
+              <div class="ft-weed w1"></div><div class="ft-weed w2"></div><div class="ft-weed w3"></div><div class="ft-weed w4"></div><div class="ft-weed w5"></div>
+              <div class="ft-coral"></div>
+              <div class="ft-stone s1"></div><div class="ft-stone s2"></div><div class="ft-stone s3"></div>
+              <div class="ft-fish" id="ftFish">🐟</div>
+              <div class="ft-fish ft-fish2">🐠</div>
+              <div class="ft-fish ft-fish3">🐡</div>
+              <div class="ft-bub b1"></div><div class="ft-bub b2"></div><div class="ft-bub b3"></div>
+            </div>
+          </div>
+          <div class="billboard" id="catbedScene" style="--ox:72;--oy:90.1;z-index:4;pointer-events:none"></div>
+          <div class="billboard cattree" style="--ox:75;--oy:17">
+            <div class="ct-wrap">
+              <div class="ct-ball"><i class="hangball"></i></div>
+              <div class="ct-post"></div>
+              <div class="ct-condo"><i class="ct-arch"></i></div>
+              <div class="ct-plank p1"></div>
+              <div class="ct-plank p2"></div>
+              <div class="ct-plank p3"></div>
+              <div class="ct-base"></div>
+            </div>
+          </div>
+          <div class="billboard bowl" id="foodBowl" style="--ox:20.70;--oy:90.27"><span class="bico">🍚</span><div class="bfill foodfill" id="foodFill"></div></div>
+          <div class="billboard bowl" id="waterBowl" style="--ox:30.70;--oy:90.27"><span class="bico">💧</span><div class="bfill waterfill" id="waterFill"></div></div>
+          <div class="billboard litterbox" id="litterBox" style="--ox:85;--oy:30">
+            <div class="lb-back"></div>
+            <div class="lb-sand"><i class="dirt d1"></i><i class="dirt d2"></i><i class="dirt d3"></i></div>
+            <div class="lb-front"></div>
+            <div class="lb-stink">💨</div>
+          </div>
+          <div class="friend-shadow" id="friendShadow"></div>
+          <div class="friend-cat" id="friendCat"><div class="friend-tag" id="friendTag">🐾 客人</div><div class="friend-flip" id="friendFlip"></div></div>
+          <div class="flat cat-shadow" id="catShadow" style="left:50%;top:46%"></div>
+          <div class="billboard cat-wrap" id="catWrap" style="left:50%;top:46%" title="点我摸摸猫">
+            <div class="cat-flip" id="catFlip"></div>
+            <div class="zzz"><span>z</span><span>z</span><span>Z</span></div>
+            <div class="sick-badge" id="sickBadge">💊</div>
+          </div>
+        </div>
+      </div>
+      <div id="particleLayer" style="position:absolute;inset:0;z-index:25;pointer-events:none"></div>
+      <!-- 气泡独立于 3D 渲染：避免被墙/地板深度排序压住。每帧由 JS 跟随 cat 移动 -->
+      <div id="bubble" class="bubble"></div>
+      <div class="night" id="nightTint"></div>
+      <div class="event-card" id="evCard">
+        <span class="ev-emoji" id="evEmoji">🍂</span>
+        <div class="ev-name" id="evName">捡到了：小树叶</div>
+        <div class="ev-btns">
+          <button class="btn3d water" id="evKeep">📦 收藏</button>
+          <button class="btn3d clean" id="evDrop">🗑️ 丢弃</button>
+        </div>
+      </div>
+      <div class="ev-lost" id="lostBanner">
+        <b>⚠️ 糟糕，猫猫走丢了！</b>
+        <span>它可能在院子里瑟瑟发抖…</span><br>
+        <button class="btn3d primary" id="btnFind" style="margin-top:8px">🔍 找回猫猫</button>
+      </div>
+      <div class="teaser" id="teaser"><div class="stick"></div><div class="feather">🪶</div></div>
+      <div class="hint3d">点击小猫摸摸它 · 每次互动 +1 小时</div>
+      <div class="toasts" id="toasts"></div>
+  </section>
+  <aside>
+      <div class="card">
+        <div class="cat-title"><b id="hudName">年糕</b><span class="chip" id="hudBreed">橘猫</span></div>
+        <div class="age-row"><span id="hudAge">第 1 天 · 幼猫</span><span id="hudLv">Lv.1 见习铲屎官</span></div>
+        <div class="xpbar"><i id="xpFill"></i></div>
+        <div class="stat"><span class="si">🍖</span><span class="sn">饱食</span><div class="bar"><i id="bHunger" class="f-hunger"></i></div><b class="sv" id="vHunger">70</b></div>
+        <div class="stat"><span class="si">💧</span><span class="sn">水分</span><div class="bar"><i id="bThirst" class="f-thirst"></i></div><b class="sv" id="vThirst">70</b></div>
+        <div class="stat"><span class="si">🧼</span><span class="sn">清洁</span><div class="bar"><i id="bClean" class="f-clean"></i></div><b class="sv" id="vClean">85</b></div>
+        <div class="stat"><span class="si">🎀</span><span class="sn">心情</span><div class="bar"><i id="bMood" class="f-mood"></i></div><b class="sv" id="vMood">75</b></div>
+        <div class="stat"><span class="si">⚡</span><span class="sn">精力</span><div class="bar"><i id="bEnergy" class="f-energy"></i></div><b class="sv" id="vEnergy">80</b></div>
+      </div>
+      <div class="card" id="actsCard">
+        <div class="acts-grid">
+          <button class="btn3d food act" id="btnFeed"><em>🍚</em>喂食</button>
+          <button class="btn3d water act" id="btnWater"><em>💧</em>喂水</button>
+          <button class="btn3d play act" id="btnPlay"><em>🪶</em>逗猫棒</button>
+          <button class="btn3d clean act" id="btnScoop"><em>🧹</em>铲猫砂</button>
+          <button class="btn3d climb act" id="btnClimb"><em>🧗</em>爬爬架</button>
+          <button class="btn3d nap act" id="btnNap"><em>😴</em>睡一觉</button>
+          <button class="btn3d water act" id="btnFishTouch"><em>🐟</em>摸鱼</button>
+          <button class="btn3d patrol act" id="btnPatrol"><em>🐾</em>巡视领地</button>
+          <button class="btn3d climb act disabled" id="btnExercise" style="display:none"><em>🏃</em>健身</button>
+          <button class="btn3d play act disabled" id="btnWatchTV" style="display:none"><em>📺</em>看电视</button>
+          <button class="btn3d pill med-act act" id="btnMed" style="display:none"><em>💊</em>喂药</button>
+        </div>
+        <p class="hint" id="hintText">小提示：每次互动都会推进 1 小时游戏时间</p>
+      </div>
+      <button class="btn3d coll-act" id="btnColl">🗂️ 收藏册</button>
+      <div style="display:flex;gap:8px;margin-top:8px">
+        <div class="coin-display" style="flex:1;justify-content:center"><span class="coin-icon">🪙</span><span id="hudCoins">0</span> 猫币</div>
+        <button class="btn3d food" id="btnShop" style="flex:1">🏪 商店</button>
+      </div>
+    </aside>
+  </main>
+</div>
+
+<!-- 开始界面 -->
+</div><!-- /stage -->
+<!-- NOTE: overlays must stay OUTSIDE #stage (perspective hijacks position:fixed) -->
+<div id="startOverlay">
+  <div class="start-card">
+    <h1>🐱 领养新猫咪</h1>
+    <p class="sub">起好名字、挑好毛色，它就住进第 <b id="pendingSlot">1</b> 号猫窝</p>
+    <label class="field-label" for="nameInput">给猫咪起个名字</label>
+    <input id="nameInput" maxlength="8" value="年糕">
+    <label class="field-label">选择品种毛色</label>
+    <div class="breed-grid" id="breedGrid"></div>
+    <button class="btn3d primary big" id="startBtn">开始养猫 🐾</button>
+    <button class="btn3d gate-back" id="gateBackLink">← 返回猫窝大门</button>
+  </div>
+</div>
+
+<!-- 设置弹窗 -->
+<div id="setModal">
+  <div class="modal-card">
+    <h2>⚙️ 设置</h2>
+    <div class="set-row"><span>猫咪名字</span><input id="nameInput2" maxlength="8"></div>
+    <div class="set-row"><label class="switch"><input type="checkbox" id="muteSw2"><span class="track"><span class="knob"></span></span>静音模式</label></div>
+    <div class="set-row"><label class="switch"><input type="checkbox" id="freeRoamSw"><span class="track"><span class="knob"></span></span>猫猫自由活动</label></div>
+    <div class="modal-btns">
+      <button class="btn3d water" id="btnSwitchCat">切换猫咪</button>
+      <button class="btn3d primary" id="closeSetBtn">完成</button>
+    </div>
+  </div>
+</div>
+
+<!-- 猫窝大门（多存档选择） -->
+<div id="gateOverlay">
+  <div class="gate-card">
+    <h1>🐱 莫兰迪猫舍</h1>
+    <p class="sub">选择要看望的猫猫，或领养一只新的</p>
+    <div class="gate-slots" id="gateSlots"></div>
+  </div>
+</div>
+
+<!-- 收藏册 -->
+<div id="collModal">
+  <div class="modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2>🗂️ 收藏册</h2>
+      <div class="coin-display"><span class="coin-icon">🪙</span><span id="collCoins">0</span></div>
+    </div>
+    <p style="font-size:12px;color:var(--sub);margin:4px 0 8px">点击物品可出售换猫币</p>
+    <div class="coll-grid" id="collGrid"></div>
+    <div class="modal-btns">
+      <button class="btn3d primary" id="collClose">收好</button>
+    </div>
+  </div>
+</div>
+
+<!-- 商店 -->
+<div id="shopModal">
+  <div class="modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2>🏪 猫咪商店</h2>
+      <div class="coin-display"><span class="coin-icon">🪙</span><span id="shopCoins">0</span></div>
+    </div>
+    <div class="shop-tabs">
+      <div class="shop-tab active" data-cat="house">🏠 猫窝</div>
+      <div class="shop-tab" data-cat="toy">🎾 玩具</div>
+      <div class="shop-tab" data-cat="consumable">🐟 猫条</div>
+    </div>
+    <div class="shop-grid" id="shopGrid"></div>
+    <div class="modal-btns">
+      <button class="btn3d primary" id="shopClose">关了</button>
+    </div>
+  </div>
+</div>
+
+<!-- 放弃猫咪确认（四位密码） -->
+<div id="delModal">
+  <div class="modal-card">
+    <div class="del-title">😢 放弃这只猫？</div>
+    <div class="del-sub" id="delSub">此操作不可恢复，它的所有进度都会消失。<br>请输入删除密码确认：</div>
+    <input id="delInput" maxlength="4" inputmode="numeric" placeholder="····">
+    <div id="delErr"></div>
+    <div class="modal-btns">
+      <button class="btn3d" id="delCancel">再想想</button>
+      <button class="btn3d danger" id="delConfirm">确认放弃</button>
+    </div>
+  </div>
+</div>
+
+
+
+<script>
+"use strict";
+/* ================= Favicon：莫兰迪猫头 ================= */
+(function(){
+  const svg=`<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100">`+
+    `<path d="M22 46 L15 12 L43 30 Z" fill="#9DB8CC"/>`+
+    `<path d="M78 46 L85 12 L57 30 Z" fill="#9DB8CC"/>`+
+    `<path d="M25 38 L20 20 L37 30 Z" fill="#F2C6C6"/>`+
+    `<path d="M75 38 L80 20 L63 30 Z" fill="#F2C6C6"/>`+
+    `<circle cx="50" cy="60" r="34" fill="#9DB8CC"/>`+
+    `<ellipse cx="37" cy="57" rx="5" ry="7" fill="#33383F"/>`+
+    `<ellipse cx="63" cy="57" rx="5" ry="7" fill="#33383F"/>`+
+    `<circle cx="39" cy="54" r="1.7" fill="#fff"/>`+
+    `<circle cx="65" cy="54" r="1.7" fill="#fff"/>`+
+    `<ellipse cx="50" cy="71" rx="11" ry="7.5" fill="#DCE4EA"/>`+
+    `<path d="M47 67 Q50 70 53 67 Q51.5 70 50 70.5 Q48.5 70 47 67" fill="#E39B9B"/>`+
+    `<path d="M45 72 Q47.5 75 50 72 Q52.5 75 55 72" stroke="#7A6A62" stroke-width="1.8" fill="none" stroke-linecap="round"/>`+
+    `<ellipse cx="25" cy="66" rx="4.5" ry="2.6" fill="#F2B9BC" opacity=".55"/>`+
+    `<ellipse cx="75" cy="66" rx="4.5" ry="2.6" fill="#F2B9BC" opacity=".55"/>`+
+    `<g stroke="rgba(110,125,138,.5)" stroke-width="1.4" stroke-linecap="round">`+
+    `<path d="M20 62 L8 60"/><path d="M20 66 L8 68"/><path d="M80 62 L92 60"/><path d="M80 66 L92 68"/></g>`+
+  `</svg>`;
+  const link=document.createElement("link");
+  link.rel="icon";link.type="image/svg+xml";
+  link.href="data:image/svg+xml,"+encodeURIComponent(svg);
+  document.head.appendChild(link);
+})();
+
+/* ================= 基础数据 ================= */
+const SLOT_BASE="moranCatSave.v2.s";   /* 三个存档槽位：.s1 .s2 .s3 */
+const OLD_KEY="moranCatSave.v2";
+const SLOTS=3;
+const BREEDS={
+  orange:{name:"橘猫",   body:"#E9BC8C",dark:"#D9A06B",belly:"#F7E7D2",muzzle:"#F7E7D2",eye:"#C98A4B",stripes:"#D69A62"},
+  blue:  {name:"英短蓝猫",body:"#AEBBC7",dark:"#9AA8B6",belly:"#D3DCE3",muzzle:"#DCE4EA",eye:"#C98A4B"},
+  tuxedo:{name:"奶牛猫", body:"#F4F3F0",dark:"#54545E",belly:"#FBFAF8",muzzle:"#FFFFFF",eye:"#D9B24C",
+          patches:{color:"#54545E",head:[["110","54","50","26"]],body:[["110","132","48","26"]]},tail:"#54545E",earL:"#54545E",earR:"#54545E"},
+  calico:{name:"三花猫", body:"#F5F0E6",dark:"#5B5B66",belly:"#FBF8F1",muzzle:"#FFFFFF",eye:"#7FA36B",
+          patches:{head:[["84","62","30","24","#E5B183"],["142","76","26","22","#5B5B66"]],
+                   body:[["74","148","30","22","#E5B183"],["148","150","28","20","#5B5B66"]],color:"#5B5B66"},
+          tail:"#5B5B66",earL:"#E5B183",earR:"#5B5B66"},
+  white: {name:"纯白猫", body:"#F8F6F1",dark:"#EDE8DF",belly:"#FFFFFF",muzzle:"#FFFFFF",eye:"#7FA8C9"},
+  black: {name:"玄猫",   body:"#5A5A64",dark:"#4C4C56",belly:"#6A6A74",muzzle:"#6A6A74",eye:"#9BC07E"},
+  siamese:{name:"暹罗猫",body:"#E3D9CB",dark:"#D6CAB8",belly:"#EDE5D8",muzzle:"#EDE5D8",eye:"#6FA3CC",
+          points:"#8A6E5C",tail:"#8A6E5C"},
+  ragdoll:{name:"布偶猫",body:"#F0EAE0",dark:"#E4DBCC",belly:"#FAF6EF",muzzle:"#FAF6EF",eye:"#5E93C4",
+          points:"#B7A08A",tail:"#B7A08A"},
+};
+const TITLES=["见习铲屎官","初级铲屎官","持证铲屎官","金牌铲屎官","资深猫奴","猫咪行为学家","猫舍主理人","传说铲屎官"];
+const WANDER_LINES=["溜达溜达～","这里不错喵","伸个懒腰","咦，什么声音？","晒太阳真舒服","巡视领地中","打个哈欠～","踩踩小碎步"];
+const HINTS=[
+  "小提示：每次互动都会推进 1 小时游戏时间",
+  "小提示：不互动时时间完全静止，猫猫不会自己饿肚子",
+  "小提示：放着不管时，猫猫会在房间里自由活动",
+  "小提示：用「爬爬架」，猫猫会跳上木猫爬架",
+  "小提示：猫砂大约每 4 游戏小时用一次，脏了记得铲",
+  "小提示：精力太低时，用「睡一觉」快进恢复",
+  "小提示：点「摸鱼」，猫猫会跑去鱼缸扒拉小鱼",
+  "小提示：进度自动保存在浏览器里",
+];
+/* 地面坐标（% of floor）：x=左右，y=前后（0=后墙边，100=镜头前） */
+const POS={food:[20.70,90.27],water:[30.70,90.27],litter:[85,30],bed:[72,90.1],fish:[14,30],center:[50,46],climbBase:[80,22],
+           shelf1:[74,14],shelf2:[77,13],shelf3:[73,12]};
+const BASE_SHELF_H=[74,130,186];   /* 三层木板高度（房间 Y 轴 px，与墙面位置对应），基准 710px 房间 */
+/* 移动端房间缩到 400px 后，猫爬架已用 CSS scale 等比缩放（见 .ct-wrap），
+   猫跳上各层木板的 translateZ 也必须等比缩，否则会被场景顶 overflow:hidden 裁掉。
+   实际取 0.48（再留 ~15% 安全余量），保证猫在顶层时头顶仍在场景内。 */
+const _rH=parseFloat(getComputedStyle(document.querySelector(".scene")).getPropertyValue("--roomH"))||710;
+const _rScale=_rH/710;
+const _shelfScale=_rScale<1?_rScale*0.80:_rScale;  /* 移动端额外乘 0.80 留余量 */
+const SHELF_H=BASE_SHELF_H.map(h=>Math.round(h*_shelfScale));
+const $=s=>document.querySelector(s);
+const pick=a=>a[Math.floor(Math.random()*a.length)];
+const clamp=v=>Math.max(0,Math.min(100,v));
+const sleepMs=ms=>new Promise(r=>setTimeout(r,ms));
+const esc=s=>String(s).replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c]));
+/* 数值字段：缺失/损坏时回落到默认值并夹紧到 0~100 */
+function num(v,d,lo,hi){
+  v=typeof v==="number"?v:parseFloat(v);
+  if(!isFinite(v))v=d;
+  return Math.max(lo,Math.min(hi,v));
+}
+
+/* ================= 状态 ================= */
+let S=null, busy=false, curAction=null, gen=0, noSave=false;
+let curX=POS.center[0], curY=POS.center[1], catState="idle", expr="neutral", curH=0;
+let petCd=0, lastBubbleAt=0, bubbleTimer=0;
+let autoBusy=false, autoGen=0, lastPlayerAct=0;   /* 自主活动状态 */
+let autoHoldsBusy=false;                          /* 自主活动是否同时占用了 busy 锁（用于被打断时归还） */
+let fishCd=0;                                     /* 摸鱼冷却 */
+/* 随机事件 */
+var evLock=false,itemPending=false,lostActive=false,lostTimer=0,lastEvAt=0;
+/* ================= 稀有度 & 商店系统 ================= */
+var RARITY={
+  gold:  {name:"传说",color:"#D4A843",bg:"#FFF8E7",border:"#D4A843",price:120,chance:.03},
+  purple:{name:"稀有",color:"#9B6BC6",bg:"#F5EEFB",border:"#B88FDB",price:50, chance:.12},
+  green: {name:"精良",color:"#5A9E6F",bg:"#EDF7F0",border:"#7AB88D",price:20, chance:.30},
+  white: {name:"普通",color:"#8CA3B3",bg:"#F2F8FC",border:"#C8D8E4",price:5,  chance:.55}
+};
+/* 给物品按概率分配稀有度 */
+function rollRarity(){
+  var r=Math.random(),acc=0;
+  for(var k in RARITY){acc+=RARITY[k].chance;if(r<acc)return k;}
+  return "white";
+}
+/* 商店物品定义 */
+/* 猫窝等级定义 */
+var HOUSE_LEVELS=[
+  {lv:1,name:"纸皮箱",e:"📦",price:0,  desc:"简朴的纸板箱，猫猫的快乐老家"},
+  {lv:2,name:"棉麻帐篷",e:"⛺",price:80, desc:"清新棉麻小帐篷，带门帘和软垫"},
+  {lv:3,name:"绒面沙发",e:"🛋️",price:200, desc:"粉色绒面小沙发，舒适柔软"},
+  {lv:4,name:"木屋小楼",e:"🏡",price:450, desc:"双层木屋，带烟囱和阳台"},
+  {lv:5,name:"皇家城堡",e:"🏰",price:800, desc:"奢华皇家城堡，带皇冠和华盖"}
+];
+var SHOP_ITEMS=[
+  /* 玩具 */
+  {id:"ball_yarn",e:"🧶",n:"毛线球",price:30,cat:"toy",pos:[35,60]},
+  {id:"mouse_toy",e:"🐭",n:"老鼠玩具",price:40,cat:"toy",pos:[55,70]},
+  {id:"feather",e:"🪶",n:"羽毛逗棒",price:35,cat:"toy",pos:[25,55]},
+  {id:"bell_ball",e:"🔔",n:"铃铛球",price:45,cat:"toy",pos:[70,65]},
+  {id:"tv",e:"📺",n:"电视机",price:300,cat:"toy",pos:[31,29],permanent:true},
+  {id:"treadmill",e:"🏃",n:"猫咪跑步机",price:300,cat:"toy",pos:[60,18],permanent:true,cssClass:"treadmill"},
+  /* 消耗品 */
+  {id:"treat_salmon",e:"🐟",n:"三文鱼猫条",price:15,cat:"consumable"},
+  {id:"treat_chicken",e:"🍗",n:"鸡肉猫条",price:12,cat:"consumable"},
+  {id:"treat_tuna",e:"🐠",n:"金枪鱼猫条",price:18,cat:"consumable"},
+  {id:"catnip",e:"🌿",n:"猫薄荷",price:25,cat:"consumable"}
+];
+/* 消耗品效果 */
+var TREAT_EFFECTS={
+  treat_salmon:{mood:18,duration:3000,msg:"三文鱼味！好吃好吃～"},
+  treat_chicken:{mood:14,duration:2500,msg:"鸡肉味！吧唧吧唧～"},
+  treat_tuna:{mood:22,duration:3500,msg:"金枪鱼！太幸福了～"},
+  catnip:{mood:30,duration:4000,msg:"喵～～～好嗨哟～"}
+};
+
+/* 传说 */ /* 稀有 */ /* 精良 */ /* 普通 */
+var FINDABLE=[
+  {e:"🔑",n:"神秘的小钥匙",r:"gold"},{e:"🔮",n:"月光宝盒",r:"gold"},
+  {e:"🧁",n:"小纸杯蛋糕",r:"purple"},{e:"🪙",n:"亮闪闪的圆片",r:"purple"},{e:"💠",n:"玻璃珠",r:"purple"},{e:"🔔",n:"小铃铛",r:"purple"},{e:"🪶",n:"漂亮的羽毛",r:"purple"},
+  {e:"🧶",n:"毛线团",r:"green"},{e:"🎀",n:"蝴蝶结",r:"green"},{e:"🌰",n:"橡果",r:"green"},{e:"🌸",n:"花瓣",r:"green"},{e:"🍬",n:"糖纸",r:"green"},{e:"🥜",n:"花生",r:"green"},{e:"🧦",n:"一只小袜子",r:"green"},{e:"🧷",n:"小别针",r:"green"},
+  {e:"🍂",n:"小树叶",r:"white"},{e:"📦",n:"小纸箱",r:"white"},{e:"🫧",n:"肥皂泡",r:"white"},{e:"🪵",n:"小树枝",r:"white"},{e:"🪨",n:"小石子",r:"white"},{e:"🏷️",n:"标签贴纸",r:"white"},{e:"📎",n:"回形针",r:"white"},{e:"🫙",n:"小瓶盖",r:"white"},{e:"🧹",n:"小羽毛掸",r:"white"},{e:"🖇️",n:"小链环",r:"white"},{e:"🪅",n:"彩纸碎",r:"white"},{e:"🧊",n:"小冰块",r:"white"}
+];
+const el={};
+
+/* ================= 猫咪 SVG（正面） ================= */
+function catSVG(breed,uid){
+  const P=BREEDS[breed];
+  const pc=P.patches?P.patches.color:P.dark;
+  const earL=P.earL||P.points||P.body, earR=P.earR||P.points||P.body;
+  const tailCol=P.tail||P.dark||P.body;
+  const pawFill=P.points||P.body;
+  const blushOp=breed==="black"?0.28:0.45;
+  let defs="",mask="";
+  if(P.points){
+    mask=`<ellipse cx="110" cy="103" rx="28" ry="19" fill="${P.points}" opacity="0.9"/>`;
+  }
+  if(P.patches){
+    defs=`<defs>
+      <clipPath id="hd${uid}"><circle cx="110" cy="92" r="46"/></clipPath>
+      <clipPath id="bd${uid}"><ellipse cx="110" cy="160" rx="42" ry="32"/></clipPath>
+    </defs>`;
+  }
+  const stripes=P.stripes?`
+    <g stroke="${P.stripes}" stroke-width="5" fill="none" stroke-linecap="round">
+      <path d="M98 48 q2 9 -1 15"/><path d="M110 46 q0 9 0 15"/><path d="M122 48 q-2 9 1 15"/>
+      <path d="M72 142 q12 6 7 20"/><path d="M148 142 q-12 6 -7 20"/>
+    </g>`:"";
+  return `<svg class="cat-svg" viewBox="0 0 220 200">${defs}
+    <ellipse cx="110" cy="191" rx="48" ry="8" fill="rgba(96,120,138,.14)"/>
+    <g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="${tailCol}" stroke-width="15" stroke-linecap="round"/></g>
+    <g class="body-g">
+      <ellipse cx="110" cy="160" rx="42" ry="32" fill="${P.body}"/>
+      ${P.patches?`<g clip-path="url(#bd${uid})">${P.patches.body.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}" fill="${b[4]||pc}"/>`).join("")}</g>`:""}
+      <ellipse cx="110" cy="167" rx="25" ry="21" fill="${P.belly}"/>
+      <g class="paw-down">
+        <ellipse cx="88" cy="187" rx="13" ry="7" fill="${pawFill}"/>
+        <ellipse cx="132" cy="187" rx="13" ry="7" fill="${pawFill}"/>
+        <g stroke="rgba(90,105,120,.35)" stroke-width="1.6" stroke-linecap="round">
+          <path d="M84 186 v4"/><path d="M91 186 v4"/><path d="M128 186 v4"/><path d="M135 186 v4"/>
+        </g>
+      </g>
+      ${stripes}
+    </g>
+    <g class="head-g">
+      <g class="ear-l-g"><path d="M74 64 L82 24 L104 52 Z" fill="${earL}"/><path d="M80 57 L84 36 L97 51 Z" fill="#F2C6C6"/></g>
+      <g class="ear-r-g"><path d="M146 64 L138 24 L116 52 Z" fill="${earR}"/><path d="M140 57 L136 36 L123 51 Z" fill="#F2C6C6"/></g>
+      <circle cx="110" cy="92" r="46" fill="${P.body}"/>
+      ${P.patches?`<g clip-path="url(#hd${uid})">${P.patches.head.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}" fill="${b[4]||pc}"/>`).join("")}</g>`:""}
+      ${mask}
+      <ellipse cx="110" cy="109" rx="22" ry="15" fill="${P.muzzle}"/>
+      <g class="eyes-open">
+        <ellipse cx="92" cy="90" rx="8" ry="10" fill="${P.eye}"/>
+        <ellipse cx="128" cy="90" rx="8" ry="10" fill="${P.eye}"/>
+        <ellipse class="pupil" cx="92" cy="91" rx="4" ry="7" fill="#33383F"/>
+        <ellipse class="pupil" cx="128" cy="91" rx="4" ry="7" fill="#33383F"/>
+        <circle cx="95" cy="86" r="2.2" fill="#fff" opacity=".9"/>
+        <circle cx="131" cy="86" r="2.2" fill="#fff" opacity=".9"/>
+      </g>
+      <g class="eyes-closed" stroke="#4E5A66" stroke-width="3" fill="none" stroke-linecap="round">
+        <path d="M84 92 Q92 99 100 92"/><path d="M120 92 Q128 99 136 92"/>
+      </g>
+      <path d="M105 104 Q110 101 115 104 Q112 110 110 111 Q108 110 105 104" fill="#E39B9B"/>
+      <g class="mouth-g" stroke="#7A6A62" stroke-width="2.4" fill="none" stroke-linecap="round">
+        <path class="mouth-happy" d="M110 112 Q106 119 100 115 M110 112 Q114 119 120 115"/>
+        <path class="mouth-sad" d="M103 118 Q110 112 117 118"/>
+      </g>
+      <g class="blush" fill="#F2B9BC" opacity="${blushOp}">
+        <ellipse cx="76" cy="103" rx="7" ry="4"/><ellipse cx="144" cy="103" rx="7" ry="4"/>
+      </g>
+      <g class="cheer-only">
+        <g class="face-cheer" stroke="#4E5A66" stroke-width="4" fill="none" stroke-linecap="round">
+          <path d="M82 91 Q92 80 102 91"/><path d="M118 91 Q128 80 138 91"/>
+        </g>
+        <path d="M95 112 Q110 110 125 112 Q122 128 110 128 Q98 128 95 112 Z" fill="#E3766F"/>
+        <path d="M102 119 Q110 122.5 118 119 Q114 125 110 125 Q106 125 102 119 Z" fill="#F2A0A0"/>
+        <g class="paw-up">
+          <path d="M80 152 Q70 136 75 122" stroke="${pawFill}" stroke-width="14" fill="none" stroke-linecap="round"/>
+          <path d="M140 152 Q150 136 145 122" stroke="${pawFill}" stroke-width="14" fill="none" stroke-linecap="round"/>
+          <ellipse cx="75" cy="117" rx="10.5" ry="8.5" fill="${pawFill}" stroke="rgba(140,160,180,.55)" stroke-width="1.6"/>
+          <ellipse cx="145" cy="117" rx="10.5" ry="8.5" fill="${pawFill}" stroke="rgba(140,160,180,.55)" stroke-width="1.6"/>
+          <g stroke="rgba(90,105,120,.3)" stroke-width="1.5" stroke-linecap="round">
+            <path d="M71 114 v4"/><path d="M79 114 v4"/><path d="M141 114 v4"/><path d="M149 114 v4"/>
+          </g>
+        </g>
+      </g>
+      <g class="swat-paw">
+        <path d="M84 150 Q72 140 66 128" stroke="${pawFill}" stroke-width="13" fill="none" stroke-linecap="round"/>
+        <ellipse cx="66" cy="123" rx="9.5" ry="7.5" fill="${pawFill}" stroke="rgba(140,160,180,.5)" stroke-width="1.5"/>
+      </g>
+      <g stroke="rgba(110,125,138,.5)" stroke-width="2.4" stroke-linecap="round">
+        <path d="M84 102 L58 98"/><path d="M84 108 L58 112"/>
+        <path d="M136 102 L162 98"/><path d="M136 108 L162 112"/>
+      </g>
+    </g>
+  </svg>`;
+}
+
+/* ================= 猫咪背面视角（后脑勺+背部） ================= */
+function catSVGBack(breed,uid){
+  const P=BREEDS[breed];
+  const pc=P.patches?P.patches.color:P.dark;
+  const earL=P.earL||P.points||P.body, earR=P.earR||P.points||P.body;
+  const tailCol=P.tail||P.dark||P.body;
+  let defs="",bodyPatch="",headPatch="";
+  if(P.patches){
+    defs=`<defs>
+      <clipPath id="bk${uid}"><ellipse cx="110" cy="160" rx="42" ry="32"/></clipPath>
+      <clipPath id="bh${uid}"><circle cx="110" cy="92" r="46"/></clipPath>
+    </defs>`;
+    bodyPatch=`<g clip-path="url(#bk${uid})">${P.patches.body.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}" fill="${b[4]||pc}"/>`).join("")}</g>`;
+    headPatch=`<g clip-path="url(#bh${uid})">${P.patches.head.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}" fill="${b[4]||pc}"/>`).join("")}</g>`;
+  }
+  const mask=P.points?`<ellipse cx="110" cy="92" r="46" fill="${P.points}" opacity=".18"/>`:"";
+  const stripes=P.stripes?`
+    <g stroke="${P.stripes}" stroke-width="6" fill="none" stroke-linecap="round">
+      <path d="M84 138 q4 8 0 14"/><path d="M110 134 q0 9 0 16"/><path d="M136 138 q-4 8 0 14"/>
+      <path d="M96 56 q4 7 0 13"/><path d="M124 56 q-4 7 0 13"/>
+    </g>`:"";
+  const haunch=`
+    <ellipse cx="76" cy="174" rx="19" ry="16" fill="${P.dark}" opacity=".28"/>
+    <ellipse cx="144" cy="174" rx="19" ry="16" fill="${P.dark}" opacity=".28"/>`;
+  return `<svg class="cat-svg" viewBox="0 0 220 200">${defs}
+    <ellipse cx="110" cy="191" rx="48" ry="8" fill="rgba(96,120,138,.14)"/>
+    <g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="${tailCol}" stroke-width="15" stroke-linecap="round"/></g>
+    <g class="body-g">
+      <ellipse cx="110" cy="160" rx="42" ry="32" fill="${P.body}"/>
+      ${bodyPatch}
+      ${haunch}
+      <ellipse cx="110" cy="132" rx="20" ry="9" fill="${P.dark}" opacity=".18"/>
+      ${stripes}
+    </g>
+    <g class="head-g">
+      <g class="ear-l-g"><path d="M74 64 L82 24 L104 52 Z" fill="${earL}"/></g>
+      <g class="ear-r-g"><path d="M146 64 L138 24 L116 52 Z" fill="${earR}"/></g>
+      <circle cx="110" cy="92" r="46" fill="${P.body}"/>
+      ${headPatch}
+      ${mask}
+      <path d="M72 118 Q110 134 148 118 L148 128 Q110 142 72 128 Z" fill="${P.dark}" opacity=".14"/>
+    </g>
+  </svg>`;
+}
+
+/* 非猫动物 SVG：emoji 头像 + 猫咪身体（带条纹/肚皮/阴影细节） */
+function animalSVG(type,uid){
+  /* 狐狸/浣熊画矢量脑袋：emoji 在这两种动物上会随平台变化（安卓画全身、PC 画脑袋），
+     用 SVG 脑袋才能在所有平台都稳定只显示脑袋。 */
+  var HEAD_FOX='<g><path d="M72 50 L58 8 L100 38 Z" fill="#E88040"/><path d="M148 50 L162 8 L120 38 Z" fill="#E88040"/><path d="M70 42 L63 20 L92 38 Z" fill="#F5E0C0"/><path d="M150 42 L157 20 L128 38 Z" fill="#F5E0C0"/><ellipse cx="110" cy="74" rx="42" ry="35" fill="#E88040"/><ellipse cx="74" cy="88" rx="13" ry="14" fill="#F8EFE0"/><ellipse cx="146" cy="88" rx="13" ry="14" fill="#F8EFE0"/><ellipse cx="110" cy="98" rx="19" ry="15" fill="#F8EFE0"/><ellipse cx="96" cy="68" rx="5" ry="6" fill="#2A1A12"/><ellipse cx="124" cy="68" rx="5" ry="6" fill="#2A1A12"/><circle cx="97.5" cy="66" r="1.7" fill="#fff"/><circle cx="125.5" cy="66" r="1.7" fill="#fff"/><ellipse cx="110" cy="90" rx="5.5" ry="4" fill="#2A1A12"/><path d="M110 94 v3 M104 97 q6 5 12 0" stroke="#2A1A12" stroke-width="2" fill="none" stroke-linecap="round"/></g>';
+  var HEAD_RACCOON='<g><path d="M74 50 L62 10 L100 38 Z" fill="#8B8B8B"/><path d="M146 50 L158 10 L120 38 Z" fill="#8B8B8B"/><path d="M72 42 L66 22 L92 37 Z" fill="#6B6B6B"/><path d="M148 42 L154 22 L128 37 Z" fill="#6B6B6B"/><ellipse cx="110" cy="74" rx="42" ry="35" fill="#8B8B8B"/><path d="M70 56 Q110 68 150 56 L150 80 Q110 92 70 80 Z" fill="#3A3A3A"/><ellipse cx="78" cy="98" rx="10" ry="12" fill="#E8E8E8"/><ellipse cx="142" cy="98" rx="10" ry="12" fill="#E8E8E8"/><ellipse cx="110" cy="102" rx="20" ry="14" fill="#F0F0F0"/><circle cx="96" cy="68" r="5.5" fill="#F5F5F5"/><circle cx="124" cy="68" r="5.5" fill="#F5F5F5"/><circle cx="96" cy="68" r="2.6" fill="#111"/><circle cx="124" cy="68" r="2.6" fill="#111"/><circle cx="97" cy="67" r="1" fill="#fff"/><circle cx="125" cy="67" r="1" fill="#fff"/><ellipse cx="110" cy="95" rx="5" ry="3.8" fill="#2A2A2A"/><path d="M110 99 v3 M105 102 q5 4 10 0" stroke="#2A2A2A" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>';
+  var animals={
+    dog:{body:"#D4A86A",dark:"#B88E50",tail:"#C49858",belly:"#F5E8D0",emoji:"🐶",
+         stripes:"#C49858",patches:[[90,155,18,14,"#C4A060"],[130,148,12,10,"#C4A060"]]},
+    fox:{body:"#E88040",dark:"#C86830",tail:"#E88040",belly:"#F5E8D0",emoji:"🦊",head:HEAD_FOX,
+         stripes:"#D07030",patches:[[88,160,16,12,"#F5E0C0"],[132,155,14,10,"#F5E0C0"]]},
+    monkey:{body:"#9B7B5A",dark:"#7B5B3A",tail:"#8B6B4A",belly:"#C4A878",emoji:"🐵",
+         stripes:"#8B6B4A",patches:[[92,158,14,11,"#B08B60"],[128,152,12,10,"#B08B60"]]},
+    rabbit:{body:"#F0E8E0",dark:"#D8D0C8",tail:"#F0E8E0",belly:"#FAFAF8",emoji:"🐰",
+         stripes:"#E8D8D0",patches:[[88,160,15,12,"#E8E0D8"],[132,155,13,10,"#E8E0D8"]]},
+    hamster:{body:"#F0D8B8",dark:"#D8C0A0",tail:"#E8D0B0",belly:"#F8E8D8",emoji:"🐹",
+         stripes:"#E0C8A8",patches:[[86,160,16,13,"#E8D0B8"],[134,154,14,11,"#E8D0B8"]]},
+    raccoon:{body:"#8B8B8B",dark:"#6B6B6B",tail:"#7A7A7A",belly:"#C8C8C8",emoji:"🦝",head:HEAD_RACCOON,
+         stripes:"#5A5A5A",patches:[[88,158,16,12,"#6A6A6A"],[132,152,14,10,"#6A6A6A"]]},
+    koala:{body:"#9B9B9B",dark:"#7B7B7B",tail:"#8A8A8A",belly:"#C0C0C0",emoji:"🐨",
+         stripes:"#6A6A6A",patches:[[90,158,15,12,"#8A8A8A"],[130,152,13,10,"#8A8A8A"]]},
+    panda:{body:"#F5F5F5",dark:"#2A2A2A",tail:"#E0E0E0",belly:"#FFFFFF",emoji:"🐼",
+         stripes:"#1A1A1A",patches:[[88,160,16,13,"#3A3A3A"],[132,154,14,11,"#3A3A3A"]]}
+  };
+  var a=animals[type];
+  if(!a)return null;
+  return '<svg class="cat-svg" viewBox="0 0 220 200">'
+    /* 地面投影 */
+    +'<ellipse cx="110" cy="191" rx="48" ry="8" fill="rgba(96,120,138,.14)"/>'
+    /* 尾巴 */
+    +'<g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="'+a.tail+'" stroke-width="15" stroke-linecap="round"/></g>'
+    /* 身体 */
+    +'<g class="body-g">'
+    +'<ellipse cx="110" cy="160" rx="42" ry="32" fill="'+a.body+'"/>'
+    /* 身体侧面阴影 */
+    +'<ellipse cx="78" cy="162" rx="18" ry="24" fill="'+a.dark+'" opacity=".12"/>'
+    +'<ellipse cx="142" cy="162" rx="18" ry="24" fill="'+a.dark+'" opacity=".12"/>'
+    /* 肚皮 */
+    +'<ellipse cx="110" cy="167" rx="25" ry="21" fill="'+a.belly+'" opacity=".7"/>'
+    /* 身体条纹 */
+    +'<g stroke="'+a.stripes+'" stroke-width="4.5" fill="none" stroke-linecap="round" opacity=".3">'
+    +'<path d="M98 140 q2 8 -1 14"/><path d="M110 138 q0 8 0 14"/><path d="M122 140 q-2 8 1 14"/>'
+    +'</g>'
+    /* 身体色块 */
+    +'<ellipse cx="'+a.patches[0][0]+'" cy="'+a.patches[0][1]+'" rx="'+a.patches[0][2]+'" ry="'+a.patches[0][3]+'" fill="'+a.patches[0][4]+'" opacity=".35"/>'
+    +'<ellipse cx="'+a.patches[1][0]+'" cy="'+a.patches[1][1]+'" rx="'+a.patches[1][2]+'" ry="'+a.patches[1][3]+'" fill="'+a.patches[1][4]+'" opacity=".35"/>'
+    /* 爪子 */
+    +'<g class="paw-down">'
+    +'<ellipse cx="88" cy="187" rx="13" ry="7" fill="'+a.dark+'" opacity=".45"/>'
+    +'<ellipse cx="132" cy="187" rx="13" ry="7" fill="'+a.dark+'" opacity=".45"/>'
+    +'<g stroke="rgba(90,105,120,.35)" stroke-width="1.6" stroke-linecap="round">'
+    +'<path d="M84 186 v4"/><path d="M91 186 v4"/><path d="M128 186 v4"/><path d="M135 186 v4"/>'
+    +'</g></g></g>'
+    /* 头像：狐狸/浣熊用矢量脑袋，其余用 emoji（都是纯脑袋 emoji，各平台一致） */
+    +(a.head?a.head:'<text x="110" y="88" text-anchor="middle" dominant-baseline="central" font-size="84">'+a.emoji+'</text>')
+    +'</svg>';
+}
+
+/* ================= 音效 ================= */
+let AC=null;
+function tone(f0,f1,dur,type,vol,delay){
+  try{
+    AC=AC||new (window.AudioContext||window.webkitAudioContext)();
+    const t=AC.currentTime+(delay||0);
+    const o=AC.createOscillator(),g=AC.createGain();
+    o.type=type||"sine";
+    o.frequency.setValueAtTime(f0,t);
+    o.frequency.exponentialRampToValueAtTime(Math.max(f1,1),t+dur);
+    g.gain.setValueAtTime(0.0001,t);
+    g.gain.linearRampToValueAtTime(vol||0.13,t+0.02);
+    g.gain.exponentialRampToValueAtTime(0.0001,t+dur);
+    o.connect(g);g.connect(AC.destination);
+    o.start(t);o.stop(t+dur+0.05);
+  }catch(e){}
+}
+function snd(k){
+  if(!S||S.muted)return;
+  if(k==="pop")   tone(420,560,.1,"sine",.12);
+  if(k==="eat"){  tone(500,640,.09,"sine",.11);tone(500,640,.09,"sine",.11,.13);}
+  if(k==="drink") tone(300,540,.22,"sine",.1);
+  if(k==="play")  tone(700,1060,.16,"triangle",.13);
+  if(k==="scoop") tone(260,120,.22,"triangle",.12);
+  if(k==="jump")  tone(330,780,.18,"triangle",.11);
+  if(k==="land")  tone(240,110,.16,"triangle",.11);
+  if(k==="nap")   tone(420,180,.5,"sine",.08);
+  if(k==="level")[523,659,784].forEach((f,i)=>tone(f,f*1.02,.14,"sine",.12,i*.12));
+  if(k==="meow"){ tone(560,880,.17,"sine",.1);tone(880,480,.26,"sine",.1,.17);}
+}
+
+/* ================= UI 小组件 ================= */
+function toast(msg){
+  const t=document.createElement("div");
+  t.className="toast";t.textContent=msg;
+  el.toasts.appendChild(t);
+  while(el.toasts.children.length>3)el.toasts.firstChild.remove();
+  setTimeout(()=>{t.classList.add("out");setTimeout(()=>t.remove(),320);},2300);
+}
+function bubble(msg,force){
+  const now=Date.now();
+  if(!force&&now-lastBubbleAt<2500)return;
+  lastBubbleAt=now;
+  el.bubble.textContent=msg;
+  el.bubble.classList.add("on");
+  // 让气泡跟随 cat 在屏幕上的位置（脱离 3D 排序的方案）
+  positionBubble();
+  clearTimeout(bubbleTimer);
+  bubbleTimer=setTimeout(()=>el.bubble.classList.remove("on"),2600);
+}
+/* 把气泡固定到 cat 上方屏幕坐标（scene 级 fixed，不再受 3D 深度排序影响）。
+   requestAnimationFrame 跟随：气泡可见期间每帧跟随猫移动，保证 60fps 流畅。
+   加场景边界约束：避免猫靠边时气泡被 #scene 的 overflow:hidden 裁掉。*/
+let bubbleFollowRAF=0;
+function positionBubble(){
+  if(!el.bubble.classList.contains("on")){
+    cancelAnimationFrame(bubbleFollowRAF); bubbleFollowRAF=0;
+    return;
+  }
+  const scene=document.getElementById("scene");
+  const sr=scene.getBoundingClientRect();
+  // 注意：scene 设了 perspective:1250px，它就是 bubble 的 containing block。
+  // 所以 style.left/top 是相对 scene 内的坐标，要用 viewport 坐标减去 sr.left/top。
+  const bw=el.bubble.offsetWidth||120;
+  const bh=el.bubble.offsetHeight||34;
+  const r=el.catWrap.getBoundingClientRect();
+  const desiredX_v=r.left+r.width/2;
+  const desiredY_v=r.top-16;
+  // 视图坐标下：左右夹在 scene 内（sr.left..sr.right），留 6px 内边距
+  const minX_v=sr.left+bw/2+6;
+  const maxX_v=sr.right-bw/2-6;
+  let x_v=Math.max(minX_v,Math.min(maxX_v,desiredX_v));
+  const minY_v=sr.top+bh+6;
+  let y_v=Math.max(minY_v,desiredY_v);
+  // 转换成 scene 内坐标（fixed 的 containing block = scene）
+  const x=x_v-sr.left;
+  const y=y_v-sr.top;
+  // 箭头相对气泡中心的偏移 = (猫中心 viewportX - 气泡中心 viewportX)
+  const arrowMax=bw/2-8;
+  const bx=Math.max(-arrowMax,Math.min(arrowMax,desiredX_v-x_v));
+  el.bubble.style.left=x+"px";
+  el.bubble.style.top=y+"px";
+  el.bubble.style.setProperty("--bx",bx+"px");
+  // 继续下一帧更新
+  bubbleFollowRAF=requestAnimationFrame(positionBubble);
+}
+// 暴露到 window 便于 puppeteer 等外部脚本调用（生产环境无副作用）
+window.positionBubble=positionBubble;
+function puff(anchor,dx,dy,items,n){
+  n=n||3;
+  for(let i=0;i<n;i++){
+    const s=document.createElement("span");
+    s.className="pt";s.textContent=items[i%items.length];
+    s.style.left=`calc(50% + ${(dx+(Math.random()*18-9)).toFixed(0)}px)`;
+    s.style.top=`calc(50% + ${(dy+(Math.random()*10-5)).toFixed(0)}px)`;
+    s.style.animationDelay=(i*0.09)+"s";
+    anchor.appendChild(s);
+    setTimeout(()=>s.remove(),1400);
+  }
+}
+/* 场景级粒子（不受猫/天气层遮挡） */
+function puffScene(items,n){
+  n=n||4;
+  var cx=curX,cy=curY;
+  var layer=el.particleLayer||document.getElementById("particleLayer");
+  if(!layer){console.warn("puffScene: particleLayer not found");return;}
+  for(let i=0;i<n;i++){
+    const s=document.createElement("span");
+    s.textContent=items[i%items.length];
+    s.style.cssText=`position:absolute;left:calc(${cx}% + ${(Math.random()*40-20).toFixed(0)}px);top:calc(${cy}% + ${(-40+Math.random()*20-10).toFixed(0)}px);font-size:22px;z-index:30;pointer-events:none;opacity:1`;
+    layer.appendChild(s);
+    /* 强制回流后触发动画 */
+    void s.offsetWidth;
+    s.style.animation=`rise ${1.2+Math.random()*0.4}s ease-out ${i*0.1}s forwards`;
+    setTimeout(()=>s.remove(),2200);
+  }
+}
+function title(){return TITLES[Math.min(S.level-1,TITLES.length-1)];}
+function setCheer(ms,force){
+  if(!force&&(S.sleeping||busy||playMode))return;
+  catState="cheer";renderCatClass();
+  snd("meow");
+  puff(el.catWrap,-24,-56,["✨","💗","⭐"],4);
+  setTimeout(()=>{ if(catState==="cheer"&&!S.sleeping){catState="idle";renderCatClass();} },ms||2400);
+}
+function addXp(n){
+  S.xp+=n;
+  let need=70+S.level*45;
+  while(S.xp>=need){
+    S.xp-=need;S.level++;need=70+S.level*45;
+    puff(el.catWrap,-10,-70,["💗","✨","💙","🎀"],5);
+    toast(`🎉 升级到 Lv.${S.level} · ${title()}`);
+    snd("level");
+  }
+}
+
+/* ================= 时间推进（仅互动） ================= */
+function advanceTime(hours){
+  S.min+=hours*60;
+  applyNeeds(hours);
+  checkSickRecover();
+  checkToyExpiry();
+}
+/* 检查玩具是否过期 */
+function checkToyExpiry(){
+  if(!S.ownedItems)return;
+  var changed=false;
+  SHOP_ITEMS.forEach(function(it){
+    var owned=S.ownedItems[it.id];
+    if(!owned||typeof owned!=="object"||owned.boughtAt==null)return;
+    if(S.min-owned.boughtAt>=owned.lifespan){
+      delete S.ownedItems[it.id];
+      var msgs=[it.n+"玩丢了…",it.n+"玩坏了…",it.n+"被猫猫藏起来了…"];
+      toast(it.e+" "+pick(msgs));
+      changed=true;
+    }
+  });
+  if(changed){renderSceneItems();save();}
+}
+function applyNeeds(gh){
+  const days=S.min/1440;
+  const k=(days<2?1.25:1)*(S.sleeping?0.3:1);
+  S.hunger=clamp(S.hunger-6*gh*k);
+  S.thirst=clamp(S.thirst-8*gh*k);
+  S.energy=clamp(S.energy+(S.sleeping?15:-3.5)*gh);
+  let md=3.5*gh;
+  if(S.hunger<30||S.thirst<30)md+=4*gh;
+  if(S.clean<30)md+=3*gh;
+  if(S.sick)md+=2.5*gh;      /* 生病时心情掉得更快 */
+  S.mood=clamp(S.mood-md);
+  if(S.visit){               /* 客人也会饿会渴，这样它才会自己去吃喝 */
+    S.visit.hunger=clamp(S.visit.hunger-6*gh);
+    S.visit.thirst=clamp(S.visit.thirst-8*gh);
+  }
+}
+function gameHour(){return Math.floor((S.min%1440)/60);}
+function needBubble(){
+  if(S.hunger<28)bubble("肚子饿得咕咕叫…",true);
+  else if(S.thirst<28)bubble("好渴…想喝水…",true);
+  else if(S.clean<28)bubble("猫砂盆臭臭的…哼…",true);
+  else if(S.mood<35)bubble("好无聊，陪陪我嘛…",true);
+  else if(S.energy<18)bubble("累趴了…让我睡一觉吧…",true);
+}
+
+/* ================= 猫咪移动（XYZ） ================= */
+function setState(s){catState=s;renderCatClass();
+  /* 吃饭/喝水时碗挡在猫身体前面 */
+  el.foodBowl.classList.toggle("front",s==="eating");
+  el.waterBowl.classList.toggle("front",s==="drinking");
+}
+function renderCatClass(){
+  /* 吃饭/喝水/上厕所/看电视时背对镜头，展示后脑勺与背部 */
+  const back=(catState==="eating"||catState==="drinking"||catState==="potty"||watchingTV)?"back":"";
+  /* 生病徽章靠 CSS 的 .cat-wrap.sick 规则显示（之前写的类名是 sad，那条规则永远命中不了） */
+  const sick=(S&&S.sick)?"sick":"";
+  el.catWrap.className=`billboard cat-wrap ${back} ${catState} ${expr} ${sick}`;
+}
+function setH(h){
+  curH=h;
+  el.catWrap.style.setProperty("--h",h+"px");
+  el.catShadow.style.opacity=Math.max(0,0.9-h/380).toFixed(2);
+}
+function placeShadow(){
+  el.catShadow.style.left=curX+"%";
+  el.catShadow.style.top=curY+"%";
+  updateBowlFront();
+}
+function updateBowlFront(){ /* 猫站在碗后方附近时，碗挡在猫身前 */
+  if(!S)return;
+  const near=(bx,by)=>Math.abs(curX-bx)<13&&curY<by+5;
+  el.foodBowl.classList.toggle("front",near(POS.food[0],POS.food[1]));
+  el.waterBowl.classList.toggle("front",near(POS.water[0],POS.water[1]));
+}
+function goTo(x,y,after){
+  return (async()=>{
+    if(x!==curX||y!==curY){
+      setState("walking");
+      if(x<curX-1)el.catFlip.classList.add("face-l");
+      else if(x>curX+1)el.catFlip.classList.remove("face-l");
+      curX=x;curY=y;
+      el.catWrap.style.left=x+"%";
+      el.catWrap.style.top=y+"%";
+      placeShadow();
+      positionBubble();
+      await sleepMs(1200);
+    }
+    el.catFlip.classList.remove("face-l");
+    setState(after||"idle");
+  })();
+}
+async function hopTo(x,y,h){
+  setState("climbing");snd("jump");
+  curX=x;curY=y;
+  el.catWrap.style.left=x+"%";
+  el.catWrap.style.top=y+"%";
+  placeShadow();
+  positionBubble();
+  setH(h);
+  await sleepMs(780);
+  setState("idle");
+}
+async function jumpDown(toX,toY){
+  setState("climbing");snd("land");
+  curX=toX;curY=toY;
+  el.catWrap.style.left=toX+"%";
+  el.catWrap.style.top=toY+"%";
+  placeShadow();
+  positionBubble();
+  setH(0);
+  await sleepMs(700);
+  puff(el.catWrap,0,10,["💨","✨"],2);
+  setState("idle");
+}
+/* resLock：0 空闲 / 1 主猫占用 / 2 朋友猫占用 —— 保证两只猫不抢同一个碗、不同时上厕所 */
+async function startEat(auto=false){
+  if(!lockTake("food",1))return;      /* 朋友猫正在吃，主猫等下一轮 */
+  busy=true;curAction="eat";
+  const g=gen;
+  try{
+    await goTo(...POS.food,"eating");
+    if(g!==gen){busy=false;return;}
+    await sleepMs(2800);
+    if(g!==gen){busy=false;return;}
+    const gained=Math.max(0,Math.min(58,100-S.hunger,S.foodBowl/1.6));
+    S.hunger=clamp(S.hunger+gained);
+    S.foodBowl=Math.max(0,S.foodBowl-gained*1.6);
+    if(!auto)addXp(6);snd("eat");puff(el.foodBowl,0,-8,["🍚","✨"],2);
+    curAction=null;
+    await goTo(...POS.center,"idle");
+    busy=false;chain();
+  }finally{lockFree("food",1);}
+}
+async function startDrink(auto=false){
+  if(!lockTake("water",1))return;
+  busy=true;curAction="drink";
+  const g=gen;
+  try{
+    await goTo(...POS.water,"drinking");
+    if(g!==gen){busy=false;return;}
+    await sleepMs(2200);
+    if(g!==gen){busy=false;return;}
+    const gained=Math.max(0,Math.min(45,100-S.thirst,S.waterBowl/1.1));
+    S.thirst=clamp(S.thirst+gained);
+    S.waterBowl=Math.max(0,S.waterBowl-gained*1.1);
+    if(!auto)addXp(4);snd("drink");puff(el.waterBowl,0,-8,["💧"],2);
+    curAction=null;
+    await goTo(...POS.center,"idle");
+    busy=false;chain();
+  }finally{lockFree("water",1);}
+}
+async function doPotty(){
+  if(!lockTake("litter",1))return;
+  busy=true;curAction="potty";
+  const g=gen;
+  try{
+    await goTo(...POS.litter,"potty");
+    if(g!==gen){busy=false;return;}
+    await sleepMs(2600);
+    if(g!==gen){busy=false;return;}
+    S.clean=clamp(S.clean-12);
+    if(S.clean<22){S.mood=clamp(S.mood-4);bubble("讨厌…猫砂盆脏脏的…");}
+    puff(el.litterBox,0,-20,["💨"],2);
+    S.nextPotty=S.min+210+Math.random()*120;
+    curAction=null;
+    await goTo(...POS.center,"idle");
+    busy=false;chain();
+  }finally{lockFree("litter",1);}
+}
+function chain(){
+  if(busy)return;
+  if(S.foodBowl>0&&S.hunger<82&&!resLock.food){startEat();return;}
+  if(S.waterBowl>0&&S.thirst<82&&!resLock.water){startDrink();return;}
+  if(S.min>=S.nextPotty&&!resLock.litter){doPotty();return;}
+  updateHUD();save();
+}
+
+/* ================= 自主活动（空闲时猫猫自理生活） ================= */
+function markActive(){lastPlayerAct=Date.now();}
+function cancelAuto(){
+  autoGen++;
+  if(autoBusy){
+    if(curH>0)setH(0);
+    if(!busy)setState("idle");
+    autoBusy=false;
+  }
+  /* 自主活动（如 playWithToy）会同时占用 busy 锁，被 cancelAuto 打断后它自己
+     的 finally 不会释放（因为 g!==autoGen），必须在这里归还，否则 busy 永久
+     卡在 true，之后所有动作都被挡住。 */
+  if(autoHoldsBusy){ busy=false; autoHoldsBusy=false; }
+}
+function randFloorSpot(){
+  const avoid=[[POS.food[0],POS.food[1]],[POS.water[0],POS.water[1]],[POS.litter[0],POS.litter[1]],POS.bed,POS.fish,[14,30],[70,14]];
+  for(let t=0;t<6;t++){
+    const x=8+Math.random()*84, y=16+Math.random()*76;
+    if(avoid.every(([ax,ay])=>Math.hypot(x-ax,y-ay)>9))return[x,y];
+  }
+  return[20+Math.random()*60,25+Math.random()*60];
+}
+async function autoWander(){
+  autoBusy=true;const g=autoGen;
+  const s1=randFloorSpot();
+  await goTo(s1[0],s1[1],"idle");
+  if(g!==autoGen){autoBusy=false;return;}
+  if(Math.random()<0.4)bubble(pick(WANDER_LINES));
+  await sleepMs(1800+Math.random()*2200);
+  if(g!==autoGen){autoBusy=false;return;}
+  if(Math.random()<0.5){
+    const s2=randFloorSpot();
+    await goTo(s2[0],s2[1],"idle");
+  }
+  autoBusy=false;
+}
+async function autoRest(){
+  autoBusy=true;const g=autoGen;
+  await goTo(...POS.bed,"idle");
+  if(g!==autoGen){autoBusy=false;return;}
+  if(Math.random()<0.6)bubble(pick(["呼噜呼噜…","窝里真舒服～","眯一会儿…"]));
+  await sleepMs(2600+Math.random()*2000);
+  autoBusy=false;
+}
+async function autoLook(){
+  autoBusy=true;const g=autoGen;
+  await goTo(30,15,"idle");
+  if(g!==autoGen){autoBusy=false;return;}
+  if(Math.random()<0.6)bubble(pick(["看小鸟！","窗外真热闹","尾巴摇摇～"]));
+  await sleepMs(2400+Math.random()*1600);
+  autoBusy=false;
+}
+async function autoClimb(){
+  autoBusy=true;const g=autoGen;
+  await goTo(...POS.climbBase,"walking");
+  if(g!==autoGen){autoBusy=false;return;}
+  await hopTo(...POS.shelf1,SHELF_H[0]); if(g!==autoGen){setH(0);autoBusy=false;return;}
+  await sleepMs(400); if(g!==autoGen){setH(0);autoBusy=false;return;}
+  await hopTo(...POS.shelf2,SHELF_H[1]); if(g!==autoGen){setH(0);autoBusy=false;return;}
+  await sleepMs(700); if(g!==autoGen){setH(0);autoBusy=false;return;}
+  await jumpDown(POS.climbBase[0]+4,POS.climbBase[1]+8);
+  autoBusy=false;
+}
+function autoLifeTick(){
+  if(!S||el.app.hidden)return;          /* 停在猫窝大门时不要让猫在后台乱跑 */
+  if(S.sleeping||busy||playMode||autoBusy||catState==="cheer"||catState==="swat")return;
+  checkSickRecover();                   /* 挂机时也能自动康复 */
+  if(S.autoWander===false)return;
+  if(Date.now()-lastPlayerAct<9000)return;
+  if(S.min>=S.nextPotty){doPotty();return;}
+  if(S.foodBowl>0&&S.hunger<85){startEat(true);return;}
+  if(S.waterBowl>0&&S.thirst<85){startDrink(true);return;}
+  const r=Math.random();
+  /* 有玩具在地上时，有概率去玩 */
+  if(r<0.12){var toy=getRandomToy();if(toy){playWithToy(toy);return;}}
+  if(r<0.22&&S.energy>30){autoClimb();return;}
+  if(r<0.35){autoRest();return;}
+  if(r<0.42){autoLook();return;}
+  autoWander();
+}
+/* 获取一个地上的玩具 */
+function getRandomToy(){
+  if(!S.ownedItems)return null;
+  var toys=SHOP_ITEMS.filter(function(it){
+    var o=S.ownedItems[it.id];
+    return o&&it.cat!=="consumable"&&it.pos&&typeof o==="object"&&o.boughtAt!=null;
+  });
+  return toys.length?pick(toys):null;
+}
+/* 围着玩具玩 */
+async function playWithToy(toy){
+  if(busy)return;
+  autoBusy=true;busy=true;autoHoldsBusy=true;const g=autoGen;
+  try{
+    await goTo(toy.pos[0]+3,toy.pos[1]-4,"walking");
+    if(g!==autoGen)return;
+    setState("playing");
+    bubble(pick(["这个好玩！","嘿嘿，抓到了！","我要把它藏起来～","喵呜～"]),true);
+    puff(el.catWrap,0,-30,[toy.e,"✨","💫"],3);
+    await sleepMs(3000);
+    if(g!==autoGen)return;
+    setCheer(1500,true);
+    S.mood=clamp(S.mood+5);
+    await sleepMs(1800);
+    if(g!==autoGen)return;
+    await goTo(...POS.center,"idle");
+  }finally{if(g===autoGen){busy=false;autoBusy=false;autoHoldsBusy=false;}updateHUD();}
+}
+function onFeed(){
+  cancelAuto();markActive();
+  if(S.foodBowl>90){toast("碗里还有满满猫粮呢～");return;}
+  S.foodBowl=100;renderBowls();
+  puff(el.foodBowl,0,-14,["🍚","🥣","✨"],3);snd("pop");
+  toast(`给 ${S.name} 添好猫粮 🍚（+1 小时）`);
+  advanceTime(1);
+  addXp(2);
+  if(!busy&&S.hunger>88)bubble("现在还饱饱的，等会儿再吃吧～");
+  needBubble();updateHUD();save();chain();
+}
+function onWater(){
+  cancelAuto();markActive();
+  if(S.waterBowl>90){toast("水碗还是满的哦～");return;}
+  S.waterBowl=100;renderBowls();
+  puff(el.waterBowl,0,-14,["💧","✨"],3);snd("pop");
+  toast(`给 ${S.name} 添好清水 💧（+1 小时）`);
+  advanceTime(1);
+  addXp(2);
+  if(!busy&&S.thirst>88)bubble("还不渴喵～");
+  needBubble();updateHUD();save();chain();
+}
+function onScoop(){
+  cancelAuto();markActive();
+  if(curAction==="potty"){toast("猫猫正在上厕所，稍等一下…");return;}
+  if(S.clean>92){toast("猫砂盆还很干净，不用铲～");return;}
+  S.clean=100;
+  puff(el.litterBox,0,-26,["✨","🧹","🌸"],4);snd("scoop");
+  addXp(5);toast("猫砂盆清理干净了 ✨（+1 小时）");
+  advanceTime(1);
+  if(!busy)bubble("谢谢铲屎官！",true);
+  needBubble();updateHUD();save();chain();
+}
+async function onClimb(){
+  cancelAuto();markActive();
+  if(busy){toast("等一下，猫猫正在忙～");return;}
+  if(S.energy<15){bubble("累趴了…爬不动了…",true);return;}
+  busy=true;
+  const g=gen;
+  toast(`${S.name} 冲向攀爬架！（+1 小时）`);
+  await goTo(...POS.climbBase,"walking");
+  if(g!==gen){busy=false;return;}
+  await hopTo(...POS.shelf1,SHELF_H[0]); if(g!==gen){busy=false;return;}
+  await sleepMs(420); if(g!==gen){busy=false;return;}
+  await hopTo(...POS.shelf2,SHELF_H[1]); if(g!==gen){busy=false;return;}
+  await sleepMs(420); if(g!==gen){busy=false;return;}
+  await hopTo(...POS.shelf3,SHELF_H[2]); if(g!==gen){busy=false;return;}
+  bubble("登顶！我是最强的猫！",true);
+  setCheer(2000,true);
+  puff(el.catWrap,0,-70,["⭐","✨"],3);
+  await sleepMs(1600); if(g!==gen){busy=false;return;}
+  await jumpDown(POS.climbBase[0]+3,POS.climbBase[1]+8); if(g!==gen){busy=false;return;}
+  S.mood=clamp(S.mood+18);
+  S.energy=Math.max(0,S.energy-12);
+  addXp(12);
+  advanceTime(1);
+  busy=false;
+  needBubble();updateHUD();save();chain();
+}
+async function onPatrol(){
+  cancelAuto();markActive();
+  if(busy){toast("等一下，猫猫正在忙～");return;}
+  if(S.energy<12){bubble("累趴了…巡视不动了…",true);return;}
+  busy=true;
+  const g=gen;
+  toast(`${S.name} 出发巡视领地！（+1 小时）`);
+  const route=[[POS.fish[0]+8,POS.fish[1]],[POS.food[0]+4,POS.food[1]-4],[58,82],[82,45]];
+  for(const [x,y] of route){
+    await goTo(x,y,"walking");
+    if(g!==gen){busy=false;return;}
+    if(Math.random()<0.55)bubble(pick(["这里安全～","一切正常喵","标记完毕","嗯…有陌生气味","领地完好！"]));
+    if(Math.abs(x-POS.fish[0]-8)<3){
+      el.ftFish.style.animationDuration="0.45s";
+      setTimeout(()=>{el.ftFish.style.animationDuration="";},1200);
+      puff(el.fishtank,0,-50,["🐟","💦"],2);
+    }
+    await sleepMs(560); if(g!==gen){busy=false;return;}
+    if(!evLock&&!itemPending&&Math.random()<0.16){
+      await evFindItem();
+      if(g!==gen){busy=false;return;}
+    }
+  }
+  await goTo(...POS.center,"idle"); if(g!==gen){busy=false;return;}
+  S.mood=clamp(S.mood+12);
+  S.energy=Math.max(0,S.energy-6);
+  addXp(8);
+  advanceTime(1);
+  busy=false;
+  needBubble();updateHUD();save();chain();
+}
+async function onExercise(){
+  cancelAuto();markActive();
+  if(busy){toast("等一下，猫猫正在忙～");return;}
+  if(S.energy<20){bubble("太累了…跑不动了…",true);return;}
+  if(!S.ownedItems||!S.ownedItems.treadmill){toast("还没有跑步机哦～去商店看看");return;}
+  busy=true;
+  const g=gen;
+  toast(S.name+" 上跑步机跑步！（+1 小时）");
+  await goTo(60,17,"walking");
+  if(g!==gen){busy=false;return;}
+  setState("playing");
+  bubble(pick(["嘿咻嘿咻！","燃烧卡路里！","跑跑跑～","健康最重要！"]),true);
+  for(var i=0;i<4;i++){
+    await sleepMs(1200);
+    if(g!==gen){busy=false;return;}
+    puff(el.catWrap,0,-30,["💦","💪","🏃"][i%3]?["💦"]:["💪"],1);
+  }
+  setState("idle");
+  await goTo(...POS.center,"idle");
+  if(g!==gen){busy=false;return;}
+  S.mood=clamp(S.mood+8);
+  S.energy=Math.max(0,S.energy-12);
+  S.hunger=clamp(S.hunger-5);
+  S.thirst=clamp(S.thirst-6);
+  addXp(10);
+  advanceTime(1);
+  puff(el.catWrap,0,-40,["💪","✨","💗"],3);
+  setCheer(1500,true);
+  busy=false;
+  needBubble();updateHUD();save();chain();
+}
+async function onNap(){
+  cancelAuto();markActive();
+  if(busy){toast("等一下，猫猫正在忙～");return;}
+  busy=true;
+  const g=gen;
+  await goTo(...POS.bed,"walking");   /* 先走回猫窝 */
+  if(g!==gen){busy=false;return;}
+  S.sleeping=true;setState("sleeping");snd("nap");
+  toast("嘘…猫猫回窝睡觉了（快进 5 小时）");
+  await sleepMs(2200);
+  if(g!==gen){busy=false;return;}
+  applyNeeds(5);          /* 睡眠系数：精力回复，需求慢衰减 */
+  S.sleeping=false;
+  S.min+=5*60;            /* 时间快进 5 小时 */
+  addXp(2);
+  setState("idle");
+  bubble(pick(["睡饱啦！精神满满！","呼…好梦～","伸个懒腰～"]),true);
+  busy=false;
+  needBubble();updateHUD();save();chain();
+}
+function onPet(){
+  cancelAuto();
+  if(S.sleeping){bubble("Zzz…",true);return;}
+  if(busy||playMode||Date.now()<petCd)return;
+  petCd=Date.now()+2400;
+  addXp(2);
+  setCheer(2400);
+  bubble(pick(["好开心！","喵呜～","最爱铲屎官了！","耶——！"]));
+}
+
+/* ================= 逗猫模式：鼠标化身逗猫棒 ================= */
+let playMode=false,playTimer=0,playStart=0,leaveTimer=0,lastPounce=0,lastFollow=0,floorMap=null;
+const wand={x:50,y:50};
+function gaussSolve(M){
+  const n=M.length;
+  for(let c=0;c<n;c++){
+    let p=c;
+    for(let r=c+1;r<n;r++)if(Math.abs(M[r][c])>Math.abs(M[p][c]))p=r;
+    const t=M[c];M[c]=M[p];M[p]=t;
+    const dv=M[c][c]||1e-9;
+    for(let r=0;r<n;r++){
+      if(r===c)continue;
+      const f=M[r][c]/dv;
+      for(let k=c;k<=n;k++)M[r][k]-=f*M[c][k];
+    }
+  }
+  return M.map((row,i)=>row[n]/(row[i]||1e-9));
+}
+function computeFloorMap(){
+  const fl=el.floor,W=fl.offsetWidth,H=fl.offsetHeight;
+  const srect=el.scene.getBoundingClientRect();
+  const probes=[],src=[],dst=[];
+  [[2,2],[98,2],[98,98],[2,98]].forEach(([px,py])=>{
+    const d=document.createElement("i");
+    d.style.cssText=`position:absolute;left:${px}%;top:${py}%;width:2px;height:2px;pointer-events:none`;
+    fl.appendChild(d);probes.push(d);
+  });
+  probes.forEach((d,i)=>{
+    const r=d.getBoundingClientRect();
+    src.push([probes[i].offsetLeft,probes[i].offsetTop]);
+    dst.push([r.left+r.width/2-srect.left,r.top+r.height/2-srect.top]);   /* 场景相对坐标，与 floorFromScreen 输入一致 */
+  });
+  probes.forEach(d=>d.remove());
+  const A=[];
+  for(let i=0;i<4;i++){
+    const [x,y]=src[i],[X,Y]=dst[i];
+    A.push([x,y,1,0,0,0,-X*x,-X*y]);
+    A.push([0,0,0,x,y,1,-Y*x,-Y*y]);
+  }
+  /* 右端项：偶数行对应 X，奇数行对应 Y */
+  const h=gaussSolve(A.map((r,i)=>{
+    const p=(i/2)|0;
+    return r.concat(i%2===0?dst[p][0]:dst[p][1]);
+  }));
+  const Hm=[[h[0],h[1],h[2]],[h[3],h[4],h[5]],[h[6],h[7],1]];
+  const [[a,b,c],[d,e,f],[g,hh,ii]]=Hm;
+  const det=a*(e*ii-f*hh)-b*(d*ii-f*g)+c*(d*hh-e*g);
+  const inv=[[e*ii-f*hh,c*hh-b*ii,f*b-c*e],[f*g-d*ii,a*ii-c*g,c*d-a*f],[d*hh-e*g,b*g-a*hh,a*e-b*d]];
+  return {inv,det,W,H};
+}
+function floorFromScreen(m,sx,sy){
+  const [a,b,c]=[m.inv[0][0],m.inv[0][1],m.inv[0][2]];
+  const [d,e,f]=[m.inv[1][0],m.inv[1][1],m.inv[1][2]];
+  const [g,hh,ii]=[m.inv[2][0],m.inv[2][1],m.inv[2][2]];
+  const w=g*sx+hh*sy+ii;
+  return [ (a*sx+b*sy+c)/w, (d*sx+e*sy+f)/w ];
+}
+function pounceHop(){
+  setH(24);
+  setTimeout(()=>setH(0),240);
+  puff(el.catWrap,0,4,["💨"],1);
+}
+function catFollow(){
+  if(!playMode)return;
+  const now=Date.now();
+  const dx=wand.x-curX,dy=wand.y-curY;
+  const dist=Math.hypot(dx,dy*0.75);
+  /* dx>0 → 逗猫棒在猫右边 → 朝右（不加 face-l），与 goTo 的方向判断保持一致 */
+  if(dx>3)el.catFlip.classList.remove("face-l");
+  else if(dx<-3)el.catFlip.classList.add("face-l");
+  if(dist>8.5){
+    if(now-lastFollow<160)return;
+    lastFollow=now;
+    curX=Math.max(4,Math.min(96,wand.x-Math.sign(dx)*6.5));
+    curY=Math.max(7,Math.min(97,wand.y-Math.sign(dy)*5.5));
+    el.catWrap.style.left=curX+"%";
+    el.catWrap.style.top=curY+"%";
+    placeShadow();
+  }else if(now-lastPounce>820){
+    lastPounce=now;
+    pounceHop();
+  }
+}
+function placeTeaser(sx,sy){ /* 逗猫棒：屏幕空间精确跟随光标（羽毛尖端=光标） */
+  el.teaser.style.left=(sx-21)+"px";
+  el.teaser.style.top=(sy-7)+"px";
+}
+/* 朋友猫跟着同一根逗猫棒跑，偏移比主猫大一点，两只猫不会叠在一起 */
+function friendFollow(){
+  if(!playMode||!friendOn())return;
+  const now=Date.now();
+  const dx=wand.x-fX, dy=wand.y-fY;
+  const dist=Math.hypot(dx,dy*0.75);
+  if(dx>3)el.friendFlip.classList.remove("face-l");
+  else if(dx<-3)el.friendFlip.classList.add("face-l");
+  if(dist>9){
+    fX=Math.max(4,Math.min(96,wand.x-Math.sign(dx||1)*9));
+    fY=Math.max(7,Math.min(97,wand.y-Math.sign(dy||1)*7.5));
+    friendPlace();
+    if(fState!=="playing")friendSetState("playing");
+  }else if(now-lastFriendPounce>900){
+    lastFriendPounce=now;
+    puff(el.friendCat,0,6,["💨","🐾"],2);
+  }
+}
+function setWandFloor(xpct,ypct){
+  if(!isFinite(xpct)||!isFinite(ypct))return;     /* 投影算出 NaN 时不要把猫踢出场景 */
+  wand.x=Math.max(4,Math.min(96,xpct));
+  wand.y=Math.max(7,Math.min(97,ypct));
+  catFollow();
+  friendFollow();
+}
+function startPlay(){
+  let fm=null;
+  try{fm=computeFloorMap();}catch(e){}
+  /* 投影矩阵退化（场景尺寸为 0、布局未就绪、算出 NaN）时绝不进入逗猫模式 */
+  if(!fm||!fm.inv||!isFinite(fm.det)||Math.abs(fm.det)<1e-9||!(fm.W>0)||!(fm.H>0)
+     ||fm.inv.some(r=>r.some(v=>!isFinite(v)))){
+    toast("逗猫棒暂时拿不动了…");return;
+  }
+  playMode=true;busy=true;playStart=Date.now();
+  floorMap=fm;
+  el.scene.classList.add("playing");
+  el.catShadow.classList.add("fast");
+  el.teaser.classList.add("on");
+  setState("playing");snd("play");
+  if(friendOn()){                    /* 有客人在：朋友猫一起追 */
+    el.friendShadow.classList.add("fast");
+    friendSetState("playing");
+  }
+  el.btnPlay.innerHTML='<em>🎯</em>结束逗猫';
+  bubble("逗我呀！追羽毛～",true);
+  toast("鼠标变成了逗猫棒！移动它逗猫猫，再点一次或按 Esc 结束");
+  { /* 初始放在猫前方 */
+    const cr=el.catWrap.getBoundingClientRect(), srr=el.scene.getBoundingClientRect();
+    placeTeaser(cr.left-srr.left+cr.width*0.4, cr.top-srr.top+cr.height*0.9);
+  }
+  setWandFloor(curX+8,curY+7);
+  playTimer=setTimeout(()=>endPlay(true),20000);
+}
+function endPlay(reward){
+  if(!playMode)return;
+  playMode=false;busy=false;
+  clearTimeout(playTimer);clearTimeout(leaveTimer);
+  el.scene.classList.remove("playing");
+  el.catShadow.classList.remove("fast");
+  el.teaser.classList.remove("on");
+  el.btnPlay.innerHTML='<em>🪶</em>逗猫棒';
+  setState("idle");
+  if(friendOn()){                    /* 收起逗猫棒，朋友猫恢复常态 */
+    el.friendShadow.classList.remove("fast");
+    friendSetState("idle");
+  }
+  if(reward&&Date.now()-playStart>3500){
+    S.mood=clamp(S.mood+22);
+    S.energy=Math.max(0,S.energy-14);
+    S.thirst=Math.max(0,S.thirst-5);
+    addXp(10);
+    puff(el.catWrap,0,-60,["💗","✨","🐾"],4);
+    if(friendOn()){
+      S.mood=clamp(S.mood+8);
+      S.visit.hunger=clamp(S.visit.hunger-8);
+      S.visit.thirst=clamp(S.visit.thirst-8);
+      puff(el.friendCat,0,-50,["💗","🐾"],3);
+      toast("两只猫一起追羽毛，开心翻倍！");
+    }
+    bubble(pick(["太好玩啦！","再来一次嘛！","扑到小羽毛啦！","开心到打滚～"]),true);
+    setCheer(2200);
+    advanceTime(1);
+    needBubble();updateHUD();save();chain();
+  }else{
+    updateHUD();save();
+  }
+}
+function onPlay(){
+  cancelAuto();markActive();
+  if(S.sleeping){toast("Zzz…猫猫睡得正香");return;}
+  if(busy&&!playMode){toast("等一下，猫猫正在忙～");return;}
+  if(playMode){endPlay(true);return;}
+  if(S.energy<18){bubble("累趴了…让我睡一觉吧…",true);return;}
+  startPlay();
+}
+function bindPlayCursor(){
+  el.scene.addEventListener("mousemove",e=>{
+    if(!playMode||!floorMap)return;
+    const r=el.scene.getBoundingClientRect();
+    const sx=e.clientX-r.left, sy=e.clientY-r.top;
+    placeTeaser(sx,sy);
+    const [fx,fy]=floorFromScreen(floorMap,sx,sy);
+    setWandFloor(fx/floorMap.W*100,fy/floorMap.H*100);
+  });
+  el.scene.addEventListener("mouseleave",()=>{
+    if(playMode)leaveTimer=setTimeout(()=>endPlay(true),2500);
+  });
+  el.scene.addEventListener("mouseenter",()=>clearTimeout(leaveTimer));
+  document.addEventListener("keydown",e=>{
+    if(e.key==="Escape")endPlay(false);
+  });
+}
+
+/* ================= 摸鱼（跑去鱼缸扒拉小鱼） ================= */
+async function onFishTouch(){
+  cancelAuto();markActive();
+  if(S.sleeping){toast("Zzz…猫猫睡得正香");return;}
+  if(busy){toast("等一下，猫猫正在忙～");return;}
+  if(Date.now()<fishCd)return;
+  fishCd=Date.now()+8000;
+  busy=true;
+  const g=gen;
+  toast(`${S.name} 蹑手蹑脚靠近鱼缸…（+1 小时）`);
+  await goTo(POS.fish[0]+8,POS.fish[1],"walking");
+  if(g!==gen){busy=false;return;}
+  setState("swat");snd("play");
+  /* 猫挥爪，鱼受惊越游越快 */
+  try{
+    for(let i=0;i<3;i++){
+      el.ftFish.style.animationDuration=Math.max(0.5,0.9-i*0.2)+"s";
+      await sleepMs(520); if(g!==gen)return;
+    }
+  }finally{
+    el.ftFish.style.animationDuration="";   /* 被打断也要把鱼速恢复，别让猫一直举着爪子 */
+    if(catState==="swat")setState("idle");
+    busy=false;
+  }
+  S.mood=clamp(S.mood+16);
+  S.energy=Math.max(0,S.energy-8);
+  addXp(8);
+  puff(el.fishtank,0,-64,["🐟","💦","✨"],4);
+  bubble(pick(["摸到鱼啦！","小鱼别怕嘛～","啪叽！","水花四溅！"]),true);
+  setCheer(1800,true);
+  advanceTime(1);
+  needBubble();updateHUD();save();chain();
+}
+
+/* ================= 看电视 ================= */
+var watchingTV=false;
+var tvProgramTimer=0;
+var tvBubbleTimer=0;
+var currentTVProgram=null;
+/* 电视节目 */
+var TV_PROGRAMS=[
+  {name:"📺 新闻联播",bg:"#1a3a5a",emoji:"📰",bubbles:["世界好大，喵～","这个人类好厉害！","外面发生好多事…"],effects:[["✨","💗"],["🌟","💪"],["💧","😢"]]},
+  {name:"🎬 电影频道",bg:"#2a1a3a",emoji:"🎥",bubbles:["哇，好精彩！","哈哈哈，太好笑了！","呜呜呜，好感人…"],effects:[["✨","🎉"],["😂","💥"],["💧","😢"]]},
+  {name:"🏀 体育频道",bg:"#1a3a1a",emoji:"⚽",bubbles:["好球！喵！","冲冲冲！","赢了赢了！"],effects:[["💪","🔥"],["🏃","💨"],["🎉","✨"]]},
+  {name:"🎵 音乐节目",bg:"#3a1a2a",emoji:"🎶",bubbles:["好好听～","想跟着跳舞！","喵喵喵～♪"],effects:[["🎵","✨"],["💃","🌟"],["🎤","💗"]]},
+  {name:"🍳 美食节目",bg:"#3a2a1a",emoji:"🍕",bubbles:["好饿…想吃！","看起来好好吃！","流口水了…"],effects:[["😋","🍕"],["🤤","✨"],["💦","🍽️"]]},
+  {name:"🦁 动物世界",bg:"#1a2a1a",emoji:"🐾",bubbles:["那是我的朋友！","好可爱的动物！","想一起玩！"],effects:[["🐾","💗"],["🌟","✨"],["💕","🐾"]]}
+];
+async function onWatchTV(){
+  cancelAuto();markActive();
+  if(S.sleeping){toast("Zzz…猫猫睡得正香");return;}
+  if(busy){toast("等一下，猫猫正在忙～");return;}
+  if(!S.ownedItems||!S.ownedItems.tv){toast("还没有电视机哦～去商店看看");return;}
+  if(watchingTV){stopWatchingTV();return;}
+  busy=true;watchingTV=true;
+  const g=gen;
+  /* 找到电视机位置 */
+  var tvItems=document.querySelectorAll('.scene-owned-item');
+  var tvEl=Array.from(tvItems).find(el=>el.classList.contains('tv-item'));
+  if(!tvEl){busy=false;watchingTV=false;return;}
+  var tvRect=tvEl.getBoundingClientRect();
+  var floorRect=el.floor.getBoundingClientRect();
+  var tvX=Math.round((tvRect.left+tvRect.width/2-floorRect.left)/floorRect.width*100);
+  var tvY=Math.round((tvRect.bottom-floorRect.top)/floorRect.height*100);
+  toast(S.name+" 坐下看电视～");
+  /* 猫咪移到电视机前方（Y值更大=更靠近屏幕底部=更靠近相机） */
+  await goTo(tvX-4,tvY+35,"walking");
+  if(g!==gen){busy=false;watchingTV=false;return;}
+  /* 猫咪转身看背面（通过 renderCatClass 处理） */
+  setState("idle");
+  renderCatClass();
+  /* 亮屏 */
+  var screenContent=tvEl.querySelector('.tv-screen-content');
+  if(screenContent)screenContent.classList.add("on");
+  /* 开始播放节目 */
+  playRandomProgram(tvEl);
+  /* 定时切换节目 */
+  tvProgramTimer=setInterval(function(){
+    if(!watchingTV||g!==gen){clearInterval(tvProgramTimer);return;}
+    playRandomProgram(tvEl);
+  },8000);
+  /* 定时显示气泡 */
+  tvBubbleTimer=setInterval(function(){
+    if(!watchingTV||g!==gen){clearInterval(tvBubbleTimer);return;}
+    showTVBubble(tvEl);
+  },5000+Math.random()*3000);
+  /* 监听其他按钮点击打断 */
+  function onInterrupt(e){
+    if(!watchingTV)return;
+    if(e.target.closest('.act')&&e.target.id!=='btnWatchTV'){
+      stopWatchingTV();
+    }
+  }
+  document.addEventListener('click',onInterrupt,true);
+  /* 保存打断监听器用于清理 */
+  window._tvInterrupt=onInterrupt;
+}
+function stopWatchingTV(){
+  if(!watchingTV)return;
+  watchingTV=false;
+  clearInterval(tvProgramTimer);tvProgramTimer=0;
+  clearInterval(tvBubbleTimer);tvBubbleTimer=0;
+  /* 移除打断监听器 */
+  if(window._tvInterrupt){
+    document.removeEventListener('click',window._tvInterrupt,true);
+    window._tvInterrupt=null;
+  }
+  /* 猫咪转回正面（通过 renderCatClass 处理） */
+  renderCatClass();
+  /* 关屏 */
+  var tvItems=document.querySelectorAll('.scene-owned-item');
+  var tvEl=Array.from(tvItems).find(el=>el.classList.contains('tv-item'));
+  if(tvEl){
+    var screenContent=tvEl.querySelector('.tv-screen-content');
+    if(screenContent)screenContent.classList.remove("on");
+  }
+  /* 回到中心 */
+  goTo(...POS.center,"idle");
+  busy=false;
+  toast("不看电视了～");
+  needBubble();updateHUD();save();
+}
+function playRandomProgram(tvEl){
+  currentTVProgram=pick(TV_PROGRAMS);
+  var programEl=tvEl.querySelector('.tv-program');
+  if(programEl){
+    programEl.style.background=currentTVProgram.bg;
+    programEl.innerHTML='<div style="font-size:16px">'+currentTVProgram.emoji+'</div><div style="font-size:6px;margin-top:2px">'+currentTVProgram.name+'</div>';
+  }
+}
+function showTVBubble(tvEl){
+  if(!currentTVProgram)return;
+  var msg=pick(currentTVProgram.bubbles);
+  bubble(msg,true);
+  /* 使用当前节目的特效 */
+  var effects=pick(currentTVProgram.effects);
+  puff(el.catWrap,0,-20,effects,2);
+}
+
+/* ================= 随机事件 ================= */
+/* 通用二选一事件卡片：返回 Promise<boolean>，超时按「否」处理 */
+function askCard(o){
+  return new Promise(function(res){
+    itemPending=true;
+    el.evEmoji.textContent=o.emoji||"❓";
+    el.evName.innerHTML=o.name||"";
+    el.evKeep.textContent=o.ok||"好";
+    el.evDrop.textContent=o.no||"不要";
+    el.evCard.classList.add("on");
+    var done=false;
+    var to=setTimeout(function(){fin(false);},o.timeout||14000);
+    function fin(keep){
+      if(done)return;
+      done=true;
+      clearTimeout(to);
+      el.evCard.classList.remove("on");
+      itemPending=false;
+      res(keep);
+    }
+    el.evKeep.onclick=function(){fin(true);};
+    el.evDrop.onclick=function(){fin(false);};
+  });
+}
+function offerItem(it){
+  var r=RARITY[it.r||"white"];
+  return askCard({emoji:it.e,name:"捡到了："+esc(it.n)+" <small style='color:"+r.color+"'>【"+r.name+"】</small>",ok:"📦 收藏",no:"🗑️ 丢弃",timeout:14000});
+}
+function collectItem(it){
+  S.collection=S.collection||{};
+  var key=it.n;
+  if(!S.collection[key])S.collection[key]={e:it.e,n:0,r:it.r||"white"};
+  S.collection[key].n++;
+  puff(el.catWrap,-16,-62,["📦","✨"],3);
+  var rName=RARITY[it.r||"white"].name;
+  bubble("收进收藏册啦！【"+rName+"】",true);
+  updateCollBtn();save();
+}
+async function evFindItem(){
+  if(!S||el.app.hidden)return;          /* 停在猫窝大门时不演事件 */
+  evLock=true;itemPending=true;
+  const prevBusy=busy;busy=true;      /* 等玩家选择期间，别让别的动作插进来 */
+  try{
+    var base=pick(FINDABLE);
+    var it={e:base.e,n:base.n,r:base.r||"white"};
+    setState("idle");
+    /* 稀有度发光特效 */
+    if(it.r==="gold"){
+      puffScene(["✨","🌟","💫","⭐","💛"],6);
+      snd("level");bubble("哇！是传说级宝物！！",true);
+    }else if(it.r==="purple"){
+      puffScene(["✨","💜","🔮","🟣"],5);
+      snd("pop");bubble("发现稀有物品！",true);
+    }else{
+      bubble("咦？地上有东西！",true);
+    }
+    await sleepMs(900);
+    var keep=await offerItem(it);
+    if(keep){collectItem(it);}
+    else bubble(pick(["哼，不要了。","扔掉啦～"]),true);
+    snd(keep?"pop":"scoop");
+  }finally{
+    busy=prevBusy;
+    lastEvAt=Date.now();evLock=false;itemPending=false;
+    updateHUD();save();
+  }
+}
+async function evMouse(){
+  if(!S||el.app.hidden)return;
+  evLock=true;busy=true;const g=gen;
+  try{
+    toast("有老鼠！"+S.name+" 压低身子猛扑过去！");
+    var m=document.createElement("span");
+    m.className="mouse-run";m.textContent="🐭";
+    m.style.top="58%";m.style.left="6%";
+    el.scene.appendChild(m);
+    setTimeout(()=>m.remove(),1300);
+    setState("playing");snd("play");
+    curX=62;curY=55;
+    el.catWrap.style.left="62%";el.catWrap.style.top="55%";placeShadow();
+    await sleepMs(1000);
+    puff(el.catWrap,0,-40,["🐭","⭐"],3);
+    setCheer(1600,true);
+    var keep=await offerItem({e:"🐭",n:"战利品小老鼠",r:"purple"});
+    if(g===gen&&keep)collectItem({e:"🐭",n:"战利品小老鼠",r:"purple"});
+    if(g===gen){
+      S.mood=clamp(S.mood+10);
+      addXp(6);
+    }
+  }finally{
+    lastEvAt=Date.now();evLock=false;busy=false;
+    if(S){updateHUD();save();}
+  }
+}
+/* 蝴蝶事件：波浪飞行，猫跳起来抓 */
+async function evButterfly(){
+  if(!S||el.app.hidden)return;
+  evLock=true;busy=true;const g=gen;
+  try{
+    toast("有蝴蝶！"+S.name+" 蹦跳着去追～");
+    var b=document.createElement("span");
+    b.className="butterfly-fly";b.textContent="🦋";
+    el.scene.appendChild(b);
+    setTimeout(()=>b.remove(),3000);
+    setState("playing");snd("play");
+    curX=48;curY=42;
+    el.catWrap.style.left="48%";el.catWrap.style.top="42%";placeShadow();
+    await sleepMs(1400);
+    if(g!==gen)return;
+    puff(el.catWrap,0,-40,["🦋","✨","🌸"],3);
+    setCheer(1600,true);
+    var keep=await offerItem({e:"🦋",n:"战利品蝴蝶",r:"green"});
+    if(g===gen&&keep)collectItem({e:"🦋",n:"战利品蝴蝶",r:"green"});
+    if(g===gen){S.mood=clamp(S.mood+8);addXp(5);}
+  }finally{lastEvAt=Date.now();evLock=false;busy=false;if(S){updateHUD();save();}}
+}
+/* 甲虫事件：地面慢爬，猫低姿伏击 */
+async function evBeetle(){
+  if(!S||el.app.hidden)return;
+  evLock=true;busy=true;const g=gen;
+  try{
+    toast("发现甲虫！"+S.name+" 悄悄靠近…");
+    var k=document.createElement("span");
+    k.className="beetle-crawl";k.textContent="🪲";
+    el.scene.appendChild(k);
+    setTimeout(()=>k.remove(),2600);
+    setState("playing");snd("play");
+    curX=50;curY=72;
+    el.catWrap.style.left="50%";el.catWrap.style.top="72%";placeShadow();
+    await sleepMs(1600);
+    if(g!==gen)return;
+    puff(el.catWrap,0,-36,["🪲","⭐","✨"],3);
+    setCheer(1600,true);
+    var keep=await offerItem({e:"🪲",n:"战利品甲虫",r:"white"});
+    if(g===gen&&keep)collectItem({e:"🪲",n:"战利品甲虫",r:"white"});
+    if(g===gen){S.mood=clamp(S.mood+6);addXp(4);}
+  }finally{lastEvAt=Date.now();evLock=false;busy=false;if(S){updateHUD();save();}}
+}
+/* 鸟事件：高空快速飞过，猫仰头看 */
+async function evBird(){
+  if(!S||el.app.hidden)return;
+  evLock=true;busy=true;const g=gen;
+  try{
+    toast("有鸟飞过！"+S.name+" 抬头盯着看～");
+    var d=document.createElement("span");
+    d.className="bird-fly";d.textContent="🐦";
+    el.scene.appendChild(d);
+    setTimeout(()=>d.remove(),1100);
+    setState("idle");
+    bubble("好高…抓不到…",true);
+    await sleepMs(1200);
+    if(g!==gen)return;
+    puff(el.catWrap,-10,-50,["🐦","💨"],2);
+    setCheer(1200,true);
+    if(g===gen){S.mood=clamp(S.mood+4);addXp(2);}
+  }finally{lastEvAt=Date.now();evLock=false;busy=false;if(S){updateHUD();save();}}
+}
+/* ================= 朋友猫来访 ================= */
+var FRIEND_NAMES=["麻薯","可乐","布丁","芝麻","奶盖","汤圆","雪球","豆豆","花卷","柠檬","土豆","棉花","小鱼干","抹茶"];
+var VISITOR_TYPES=[
+  {type:"cat",emoji:"",names:FRIEND_NAMES},
+  {type:"dog",emoji:"🐶",names:["旺财","小白","豆豆","毛毛","大黄","来福","团团","圆圆"]},
+  {type:"fox",emoji:"🦊",names:["小赤","阿狸","火火","灵灵","红红"]},
+  {type:"monkey",emoji:"🐵",names:["小圣","皮皮","淘淘","果果","跳跳"]},
+  {type:"rabbit",emoji:"🐰",names:["小白","雪团","棉棉","月月","萝卜"]},
+  {type:"hamster",emoji:"🐹",names:["小仓","瓜子","花生","圆圆","小胖"]},
+  {type:"raccoon",emoji:"🦝",names:["小蒙","面具","灰灰","圆圆","斑斑"]},
+  {type:"koala",emoji:"🐨",names:["考拉","懒懒","桉桉","萌萌","睡睡"]},
+  {type:"panda",emoji:"🐼",names:["团团","圆圆","黑白","竹竹","萌萌"]}
+];
+/* 资源互斥锁：0 空闲 / 1 主猫占用 / 2 朋友猫占用 —— 两只猫绝不会同时用同一个碗或猫砂盆 */
+var resLock={food:0,water:0,litter:0};
+var fBusy=false, fGen=0, fX=66, fY=50, fState="idle", lastFriendPounce=0;
+function lockTake(k,who){ if(resLock[k])return false; resLock[k]=who; return true; }
+function lockFree(k,who){ if(resLock[k]===who)resLock[k]=0; }
+function friendOn(){ return !!(S&&S.visit&&S.visit.opened); }
+
+function spawnVisit(pre){
+  const all=Object.keys(BREEDS);
+  const other=all.filter(b=>b!==(S&&S.breed));
+  const breed=pick(other.length?other:all);
+  /* 50%概率来其他动物（其余六种等概率），50%概率来猫 */
+  var visitor=Math.random()<0.5?pick(VISITOR_TYPES.slice(1)):VISITOR_TYPES[0];
+  return {
+    breed:breed,
+    animalType:visitor.type,
+    animalEmoji:visitor.emoji,
+    name:pick(visitor.names),
+    opened:false,
+    x:58+Math.random()*18,
+    y:44+Math.random()*12,
+    endMin:S.min+600,
+    endAt:Date.now()+8*60*1000,
+    hunger:35+Math.random()*35,
+    thirst:35+Math.random()*35,
+    nextPotty:S.min+150+Math.random()*150
+  };
+}
+function friendPlace(){
+  el.friendCat.style.left=fX+"%";
+  el.friendCat.style.top=fY+"%";
+  el.friendShadow.style.left=fX+"%";
+  el.friendShadow.style.top=fY+"%";
+}
+function friendSetState(s){
+  const prev=fState;fState=s;
+  el.friendCat.className="friend-cat on "+s+(playMode?" playing":"");
+  /* 吃饭/喝水时碗挡在客人猫身体前面，与主猫行为一致 */
+  if(s==="eating")el.foodBowl.classList.add("front");
+  else if(prev==="eating"&&!resLock.food)el.foodBowl.classList.remove("front");
+  if(s==="drinking")el.waterBowl.classList.add("front");
+  else if(prev==="drinking"&&!resLock.water)el.waterBowl.classList.remove("front");
+}
+function showFriend(){
+  const v=S.visit;
+  if(!v)return;
+  fX=v.x;fY=v.y;
+  if(v.animalType&&v.animalType!=="cat"&&v.animalEmoji){
+    /* 非猫动物：用 SVG 身体 */
+    var svg=animalSVG(v.animalType,"fr"+Date.now());
+    el.friendFlip.innerHTML=svg||'<span style="font-size:80px;display:block;line-height:1">'+v.animalEmoji+'</span>';
+  }else{
+    el.friendFlip.innerHTML=catSVG(v.breed,"fr"+Date.now());
+  }
+  var typeLabel=v.animalType&&v.animalType!=="cat"?v.animalEmoji+" 来访":"🐾 客人";
+  el.friendTag.textContent=typeLabel+" · "+v.name;
+  friendPlace();
+  el.friendCat.style.opacity="1";
+  el.friendShadow.classList.add("on");
+  fGen++;
+  fBusy=false;
+  friendSetState("idle");
+}
+function hideFriend(){
+  fGen++;
+  fBusy=false;
+  el.friendCat.style.opacity="0";
+  el.friendCat.className="friend-cat";
+  el.friendShadow.classList.remove("on");
+  el.friendShadow.classList.remove("fast");
+  el.friendFlip.innerHTML="";
+  /* 清理客人猫设置的碗 front 状态（不影响正在使用该碗的主猫） */
+  if(fState==="eating"&&resLock.food!==1)el.foodBowl.classList.remove("front");
+  if(fState==="drinking"&&resLock.water!==1)el.waterBowl.classList.remove("front");
+  lockFree("food",2);lockFree("water",2);lockFree("litter",2);
+  fState="idle";
+}
+async function friendGoTo(x,y,after){
+  if(fX!==x||fY!==y){
+    friendSetState("walking");
+    if(x<fX-1)el.friendFlip.classList.add("face-l");
+    else if(x>fX+1)el.friendFlip.classList.remove("face-l");
+    fX=x;fY=y;friendPlace();
+    await sleepMs(1200);
+  }
+  el.friendFlip.classList.remove("face-l");
+  friendSetState(after||"idle");
+}
+function friendSpot(){
+  const avoid=[[POS.food[0],POS.food[1]],[POS.water[0],POS.water[1]],[POS.litter[0],POS.litter[1]],POS.bed,POS.fish,[curX,curY]];
+  for(let t=0;t<8;t++){
+    const x=10+Math.random()*80, y=22+Math.random()*70;
+    if(avoid.every(([ax,ay])=>Math.hypot(x-ax,y-ay)>11))return [x,y];
+  }
+  return [20+Math.random()*60,32+Math.random()*52];
+}
+async function friendWander(){
+  if(fBusy)return;
+  fBusy=true;const g=fGen;
+  try{
+    const s1=friendSpot();
+    await friendGoTo(s1[0],s1[1],"idle");
+    if(g!==fGen)return;
+    await sleepMs(1700+Math.random()*2100);
+  }finally{ if(g===fGen)fBusy=false; }
+}
+async function friendEat(){
+  if(fBusy||!S.foodBowl||!lockTake("food",2))return;
+  fBusy=true;const g=fGen;
+  try{
+    await friendGoTo(...POS.food,"eating");
+    if(g!==fGen)return;
+    await sleepMs(2400);
+    if(g!==fGen)return;
+    const v=S.visit;
+    const got=Math.max(0,Math.min(50,100-v.hunger,S.foodBowl/1.6));
+    v.hunger=clamp(v.hunger+got);
+    S.foodBowl=Math.max(0,S.foodBowl-got*1.6);
+    snd("eat");puff(el.friendCat,0,-12,["🍚","✨"],2);
+    updateHUD();
+    await friendGoTo(...friendSpot(),"idle");
+  }finally{ lockFree("food",2); if(g===fGen)fBusy=false; updateHUD();save(); }
+}
+async function friendDrink(){
+  if(fBusy||!S.waterBowl||!lockTake("water",2))return;
+  fBusy=true;const g=fGen;
+  try{
+    await friendGoTo(...POS.water,"drinking");
+    if(g!==fGen)return;
+    await sleepMs(2000);
+    if(g!==fGen)return;
+    const v=S.visit;
+    const got=Math.max(0,Math.min(45,100-v.thirst,S.waterBowl/1.1));
+    v.thirst=clamp(v.thirst+got);
+    S.waterBowl=Math.max(0,S.waterBowl-got*1.1);
+    snd("drink");puff(el.friendCat,0,-12,["💧"],2);
+    updateHUD();
+    await friendGoTo(...friendSpot(),"idle");
+  }finally{ lockFree("water",2); if(g===fGen)fBusy=false; updateHUD();save(); }
+}
+async function friendPotty(){
+  if(fBusy||!lockTake("litter",2))return;
+  fBusy=true;const g=fGen;
+  try{
+    await friendGoTo(...POS.litter,"potty");
+    if(g!==fGen)return;
+    await sleepMs(2400);
+    if(g!==fGen)return;
+    const v=S.visit;
+    v.nextPotty=S.min+240+Math.random()*180;
+    S.clean=clamp(S.clean-8);
+    puff(el.litterBox,0,-20,["💨"],2);snd("scoop");
+    updateHUD();
+    await friendGoTo(...friendSpot(),"idle");
+  }finally{ lockFree("litter",2); if(g===fGen)fBusy=false; updateHUD();save(); }
+}
+/* 朋友猫的自主生活：每 4 秒调度一次，和主猫通过 resLock 错开 */
+function friendLifeTick(){
+  if(!S||el.app.hidden||!friendOn())return;
+  const v=S.visit;
+  if(S.min>=v.endMin||Date.now()>=v.endAt){friendLeave();return;}
+  if(fBusy||playMode||S.sleeping||lostActive||evLock)return;
+  const r=Math.random();
+  if(r<0.34&&v.hunger<72&&S.foodBowl>3&&!resLock.food){friendEat();return;}
+  if(r<0.54&&v.thirst<72&&S.waterBowl>3&&!resLock.water){friendDrink();return;}
+  if(r<0.64&&S.min>=v.nextPotty&&!resLock.litter){friendPotty();return;}
+  if(r<0.86){friendWander();return;}
+}
+async function friendLeave(){
+  if(!S.visit)return;
+  const v=S.visit;
+  const g=++fGen;
+  fBusy=false;
+  el.friendShadow.classList.add("fast");
+  friendSetState("walking");
+  fX=Math.min(97,fX+16);friendPlace();
+  await sleepMs(1150);
+  if(g!==fGen)return;
+  S.visit=null;
+  hideFriend();
+  S.mood=clamp(S.mood+7);
+  addXp(4);
+  toast("👋 "+v.name+" 玩累了，回家啦～ "+S.name+" 很开心");
+  bubble("下次再来玩！",true);
+  updateHUD();save();
+}
+/* 进入游戏时恢复：后台触发的来访，朋友猫此时已经在屋里 */
+function restoreVisit(){
+  hideFriend();
+  if(!S||!S.visit)return;
+  const v=S.visit;
+  if(!v.opened||!BREEDS[v.breed]||S.min>=v.endMin||Date.now()>=v.endAt){
+    S.visit=null;save();return;
+  }
+  showFriend();
+  setTimeout(function(){
+    if(friendOn()){
+      var label=v.animalType&&v.animalType!=="cat"?v.animalEmoji+" "+v.name:v.name+"（"+BREEDS[v.breed].name+"）";
+      toast(label+"正在家里做客～");
+    }
+  },1300);
+}
+
+/* 前台触发：敲门 → 玩家点「开门」→ 朋友猫进屋 */
+async function evFriend(){
+  if(!S||el.app.hidden)return;
+  if(S.visit)return;
+  evLock=true;busy=true;const gk=gen;
+  const v=spawnVisit(false);
+  try{
+    var guestLabel=v.animalType&&v.animalType!=="cat"?v.animalEmoji+" "+v.name:v.name+"（"+BREEDS[v.breed].name+"）";
+    toast("🚪 门外有动静…是 "+guestLabel+" 来串门啦！");
+    bubble("这是我朋友！来家里玩～",true);
+    snd("meow");
+    await sleepMs(800);
+    if(gk!==gen)return;
+    const ok=await askCard({
+      emoji:"🚪",
+      name:"门外是 <b>"+esc(v.name)+"</b>"+(v.animalType&&v.animalType!=="cat"?"（"+v.animalEmoji+"）":"（"+BREEDS[v.breed].name+"）")+"<br>要开门让它进来吗？",
+      ok:"🚪 开门",
+      no:"🙅 不开门",
+      timeout:15000
+    });
+    if(gk!==gen)return;
+    if(ok){
+      v.opened=true;
+      S.visit=v;
+      showFriend();
+      snd("pop");
+      bubble("欢迎来我家！",true);
+      S.mood=clamp(S.mood+12);
+      addXp(6);
+      puff(el.friendCat,0,-40,["💗","✨","🐾"],4);
+      toast(v.name+" 进来啦！两只猫可以一起玩～");
+    }else{
+      S.mood=clamp(S.mood-3);
+      bubble("（门外的小伙伴等了一会儿，走了…）",true);
+      snd("scoop");
+    }
+  }finally{
+    lastEvAt=Date.now();evLock=false;busy=false;
+    if(S){updateHUD();save();}
+  }
+}
+/* 后台触发：玩家停在猫窝大门或切走标签页时也能roll到来访 */
+function scheduleBgVisit(){
+  const v=spawnVisit(true);
+  v.opened=true;
+  v.x=20+Math.random()*58;
+  v.y=28+Math.random()*46;
+  v.endMin=S.min+600;
+  v.endAt=Date.now()+10*60*1000;
+  S.visit=v;
+  lastEvAt=Date.now();
+  save();
+}
+function evSick(){
+  if(!S||el.app.hidden)return;
+  S.sick=true;
+  S.sickSince=S.min;
+  updateMedBtn();updateHUD();
+  toast("😰 "+S.name+" 好像生病了，快喂药！（不喂也会在 8 个游戏小时后自己扛过去）");
+  bubble("不舒服…想睡觉…",true);
+  snd("scoop");
+  lastEvAt=Date.now();
+}
+/* 生病自动康复：没有人喂药也不会把随机事件永久锁死 */
+function checkSickRecover(){
+  if(!S||!S.sick)return;
+  if(S.min-(S.sickSince||0)>=480){
+    S.sick=false;S.sickSince=0;
+    S.mood=clamp(S.mood+8);
+    updateMedBtn();
+    toast("🍀 "+S.name+" 自己扛过去了，精神好多了～");
+    bubble("嗯…好像不难受了～",true);
+  }else if(Math.random()<0.4){
+    toast("💊 "+S.name+" 还在生病，点「喂药」能让它快点好起来～");
+  }
+}
+async function feedMed(){
+  if(!S.sick||busy||playMode)return;
+  busy=true;const g=gen;
+  setState("idle");
+  puff(el.catWrap,0,-40,["💊","✨"],3);
+  snd("eat");
+  bubble("药好苦…qwq",true);
+  await sleepMs(1400);
+  if(g!==gen){busy=false;return;}
+  S.sick=false;S.sickSince=0;
+  S.mood=clamp(S.mood-4);
+  addXp(6);
+  bubble("虽然苦，但舒服多了～",true);
+  updateMedBtn();
+  busy=false;
+  updateHUD();save();
+}
+function updateMedBtn(){el.btnMed.style.display=S.sick?"flex":"none";}
+function updateExerciseBtn(){
+  var hasTreadmill=S.ownedItems&&S.ownedItems.treadmill;
+  el.btnExercise.style.display=hasTreadmill?"flex":"none";
+  el.btnExercise.classList.toggle("disabled",!hasTreadmill);
+  el.btnExercise.disabled=!hasTreadmill;
+}
+function updateWatchTVBtn(){
+  var hasTV=S.ownedItems&&S.ownedItems.tv;
+  el.btnWatchTV.style.display=hasTV?"flex":"none";
+  el.btnWatchTV.classList.toggle("disabled",!hasTV);
+  el.btnWatchTV.disabled=!hasTV;
+}
+function evLost(){
+  if(!S||el.app.hidden)return;
+  if(lostActive)return;
+  /* 排好下一次走丢的时间：1~1.5 个游戏天之后，避免连着来也避免永远等不到 */
+  S.nextLost=S.min+1440+Math.floor(Math.random()*720);
+  evLock=true;lostActive=true;busy=true;
+  el.catWrap.style.visibility="hidden";
+  el.catShadow.style.visibility="hidden";
+  el.lostBanner.classList.add("on");
+  toast("⚠️ 糟糕！"+S.name+" 从门缝溜出去走丢了！");
+  if(friendOn())bubble("咦？它跑哪儿去了…",true);
+  lostTimer=setTimeout(()=>doFind(true),32000);   /* 太久没找会自己回来 */
+}
+async function doFind(auto){
+  if(!lostActive)return;
+  lostActive=false;
+  clearTimeout(lostTimer);
+  el.lostBanner.classList.remove("on");
+  el.btnFind.disabled=true;
+  el.btnFind.textContent="🔍 寻找中…";
+  await sleepMs(1500);
+  el.catWrap.style.visibility="";
+  el.catShadow.style.visibility="";
+  curX=50;curY=46;
+  el.catWrap.style.left="50%";el.catWrap.style.top="46%";
+  placeShadow();setH(0);setState("idle");
+  S.clean=clamp(S.clean-15);
+  S.mood=clamp(S.mood-8);
+  S.hunger=clamp(S.hunger-10);
+  puff(el.catWrap,0,-50,["💦","💨"],4);
+  bubble(auto?"自己灰头土脸地回来了…":"呜…再也不乱跑了",true);
+  el.btnFind.disabled=false;
+  el.btnFind.textContent="🔍 找回猫猫";
+  lastEvAt=Date.now();evLock=false;busy=false;
+  updateHUD();save();
+}
+/* 强制清掉「走丢」残留（切换猫咪 / 重新进入游戏时调用） */
+function clearLostState(){
+  clearTimeout(lostTimer);
+  lostActive=false;
+  el.lostBanner.classList.remove("on");
+  el.btnFind.disabled=false;
+  el.btnFind.textContent="🔍 找回猫猫";
+  el.catWrap.style.visibility="";
+  el.catShadow.style.visibility="";
+}
+/* 收藏册 */
+function collCount(){
+  if(!S.collection)return 0;
+  var t=0;for(var k in S.collection)t+=S.collection[k].n;
+  return t;
+}
+function updateCollBtn(){
+  var n=collCount();
+  el.btnColl.textContent="🗂️ 收藏册"+(n?" · "+n:"");
+}
+function renderColl(){
+  el.collGrid.innerHTML="";
+  el.collCoins.textContent=S.catCoins||0;
+  var keys=Object.keys(S.collection||{});
+  if(!keys.length){el.collGrid.innerHTML='<div class="coll-empty">还没有收藏任何宝贝，等猫猫捡到东西时选「收藏」吧</div>';return;}
+  keys.forEach(function(k){
+    var it=S.collection[k];
+    var r=RARITY[it.r||"white"];
+    var d=document.createElement("div");
+    d.className="coll-item"+(it.r==="gold"?" rarity-gold":it.r==="purple"?" rarity-purple":"");
+    d.style.background=r.bg;d.style.borderColor=r.border;
+    d.innerHTML='<span class="ci-e">'+it.e+'</span><span class="ci-n">'+k+'</span>'
+      +'<span class="ci-r" style="background:'+r.color+';color:#fff">'+r.name+'</span>'
+      +'<span class="ci-c">× '+it.n+'</span>'
+      +'<span class="ci-price">🪙 '+r.price+'/个</span>'
+      +'<button class="ci-sell" data-name="'+esc(k)+'">出售</button>';
+    d.querySelector(".ci-sell").onclick=function(e){
+      e.stopPropagation();
+      sellItem(k);
+    };
+    el.collGrid.appendChild(d);
+  });
+}
+function sellItem(name){
+  var it=S.collection[name];
+  if(!it||it.n<=0)return;
+  var r=RARITY[it.r||"white"];
+  it.n--;
+  S.catCoins=(S.catCoins||0)+r.price;
+  puff(el.catWrap,-16,-62,["🪙","✨"],2);
+  toast("出售 "+it.e+" "+name+" → 🪙"+r.price);
+  if(it.n<=0)delete S.collection[name];
+  renderColl();updateHUD();save();
+}
+/* 商店 */
+var shopCat="house";
+function renderShop(){
+  el.shopGrid.innerHTML="";
+  el.shopCoins.textContent=S.catCoins||0;
+  if(shopCat==="house"){
+    /* 猫窝升级 */
+    var curLv=S.catHouseLevel||0;
+    HOUSE_LEVELS.forEach(function(h){
+      var d=document.createElement("div");
+      var isCur=h.lv===curLv;
+      var canBuy=h.lv===curLv+1;
+      var locked=h.lv>curLv+1;
+      d.className="shop-item"+(isCur?" owned":"")+(locked?" locked":"");
+      d.innerHTML='<span class="si-e" style="font-size:32px">'+h.e+'</span>'
+        +'<span class="si-n" style="font-weight:700">'+h.name+'</span>'
+        +'<span class="si-desc" style="font-size:10px;color:#8CA3B3;display:block;margin:2px 0">'+h.desc+'</span>'
+        +(isCur?'<span class="si-owned">⭐ 当前等级</span>'
+        :canBuy?'<span class="si-price">🪙 '+h.price+' 升级</span>'
+        :locked?'<span style="font-size:10px;color:#bbb">🔒 需要先升到上一级</span>'
+        :'<span class="si-owned">✅ 已解锁</span>');
+      if(canBuy)d.onclick=function(){upgradeHouse(h);};
+      el.shopGrid.appendChild(d);
+    });
+    return;
+  }
+  var items=SHOP_ITEMS.filter(function(it){return it.cat===shopCat;});
+  if(!items.length){el.shopGrid.innerHTML='<div class="coll-empty">暂无商品</div>';return;}
+  items.forEach(function(it){
+    var owned=!!(S.ownedItems&&S.ownedItems[it.id]);
+    var d=document.createElement("div");
+    d.className="shop-item"+(owned?" owned":"");
+    d.innerHTML='<span class="si-e">'+it.e+'</span><span class="si-n">'+it.n+'</span>'
+      +(owned?'<span class="si-owned">✅ '+(it.permanent?'永久拥有':'已拥有')+'</span>':'<span class="si-price">🪙 '+it.price+'</span>');
+    if(!owned)d.onclick=function(){buyItem(it);};
+    el.shopGrid.appendChild(d);
+  });
+}
+function upgradeHouse(h){
+  if((S.catCoins||0)<h.price){toast("猫币不够啦！还差 🪙"+(h.price-(S.catCoins||0)));return;}
+  S.catCoins-=h.price;
+  S.catHouseLevel=h.lv;
+  toast("🎉 猫窝升级为："+h.e+" "+h.name+"！");
+  puff(el.catWrap,-16,-62,[h.e,"✨","🪙","💗"],4);
+  setCheer(2000,true);
+  renderHouse();
+  renderShop();updateHUD();save();
+}
+function buyItem(it){
+  if(busy){toast("猫咪正在忙，等一下～");return;}
+  if((S.catCoins||0)<it.price){toast("猫币不够啦！还差 🪙"+(it.price-(S.catCoins||0)));return;}
+  S.catCoins-=it.price;
+  S.ownedItems=S.ownedItems||{};
+  if(it.cat==="consumable"){
+    S.ownedItems[it.id]=true;
+    renderShop();updateHUD();save();
+    useTreat(it);
+  }else{
+    if(it.permanent){
+      /* 永久玩具：不设过期时间 */
+      S.ownedItems[it.id]=true;
+    }else{
+      S.ownedItems[it.id]={boughtAt:S.min,lifespan:180+Math.floor(Math.random()*180)};
+    }
+    toast("购买成功！"+it.e+" "+it.n);
+    puff(el.catWrap,-16,-62,[it.e,"✨","🪙"],3);
+    renderSceneItems();
+    renderShop();updateHUD();save();
+  }
+}
+/* 消耗品使用（带动作锁） */
+async function useTreat(it){
+  var eff=TREAT_EFFECTS[it.id];
+  if(!eff){toast("使用了 "+it.e);return;}
+  if(busy)return;
+  busy=true;
+  var g=gen;
+  try{
+    el.shopModal.classList.remove("on");
+    toast(it.e+" "+it.n+" 给猫咪～");
+    /* 双手捧着猫条吃的动画 */
+    catState="treat-eat";renderCatClass();
+    snd("eat");
+    bubble(eff.msg,true);
+    /* 显示猫条在猫身前 */
+    var treatEl=document.createElement("span");
+    treatEl.textContent=it.e;
+    treatEl.style.cssText="position:absolute;left:calc(50% + 8px);top:calc(50% - 10px);font-size:20px;z-index:10;pointer-events:none;animation:treatFloat .8s ease-in-out infinite alternate";
+    el.catWrap.appendChild(treatEl);
+    await sleepMs(5000);
+    if(g!==gen)return;
+    treatEl.remove();
+    S.mood=clamp(S.mood+eff.mood);
+    puff(el.catWrap,0,-40,[it.e,"💗","✨"],4);
+    setCheer(2000,true);
+    delete S.ownedItems[it.id];
+    addXp(3);
+  }finally{if(g===gen){busy=false;catState="idle";renderCatClass();}updateHUD();save();}
+}
+/* 猫窝等级视觉渲染 */
+function renderHouse(){
+  var lv=S.catHouseLevel||1;
+  var bed=document.getElementById("catbedScene");
+  if(!bed)return;
+  bed.innerHTML="";
+
+  if(lv===1){
+    /* Lv1 纸皮箱 */
+    bed.innerHTML='<div class="h-lv1"><div class="bx-body"><div class="bx-tape"></div><div class="bx-hole"></div></div><div class="bx-flap l"></div><div class="bx-flap r"></div></div>';
+    bed.style.width="130px";bed.style.height="85px";   /* 基准尺寸，其余等级按此宽度等比缩放 */
+    return;
+  }
+  if(lv===2){
+    /* Lv2 棉麻帐篷 */
+    bed.innerHTML='<div class="h-lv2"><svg class="tt-svg" viewBox="0 0 200 229" preserveAspectRatio="none"><defs><linearGradient id="ttCloth" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#D2BF9C"/><stop offset=".16" stop-color="#EFE5D1"/><stop offset=".40" stop-color="#FCF7EC"/><stop offset=".63" stop-color="#F2E8D4"/><stop offset=".86" stop-color="#DDCBA9"/><stop offset="1" stop-color="#C4AE88"/></linearGradient><linearGradient id="ttShade" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8C7450" stop-opacity="0"/><stop offset=".72" stop-color="#8C7450" stop-opacity=".05"/><stop offset="1" stop-color="#7A6440" stop-opacity=".26"/></linearGradient><linearGradient id="ttPole" x1="0" y1="1" x2="0" y2="0"><stop offset="0" stop-color="#AC8B58"/><stop offset=".5" stop-color="#DCC295"/><stop offset="1" stop-color="#EFDDB6"/></linearGradient><linearGradient id="ttHole" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#332F28"/><stop offset=".45" stop-color="#5B554A"/><stop offset="1" stop-color="#24211C"/></linearGradient><radialGradient id="ttCush" cx=".5" cy=".34" r=".78"><stop offset="0" stop-color="#FDF8EC"/><stop offset="1" stop-color="#E3D3B2"/></radialGradient></defs><path d="M26 213 Q62 132 113 13" fill="none" stroke="url(#ttPole)" stroke-width="8" stroke-linecap="round"/><path d="M174 213 Q138 132 87 13" fill="none" stroke="url(#ttPole)" stroke-width="8" stroke-linecap="round"/><ellipse cx="100" cy="25" rx="14" ry="10" fill="#B4915E"/><ellipse cx="100" cy="23" rx="14" ry="9" fill="#DCC295"/><path d="M26 205 C38 158 58 92 92 43 Q100 32 108 43 C142 92 162 158 174 205 Q150 216 100 216 Q50 216 26 205 Z" fill="url(#ttCloth)"/><path d="M26 205 C38 158 58 92 92 43 Q100 32 108 43 C142 92 162 158 174 205 Q150 216 100 216 Q50 216 26 205 Z" fill="url(#ttShade)"/><g fill="none" stroke="#9C8660" stroke-opacity=".20" stroke-width="1.8" stroke-linecap="round"><path d="M95 50 C74 100 57 158 49 202"/><path d="M98 50 C89 102 81 158 79 209"/><path d="M102 50 C111 102 119 158 121 209"/><path d="M105 50 C126 100 143 158 151 202"/></g><path d="M31 195 Q100 214 169 195" fill="none" stroke="#B79C71" stroke-opacity=".55" stroke-width="1.4" stroke-dasharray="5 5"/><path d="M66 204 L66 133 C66 104 82 92 100 92 C118 92 134 104 134 133 L134 204 C120 210 80 210 66 204 Z" fill="url(#ttHole)"/><ellipse cx="100" cy="191" rx="31" ry="13" fill="url(#ttCush)"/><path d="M68 130 C56 145 44 170 42 199 Q55 208 68 204 Z" fill="url(#ttCloth)" stroke="#B79C71" stroke-opacity=".35" stroke-width="1.2"/><path d="M132 130 C144 145 156 170 158 199 Q145 208 132 204 Z" fill="url(#ttCloth)" stroke="#B79C71" stroke-opacity=".35" stroke-width="1.2"/><circle cx="53" cy="153" r="5.2" fill="#FBF2DF" stroke="#BE9F73" stroke-width="1.5"/><circle cx="147" cy="153" r="5.2" fill="#FBF2DF" stroke="#BE9F73" stroke-width="1.5"/></svg></div>';
+    bed.style.width="130px";bed.style.height="147px";  /* 155×175 × .8387 */
+    return;
+  }
+  if(lv===3){
+    /* Lv3 绒面沙发 */
+    bed.innerHTML='<div class="h-lv3"><div class="sf-back"><div class="sf-tuft"><i></i><i></i><i></i></div></div><div class="sf-seat"></div><div class="sf-cush"></div><div class="sf-pillow"></div><div class="sf-arm l"></div><div class="sf-arm r"></div><div class="sf-leg l"></div><div class="sf-leg r"></div></div>';
+    bed.style.width="130px";bed.style.height="84px";   /* 170×110 × .7647 */
+    return;
+  }
+  if(lv===4){
+    /* Lv4 双层木屋小楼 */
+    bed.innerHTML='<div class="cb-side-shadow"></div><div class="h-lv4"><div class="cb-smoke"></div><div class="cb-smoke s2"></div><div class="cb-chim"></div><div class="cb-up"><div class="cb-win"></div></div><div class="cb-rail"></div><div class="cb-bal"></div><div class="cb-down"><div class="cb-door"></div><div class="cb-lamp"></div></div><div class="cb-base"></div><div class="cb-roof"><svg viewBox="0 0 292 100" preserveAspectRatio="none"><defs><linearGradient id="cbRoofG" x1="0" y1="0" x2="1" y2="0"><stop offset="0" stop-color="#B08D62"/><stop offset=".20" stop-color="#E2CCAB"/><stop offset=".48" stop-color="#F0DDC0"/><stop offset=".76" stop-color="#DCC29B"/><stop offset="1" stop-color="#AC8A5E"/></linearGradient></defs><path d="M31.73 77.21 L132.25 14.57 A26 26 0 0 1 159.75 14.57 L260.27 77.21 A8 8 0 0 1 256.04 92 L35.96 92 A8 8 0 0 1 31.73 77.21 Z" fill="url(#cbRoofG)" stroke="#A9825A" stroke-width="1.6"/><g fill="none" stroke="#8A6640" stroke-opacity=".22" stroke-width="1.6" stroke-linecap="round"><path d="M34 76 L258 76"/><path d="M53 64 L239 64"/><path d="M72 52 L220 52"/><path d="M91 40 L201 40"/><path d="M111 28 L181 28"/></g><path d="M36 82 L130 22" fill="none" stroke="#FFF6E2" stroke-opacity=".4" stroke-width="2"/></svg></div></div>';
+    bed.style.width="130px";bed.style.height="147px";  /* 195×220 × .6667 */
+    return;
+  }
+  if(lv>=5){
+    /* Lv5 皇家城堡 */
+    bed.innerHTML='<div class="h-lv5"><div class="rc-step"></div><div class="rc-base"><div class="rc-emblem">♛</div></div><div class="rc-pillar l"></div><div class="rc-pillar r"></div><div class="rc-matt"></div><div class="rc-pillow"></div><div class="rc-canopy"></div><div class="rc-scallop"></div><div class="rc-drape l"></div><div class="rc-drape r"></div><div class="rc-tas l"></div><div class="rc-tas r"></div><div class="rc-crown"></div></div>';
+    bed.style.width="130px";bed.style.height="148px";  /* 220×250 × .5909 */
+    return;
+  }
+}
+/* 渲染已购买的玩具到场景 */
+function renderSceneItems(){
+  document.querySelectorAll(".scene-owned-item").forEach(function(el){el.remove();});
+  if(!S.ownedItems)return;
+  SHOP_ITEMS.forEach(function(it){
+    var owned=S.ownedItems[it.id];
+    if(!owned||it.cat==="consumable"||!it.pos)return;
+    /* 玩具：检查是否过期（永久玩具跳过） */
+    if(!it.permanent&&typeof owned==="object"&&owned.boughtAt!=null){
+      var elapsed=S.min-owned.boughtAt;
+      if(elapsed>=owned.lifespan){
+        /* 玩具消耗 */
+        delete S.ownedItems[it.id];
+        var msgs=[it.n+"玩丢了…",it.n+"玩坏了…",it.n+"被猫猫藏起来了…",it.n+"不知道去哪了…"];
+        toast(it.e+" "+pick(msgs));
+        puff(el.catWrap,0,-30,[it.e,"💨"],2);
+        save();
+        return;
+      }
+    }
+    var d=document.createElement("div");
+    d.className="billboard scene-owned-item";
+    d.style.cssText="--ox:"+it.pos[0]+";--oy:"+it.pos[1]+";z-index:2;pointer-events:none";
+    if(it.cssClass==="treadmill"){
+      /* 跑步机：完整HTML结构 */
+      d.classList.add("treadmill");
+      d.innerHTML='<div class="tm-belt"></div><div class="tm-plate"></div><div class="tm-pillar"></div><div class="tm-console"><div class="tm-screen"></div><div class="tm-btns"><div class="tm-btn on"></div><div class="tm-btn"></div><div class="tm-btn"></div></div></div><div class="tm-rail"></div><div class="tm-rail-post lp"></div><div class="tm-rail-post rp"></div>';
+    }else if(it.id==="tv"){
+      /* 现代电视机：完整HTML结构 */
+      d.classList.add("tv-item");
+      d.innerHTML='<div class="tv-body"><div class="tv-screen"><div class="tv-screen-content"><div class="tv-program"></div><div class="tv-scanlines"></div></div></div><div class="tv-led"></div></div><div class="tv-stand"></div><div class="tv-cabinet"></div><div class="tv-leg l"></div><div class="tv-leg r"></div><div class="tv-shadow"></div>';
+    }else{
+      d.style.fontSize="28px";
+      d.style.filter="drop-shadow(0 3px 3px rgba(100,135,160,.3))";
+      d.textContent=it.e;
+    }
+    el.floor.appendChild(d);
+  });
+}
+
+/* ================= 天气系统 ================= */
+var curWeather="clear",weatherEndAt=0,lightningTimer=0;
+var WEATHER_TYPES=["clear","overcast","rain","thunder","snow","meteor","fullmoon"];
+function pickWeather(){
+  const h=gameHour();
+  const night=h>=19||h<6;
+  const day=!night;
+  /* 按时段过滤可选天气 */
+  let pool=["clear","clear","clear","overcast"]; /* 晴天概率较高 */
+  if(day)pool.push("rain");
+  if(night)pool.push("thunder","snow","meteor","fullmoon");
+  else pool.push("snow");
+  return pick(pool);
+}
+function setWeather(w){
+  curWeather=w;
+  /* 清理所有天气效果 */
+  el.weatherLayer.innerHTML="";
+  el.weatherLayer.classList.remove("on");
+  el.fogLayer.classList.remove("on");
+  el.lightningFlash.style.opacity="0";
+  clearInterval(lightningTimer);lightningTimer=0;
+  el.glowOverlay.classList.remove("on");
+  el.fullmoon.classList.remove("on");
+  el.cloud.forEach(function(c){c.style.opacity="";});
+  if(w==="clear")return;
+  /* 大晴天时云更少 */
+  if(w!=="overcast"&&w!=="rain"&&w!=="thunder"){
+    el.cloud.forEach(function(c){c.style.opacity="0.4";});
+  }
+  /* 阴天 */
+  if(w==="overcast"){
+    el.cloud.forEach(function(c){c.style.opacity="0.95";});
+    return;
+  }
+  /* 下雨 */
+  if(w==="rain"||w==="thunder"){
+    el.weatherLayer.classList.add("on");
+    for(var i=0;i<50;i++){
+      var d=document.createElement("div");d.className="rain-drop";
+      d.style.left=Math.random()*100+"%";
+      d.style.height=(14+Math.random()*18)+"px";
+      d.style.animationDuration=(.4+Math.random()*.25)+"s";
+      d.style.animationDelay=(Math.random()*1)+"s";
+      el.weatherLayer.appendChild(d);
+    }
+    el.cloud.forEach(function(c){c.style.opacity="0.95";});
+  }
+  /* 打雷（叠加在雨上） */
+  if(w==="thunder"){
+    lightningTimer=setInterval(function(){
+      if(Math.random()<0.45){
+        el.lightningFlash.style.opacity="1";
+        setTimeout(function(){el.lightningFlash.style.opacity="0";},100);
+        setTimeout(function(){
+          el.lightningFlash.style.opacity="0.7";
+          setTimeout(function(){el.lightningFlash.style.opacity="0";},80);
+        },180);
+      }
+    },1800);
+  }
+  /* 下雪 */
+  if(w==="snow"){
+    el.weatherLayer.classList.add("on");
+    for(var i=0;i<40;i++){
+      var s=document.createElement("div");s.className="snow-flake";
+      s.textContent=pick(["❄","❅","❆","•"]);
+      s.style.left=Math.random()*100+"%";
+      s.style.fontSize=(10+Math.random()*10)+"px";
+      s.style.animationDuration=(2.5+Math.random()*3)+"s";
+      s.style.animationDelay=(Math.random()*3)+"s";
+      el.weatherLayer.appendChild(s);
+    }
+  }
+  /* 流星雨 */
+  if(w==="meteor"){
+    el.weatherLayer.classList.add("on");
+    for(var i=0;i<12;i++){
+      var m=document.createElement("div");m.className="meteor";
+      m.style.left=(5+Math.random()*80)+"%";
+      m.style.top=(5+Math.random()*40)+"%";
+      m.style.animationDuration=(1+Math.random()*1.5)+"s";
+      m.style.animationDelay=(Math.random()*4)+"s";
+      el.weatherLayer.appendChild(m);
+    }
+  }
+  /* 满月 */
+  if(w==="fullmoon"){
+    el.fullmoon.classList.add("on");
+    el.moon.style.opacity="0"; /* 隐藏普通月亮 */
+  }
+}
+function weatherTick(){
+  if(!S||el.app.hidden)return;
+  var now=Date.now();
+  if(now<weatherEndAt)return;
+  /* 天气持续 40~90 秒（游戏内时间），换算为真实时间约 16~36 秒 */
+  weatherEndAt=now+(16000+Math.random()*20000);
+  var w=pickWeather();
+  if(w!==curWeather)setWeather(w);
+}
+
+/* ================= 事件调度 ================= */
+var EV_COOLDOWN=20000;                    /* 两次随机事件的最小间隔（真实时间） */
+function evTick(){
+  if(!S)return;
+  /* 停在猫窝大门 / 标签页切到后台：走后台事件，玩家回来时朋友猫已经在屋里 */
+  if(el.app.hidden||document.hidden){bgTick();return;}
+  inGameEvTick();
+}
+/* 后台事件：玩家不在游戏画面时也会 roll，结果写进存档 */
+function bgTick(){
+  if(S.visit)return;
+  if(S.sick)return;
+  if(Math.floor(S.min/1440)+1<2)return;   /* 幼猫期（第 1 天）不安排朋友来访 */
+  if(Date.now()-lastEvAt<45000)return;
+  if(Math.random()<0.55)return;
+  scheduleBgVisit();
+}
+function inGameEvTick(){
+  if(S.sleeping||busy||playMode||itemPending||evLock||lostActive)return;
+  if(Date.now()-lastEvAt<EV_COOLDOWN)return;
+  /* 走丢仅在进入游戏时判定（见 enterGame），前台游玩期间不触发 */
+  if(S.sick)return;
+  /* 先决定要不要发生事件，再打断自主活动，避免空 roll 把猫的散步掐断 */
+  var fire=null;
+  if(!S.visit){
+    var roll=Math.random();
+    /* 幼猫期（第 1 天）不触发朋友来访：命中该概率段时重摇到其它事件区间 */
+    if(Math.floor(S.min/1440)+1<2&&roll>=0.57&&roll<0.82)roll=Math.random()*0.55;
+    if(roll<0.25)fire="find";
+    else if(roll<0.35)fire="mouse";
+    else if(roll<0.45)fire="butterfly";
+    else if(roll<0.52)fire="beetle";
+    else if(roll<0.57)fire="bird";
+    else if(roll<0.82)fire="friend";                       /* 朋友来访 25% */
+    else if(roll<0.92)fire="sick";
+  }
+  if(!fire)return;
+  if(autoBusy)cancelAuto();
+  if(catState==="cheer"||catState==="swat")return;
+  if(fire==="find")evFindItem();
+  else if(fire==="mouse")evMouse();
+  else if(fire==="butterfly")evButterfly();
+  else if(fire==="beetle")evBeetle();
+  else if(fire==="bird")evBird();
+  else if(fire==="friend")evFriend();
+  else if(fire==="sick")evSick();
+  else if(fire==="lost")evLost();
+}
+
+/* ================= 渲染 ================= */
+function renderBowls(){
+  el.foodFill.style.height=(S.foodBowl*0.72)+"%";
+  el.waterFill.style.height=(S.waterBowl*0.72)+"%";
+  el.litterBox.classList.toggle("dirty",S.clean<70);
+  el.litterBox.classList.toggle("stinky",S.clean<45);
+}
+function renderEnv(){
+  const h=gameHour();
+  const night=h>=19||h<6;
+  const w=curWeather;
+  /* 基础天空颜色（受天气影响） */
+  var skyBg;
+  if(night)skyBg="linear-gradient(180deg,#2A3555 0%,#1E2745 100%)";
+  else skyBg="linear-gradient(180deg,#BFDFF2 0%,#D5ECF8 50%,#E8F4FB 100%)";
+  /* 天气叠加调色 */
+  if(w==="overcast"||w==="rain"||w==="thunder"){
+    skyBg=night
+      ?"linear-gradient(180deg,#1A2540 0%,#12192E 100%)"
+      :"linear-gradient(180deg,#8A9EB5 0%,#A0B5C8 50%,#B5C8D8 100%)";
+  }
+  if(w==="snow"){
+    skyBg=night
+      ?"linear-gradient(180deg,#283550 0%,#303D58 100%)"
+      :"linear-gradient(180deg,#B8C8D8 0%,#CAD8E5 50%,#DCE8F0 100%)";
+  }
+  if(w==="meteor"||w==="fullmoon"){
+    skyBg="linear-gradient(180deg,#0A0E1A 0%,#141830 50%,#1A2040 100%)";
+  }
+  el.sky.style.background=skyBg;
+  el.sun.style.opacity=(night||w==="overcast"||w==="rain"||w==="thunder")?0:1;
+  el.sun.style.left="22%";
+  el.sun.style.top="18%";
+  el.sun.style.transform="scale(1)";
+  el.moon.style.opacity=(night&&w!=="fullmoon")?1:0;
+  el.stars.style.setProperty("opacity",night?"1":"0","important");
+  /* 动态生成星星点（仅首次） */
+  if(night&&!el.stars.children.length){
+    for(var si=0;si<20;si++){
+      var dot=document.createElement("div");
+      dot.className="star-dot";
+      var sz=2+Math.random()*4;
+      dot.style.cssText="width:"+sz+"px;height:"+sz+"px;left:"+(5+Math.random()*90)+"%;top:"+(5+Math.random()*50)+"%;animation-duration:"+(1.5+Math.random()*3)+"s;animation-delay:"+(Math.random()*3)+"s";
+      el.stars.appendChild(dot);
+    }
+  }
+  /* 夜晚室内暗角 */
+  el.nightTint.style.opacity=night?0.28:0;
+}
+function updateHUD(){
+  const day=Math.floor(S.min/1440)+1;
+  const hh=String(gameHour()).padStart(2,"0");
+  const mm=String(Math.floor(S.min%60)).padStart(2,"0");
+  const h=gameHour();
+  const icon=(h>=19||h<6)?"🌙":(h>=16?"🌆":h>=11?"☀️":"🌅");
+  el.clockDay.textContent=`第 ${day} 天`;
+  el.clockTime.textContent=`${hh}:${mm} ${icon}`;
+  el.hudName.textContent=S.name;
+  el.hudBreed.textContent=BREEDS[S.breed].name;
+  const stage=day<2?"幼猫":day<30?"成年猫":"熟龄猫";
+  el.hudAge.textContent=`第 ${day} 天 · ${stage}`;
+  el.hudLv.textContent=`Lv.${S.level} ${title()}`;
+  el.xpFill.style.width=Math.min(100,S.xp/(70+S.level*45)*100)+"%";
+  const set=(b,v,n)=>{el[b].style.width=v+"%";el[b].classList.toggle("low",v<28);el[n].textContent=Math.round(v);};
+  set("bHunger",S.hunger,"vHunger");
+  set("bThirst",S.thirst,"vThirst");
+  set("bClean",S.clean,"vClean");
+  set("bMood",S.mood,"vMood");
+  set("bEnergy",S.energy,"vEnergy");
+  const worst=Math.min(S.hunger,S.thirst,S.clean);
+  expr=S.sleeping?"neutral":(S.sick||S.mood<35||worst<22)?"sad":(S.mood>=60&&worst>=35)?"happy":"neutral";
+  updateMedBtn();
+  updateCollBtn();
+  updateExerciseBtn();
+  updateWatchTVBtn();
+  el.hudCoins.textContent=S.catCoins||0;
+  el.catWrap.style.width=(day<2?136:168)+"px";
+  renderCatClass();
+  renderEnv();
+  renderBowls();
+  updateBowlFront();
+}
+
+/* ================= 存档（多槽位） ================= */
+let slotIdx=1;   /* 当前猫窝编号 1~3 */
+/* 新猫初始状态：也是读档时缺失字段的补齐模板 */
+function newCat(name,breed){
+  return {v:3,name:name,breed:breed,min:8*60,
+    hunger:70,thirst:70,clean:85,mood:75,energy:80,
+    foodBowl:0,waterBowl:0,
+    xp:0,level:1,nextPotty:8*60+180,muted:false,sleeping:false,autoWander:true,
+    collection:{},catCoins:0,ownedItems:{},catHouseLevel:1,
+    sick:false,sickSince:0,visit:null,nextLost:14*60};
+}
+/* 来访状态修补：坏档/旧档一律丢弃，且每次读档把离场时间往后延 8 分钟 */
+function sanitizeVisit(v,s){
+  if(!v||typeof v!=="object")return null;
+  var isOtherAnimal=v.animalType&&v.animalType!=="cat";
+  if(!isOtherAnimal&&!BREEDS[v.breed])return null;
+  const base=s?s.min:0;
+  return {
+    breed:v.breed||Object.keys(BREEDS)[0],
+    animalType:v.animalType||"cat",
+    animalEmoji:v.animalEmoji||"",
+    name:typeof v.name==="string"&&v.name.trim()?v.name.trim():"客人",
+    opened:!!v.opened,
+    x:num(v.x,62,4,96),y:num(v.y,50,7,97),
+    endMin:num(v.endMin,base+600,0,1e9),
+    endAt:Date.now()+8*60*1000,
+    hunger:num(v.hunger,60,0,100),
+    thirst:num(v.thirst,60,0,100),
+    nextPotty:num(v.nextPotty,base+180,0,1e9)
+  };
+}
+/* 读档时修补：未知品种回退、缺失字段补齐、数值夹紧，避免旧档/损坏档把游戏卡死 */
+function sanitize(s){
+  if(!s||typeof s!=="object")return null;
+  if(!BREEDS[s.breed])s.breed="orange";
+  const d=newCat("猫咪",s.breed);
+  const o=Object.assign({},d,s);
+  o.name=typeof o.name==="string"&&o.name.trim()?o.name.trim().slice(0,8):d.name;
+  o.min=num(o.min,d.min,0,1e9);
+  o.hunger=num(o.hunger,d.hunger,0,100);
+  o.thirst=num(o.thirst,d.thirst,0,100);
+  o.clean=num(o.clean,d.clean,0,100);
+  o.mood=num(o.mood,d.mood,0,100);
+  o.energy=num(o.energy,d.energy,0,100);
+  o.foodBowl=num(o.foodBowl,0,0,100);
+  o.waterBowl=num(o.waterBowl,0,0,100);
+  o.xp=num(o.xp,0,0,1e9);
+  o.level=Math.max(1,Math.round(num(o.level,1,1,9999)));
+  o.nextPotty=num(o.nextPotty,o.min+210,0,1e9);
+  o.muted=!!o.muted;o.sick=!!o.sick;
+  o.sleeping=false;                       /* 读档一律视为醒着，避免睡死 */
+  o.autoWander=o.autoWander!==false;
+  o.sickSince=num(o.sickSince,o.sick?o.min:0,0,1e9);
+  /* 老存档没有 nextLost 字段：不要让它一读档就走丢，先给 3 个游戏小时的缓冲 */
+  o.nextLost=num(o.nextLost,Math.max(d.nextLost,o.min+180),0,1e9);
+  if(!o.collection||typeof o.collection!=="object")o.collection={};
+  /* 清洗收藏数据：确保结构正确 */
+  for(var ck in o.collection){
+    var ci=o.collection[ck];
+    if(!ci||typeof ci!=="object"){
+      delete o.collection[ck];continue;
+    }
+    if(typeof ci.e!=="string")ci.e="?";
+    ci.n=num(ci.n,0,0,9999);
+    if(!ci.r||!RARITY[ci.r])ci.r="white";
+    if(ci.n<=0)delete o.collection[ck];
+  }
+  o.catCoins=num(o.catCoins,0,0,1e9);
+  if(!o.ownedItems||typeof o.ownedItems!=="object")o.ownedItems={};
+  /* 旧存档玩具可能是布尔值true，转为带时间的对象（永久玩具保持true） */
+  for(var oid in o.ownedItems){
+    if(o.ownedItems[oid]===true){
+      var shopItem=SHOP_ITEMS.find(function(si){return si.id===oid;});
+      if(shopItem&&shopItem.cat!=="consumable"&&!shopItem.permanent){
+        o.ownedItems[oid]={boughtAt:o.min,lifespan:240};
+      }
+    }
+  }
+  o.catHouseLevel=num(o.catHouseLevel,1,1,HOUSE_LEVELS.length);
+  o.visit=sanitizeVisit(o.visit,o);
+  return o;
+}
+function slotKey(i){return SLOT_BASE+"."+i;}
+function save(){
+  if(noSave)return;
+  try{localStorage.setItem(slotKey(slotIdx),JSON.stringify(S));}catch(e){}
+}
+function loadSlot(i){
+  try{
+    const raw=localStorage.getItem(slotKey(i));
+    if(!raw)return null;
+    const s=JSON.parse(raw);
+    if(!s||typeof s!=="object"||!s.breed)return null;
+    return sanitize(s);
+  }catch(e){return null;}
+}
+function clearSlot(i){try{localStorage.removeItem(slotKey(i));}catch(e){}}
+function migrateOld(){   /* 旧版单存档迁入 1 号猫窝 */
+  try{
+    const old=localStorage.getItem(OLD_KEY);
+    if(old&&!localStorage.getItem(slotKey(1))){
+      localStorage.setItem(slotKey(1),old);
+    }
+    localStorage.removeItem(OLD_KEY);
+  }catch(e){}
+}
+
+/* ================= 猫窝大门（选择存档） ================= */
+var delSlotIdx=0;
+function openDelModal(i,name){
+  delSlotIdx=i;
+  el.delSub.innerHTML=`<b>${esc(name)}</b> 的所有进度都会消失，此操作不可恢复。<br>请输入删除密码确认：`;
+  el.delInput.value="";
+  el.delErr.textContent="";
+  el.delErr.classList.remove("shake");
+  el.delModal.classList.add("on");
+  setTimeout(()=>el.delInput.focus(),60);
+}
+function closeDelModal(){el.delModal.classList.remove("on");}
+function confirmDelete(){
+  if(el.delInput.value==="0420"){
+    clearSlot(delSlotIdx);
+    closeDelModal();
+    renderGate();
+    toast("猫窝已腾空");
+  }else{
+    el.delErr.textContent="密码不对，再想想～";
+    el.delErr.classList.remove("shake");
+    void el.delErr.offsetWidth;
+    el.delErr.classList.add("shake");
+  }
+}
+function showGate(){
+  noSave=false;
+  el.app.hidden=true;
+  el.startOverlay.style.display="none";
+  el.gateOverlay.style.display="flex";
+  renderGate();
+}
+function renderGate(){
+  el.gateSlots.innerHTML="";
+  for(let i=1;i<=SLOTS;i++){
+    const s=loadSlot(i);
+    const card=document.createElement("button");
+    card.className="gate-slot"+(s?" occupied":" empty");
+    if(s){
+      const day=Math.floor((s.min||0)/1440)+1;
+      const mood=s.mood>=60?"😊":s.mood>=35?"😐":"☹️";
+      card.innerHTML=
+        `<span class="mini">${catSVG(s.breed,"g"+i)}</span>`+
+        `<div class="g-name">${esc(s.name)}</div>`+
+        `<div class="g-info">第 ${day} 天 · Lv.${s.level||1}<br>${mood} ${BREEDS[s.breed].name}</div>`+
+        `<span class="gate-del" title="放弃这只猫">✕</span>`;
+      card.onclick=()=>{
+        slotIdx=i;gen++;
+        S=s;S.sleeping=false;
+        lastPlayerAct=Date.now();
+        try{localStorage.setItem("moranCatActive",String(i));}catch(e){}
+        enterGame(false);
+      };
+      card.querySelector(".gate-del").onclick=e=>{
+        e.stopPropagation();
+        openDelModal(i,s.name);
+      };
+    }else{
+      card.innerHTML=`<div class="g-empty">🧺</div><div class="g-empty-t">空猫窝<br>点此领养新猫</div>`;
+      card.onclick=()=>{
+        slotIdx=i;
+        el.pendingSlot.textContent=i;
+        el.gateOverlay.style.display="none";
+        el.startOverlay.style.display="flex";
+        el.nameInput.value=pick(["年糕","团子","布丁","麻薯","汤圆","雪球"]);
+        buildStartUI();
+      };
+    }
+    el.gateSlots.appendChild(card);
+  }
+}
+
+/* ================= 开局 / 读档 ================= */
+function buildCat(){
+  el.catFlip.innerHTML=
+    `<div class="cat-view cat-front">${catSVG(S.breed,S.breed+"f")}</div>`+
+    `<div class="cat-view cat-back">${catSVGBack(S.breed,S.breed+"b")}</div>`;
+}
+function enterGame(fresh){
+  /* 进入任何一只猫之前，先把上一只猫残留的临时状态全部清干净，
+     否则「走丢 / 事件中 / 忙碌中」会跨存档把新猫卡死 */
+  gen++;
+  endPlay(false);
+  clearTimeout(bubbleTimer);
+  cancelAnimationFrame(bubbleFollowRAF);bubbleFollowRAF=0;
+  el.bubble.classList.remove("on");
+  el.evCard.classList.remove("on");
+  clearLostState();
+  busy=false;autoBusy=false;evLock=false;itemPending=false;
+  catState="idle";expr="neutral";
+  if(S){S.sleeping=false;}
+  el.gateOverlay.style.display="none";
+  el.startOverlay.style.display="none";
+  el.app.hidden=false;
+  syncSceneHeight();
+  buildCat();
+  curX=POS.center[0];curY=POS.center[1];setH(0);
+  el.catWrap.style.left=curX+"%";
+  el.catWrap.style.top=curY+"%";
+  placeShadow();
+  setState("idle");
+  updateHUD();syncSwitches();
+  setWeather(pickWeather());weatherEndAt=Date.now()+12000;
+  renderHouse();renderSceneItems();
+  restoreVisit();                 /* 后台触发的来访：进屋时朋友猫已经在房间里 */
+  /* 走丢判定：只在进入游戏时概率触发，前台游玩不触发 */
+  if(S.min>=S.nextLost&&Math.random()<0.35){
+    evLost();
+  }
+  if(fresh){
+    toast(`欢迎回家，${S.name}！`);snd("meow");
+    setTimeout(()=>bubble("这就是我的新家吗？好开心！",true),900);
+  }
+}
+
+/* ================= 开始界面 ================= */
+let selBreed="orange";
+function buildStartUI(){
+  el.breedGrid.innerHTML="";
+  Object.keys(BREEDS).forEach(b=>{
+    const btn=document.createElement("button");
+    btn.className="breed-item"+(b===selBreed?" sel":"");
+    btn.innerHTML=`<span class="mini">${catSVG(b,"m"+b)}</span><span>${BREEDS[b].name}</span>`;
+    btn.onclick=()=>{selBreed=b;buildStartUI();};
+    el.breedGrid.appendChild(btn);
+  });
+}
+function syncSwitches(){
+  el.muteSw2.checked=!!S.muted;
+  el.freeRoamSw.checked=S.autoWander!==false;
+  el.muteBtn.textContent=S.muted?"🔇":"🔊";
+}
+
+/* ================= 场景点击（摸猫命中测试） ================= */
+function bindSceneTap(){
+  el.scene.addEventListener("click",e=>{
+    const r=el.scene.getBoundingClientRect();
+    const px=e.clientX-r.left,py=e.clientY-r.top;
+    const cr=el.catWrap.getBoundingClientRect();
+    if(px>=cr.left-r.left-12&&px<=cr.right-r.left+12&&py>=cr.top-r.top-12&&py<=cr.bottom-r.top+8){
+      onPet();
+    }
+  });
+}
+
+/* ================= 事件绑定 ================= */
+function bind(){
+  el.gateBackLink.onclick=()=>{el.startOverlay.style.display="none";showGate();};
+  el.startBtn.onclick=()=>{
+    const name=(el.nameInput.value||"").trim()||pick(["年糕","团子","布丁","麻薯","汤圆","雪球"]);
+    S=newCat(name,selBreed);
+    gen++;
+    lastPlayerAct=Date.now();
+    try{localStorage.setItem("moranCatActive",String(slotIdx));}catch(e){}
+    save();
+    enterGame(true);
+  };
+  el.btnFeed.onclick=onFeed;
+  el.btnWater.onclick=onWater;
+  el.btnPlay.onclick=onPlay;
+  el.btnScoop.onclick=onScoop;
+  el.btnClimb.onclick=onClimb;
+  el.btnNap.onclick=onNap;
+  el.btnPatrol.onclick=onPatrol;
+  el.btnExercise.onclick=onExercise;
+  el.btnFishTouch.onclick=onFishTouch;
+  el.btnWatchTV.onclick=onWatchTV;
+  el.muteSw2.onchange=e=>{S.muted=e.target.checked;syncSwitches();save();};
+  el.freeRoamSw.onchange=e=>{S.autoWander=e.target.checked;syncSwitches();save();
+    toast(S.autoWander?"自由活动已开启：猫猫空闲时会自己溜达、吃饭上厕所":"自由活动已关闭");};
+  el.muteBtn.onclick=()=>{S.muted=!S.muted;syncSwitches();save();};
+  el.setBtn.onclick=()=>{
+    el.nameInput2.value=S.name;
+    syncSwitches();
+    el.setModal.classList.add("on");
+  };
+  el.closeSetBtn.onclick=()=>{
+    S.name=((el.nameInput2.value||"").trim()||S.name).slice(0,8);
+    el.setModal.classList.remove("on");updateHUD();save();
+  };
+  el.setModal.onclick=e=>{if(e.target===el.setModal)el.closeSetBtn.onclick();};
+  el.btnSwitchCat.onclick=()=>{save();el.setModal.classList.remove("on");showGate();};
+  el.btnColl.onclick=()=>{renderColl();el.collModal.classList.add("on");};
+  el.collClose.onclick=()=>{el.collModal.classList.remove("on");};
+  el.collModal.onclick=e=>{if(e.target===el.collModal)el.collModal.classList.remove("on");};
+  el.btnShop.onclick=()=>{renderShop();el.shopModal.classList.add("on");};
+  el.shopClose.onclick=()=>{el.shopModal.classList.remove("on");};
+  el.shopModal.onclick=e=>{if(e.target===el.shopModal)el.shopModal.classList.remove("on");};
+  document.querySelectorAll(".shop-tab").forEach(function(tab){
+    tab.onclick=function(){
+      document.querySelectorAll(".shop-tab").forEach(function(t){t.classList.remove("active");});
+      tab.classList.add("active");
+      shopCat=tab.getAttribute("data-cat");
+      renderShop();
+    };
+  });
+  el.btnMed.onclick=feedMed;
+  el.btnFind.onclick=()=>doFind(false);
+  el.delCancel.onclick=closeDelModal;
+  el.delConfirm.onclick=confirmDelete;
+  el.delInput.oninput=()=>{el.delErr.textContent="";};
+  el.delInput.onkeydown=e=>{if(e.key==="Enter")confirmDelete();};
+  el.delModal.onclick=e=>{if(e.target===el.delModal)closeDelModal();};
+  window.addEventListener("beforeunload",()=>{
+    if(!noSave)save();
+  });
+  let hintIdx=0;
+  setInterval(()=>{hintIdx=(hintIdx+1)%HINTS.length;el.hintText.textContent=HINTS[hintIdx];},12000);
+  bindPlayCursor();
+  bindSceneTap();
+  /* 自主活动：玩家 9 秒没动作后，猫猫开始自理生活 */
+  document.addEventListener("click",markActive,true);
+  document.addEventListener("keydown",markActive,true);
+  setInterval(autoLifeTick,4000);
+  setInterval(friendLifeTick,4000);  /* 朋友猫自主生活 */
+  setInterval(evTick,9000);   /* 随机事件调度 */
+  setInterval(weatherTick,8000);  /* 天气变化调度 */
+}
+
+/* ================= 调试钩子 ================= */
+window.__catGame={
+  get state(){return S;},
+  set(kv){if(S){Object.assign(S,kv);updateHUD();renderBowls();}},
+  ev:{find:evFindItem,mouse:evMouse,butterfly:evButterfly,beetle:evBeetle,bird:evBird,friend:evFriend,sick:evSick,lost:evLost},
+  bgVisit(){if(S){scheduleBgVisit();restoreVisit();}},
+  friendLeave:friendLeave,
+  weather:curWeather,setWeather:setWeather,weatherTypes:WEATHER_TYPES,
+  dbg(){return {lostActive:lostActive,evLock:evLock,itemPending:itemPending,busy:busy,playMode:playMode,
+    autoBusy:autoBusy,slotIdx:slotIdx,fBusy:fBusy,friendOn:friendOn(),visit:S&&S.visit,resLock:resLock,
+    sick:S&&S.sick,nextLost:S&&S.nextLost,min:S&&S.min};},
+  hardReset(){noSave=true;for(var i=1;i<=3;i++)clearSlot(i);try{localStorage.removeItem("moranCatActive");}catch(e){}location.reload();}
+};
+
+/* ================= 启动 ================= */
+/* 场景高度 = 右侧互动卡片底部（即「小提示」下方的卡片边框）。
+   高度是固定的：测量时临时隐藏「喂药」按钮，所以生病态不会让场景变高。
+   3D 房间高度固定 --roomH，场景只是把背景往下铺，所以不会破坏透视。 */
+function syncSceneHeight(){
+  const sc=el.scene,coll=el.actsCard;
+  if(!sc||!coll)return;
+  if(window.matchMedia("(max-width:920px)").matches){ sc.style.height=""; return; }
+  if(sc.getBoundingClientRect().width===0)return;         /* 还停在大门界面 */
+  const med=el.btnMed,medDisp=med?med.style.display:null;
+  if(med&&medDisp!=="none")med.style.display="none";       /* 量基准高度，排除喂药按钮 */
+  const h=coll.getBoundingClientRect().bottom-sc.getBoundingClientRect().top;
+  if(med&&medDisp!=="none")med.style.display=medDisp;      /* 同帧内还原，不会闪烁 */
+  sc.style.height=Math.max(h,710).toFixed(2)+"px";
+}
+
+function init(){
+  ["startOverlay","gateOverlay","gateSlots","gateBackLink","pendingSlot","delModal","delSub","delInput","delErr","delCancel","delConfirm","collModal","collGrid","collClose","collCoins","btnColl","btnMed","sickBadge","evCard","evEmoji","evName","evKeep","evDrop","lostBanner","btnFind","app","breedGrid","startBtn","nameInput","scene","room",
+   "shopModal","shopGrid","shopCoins","shopClose","btnShop","hudCoins",
+   "sky","sun","moon","fullmoon","stars","nightTint","glowOverlay","weatherLayer","fogLayer","lightningFlash","rainbowArc","particleLayer","catWrap","catShadow","catFlip","bubble","teaser","floor","friendCat",
+   "friendShadow","friendFlip","friendTag",
+   "foodBowl","waterBowl","foodFill","waterFill","litterBox","toasts","hudName","hudBreed","hudAge","hudLv",
+   "fishtank","ftFish","btnFishTouch","btnPatrol","actsCard",
+   "xpFill","bHunger","bThirst","bClean","bMood","bEnergy","vHunger","vThirst","vClean","vMood","vEnergy",
+   "clockDay","clockTime","muteBtn","setBtn","btnFeed","btnWater","btnPlay","btnScoop","btnClimb","btnNap","btnExercise","btnWatchTV",
+   "muteSw2","freeRoamSw","hintText",
+   "setModal","nameInput2","btnSwitchCat","closeSetBtn"
+  ].forEach(id=>el[id]=$("#"+id));
+  el.cloud=[...document.querySelectorAll(".cloud")];  /* 云朵集合 */
+  bind();
+  buildStartUI();
+  let sceneHRAF=0;   /* rAF 防抖：合并同帧多次触发，也避免测量时切 display 引发 RO 循环告警 */
+  const scheduleSceneHeight=()=>{
+    if(sceneHRAF)return;
+    sceneHRAF=requestAnimationFrame(()=>{ sceneHRAF=0; syncSceneHeight(); });
+  };
+  window.addEventListener("resize",scheduleSceneHeight);
+  if(window.ResizeObserver&&el.actsCard) new ResizeObserver(scheduleSceneHeight).observe(el.actsCard);
+  migrateOld();   /* 旧版单存档自动迁入 1 号猫窝 */
+  showGate();     /* 每次打开先经过猫窝大门，选择要看的猫 */
+}
+init();
+</script>
+</body>
+</html>

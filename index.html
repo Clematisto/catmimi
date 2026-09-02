@@ -15,7 +15,7 @@
   --line:#DFE9F0;
   --slab:#CBDEEA; --slab-deep:#BCD3E2;
 }
-*{margin:0;padding:0;box-sizing:border-box}
+*{margin:0;padding:0;box-sizing:border-box;-webkit-tap-highlight-color:transparent}
 html,body{height:100%}
 /* 强制浅色：html 底色兜底（含下拉回弹露出的画布区域），防止暗黑模式手机把根画布涂黑 */
 html{background:#E7F0F6}
@@ -92,6 +92,7 @@ main{display:grid;grid-template-columns:1fr 360px;gap:20px;align-items:stretch}
   perspective:1250px;perspective-origin:50% 184.6px;   /* =26%×710，拉伸后保持灭点不变 */
   background:linear-gradient(180deg,#CFE3F0,#DCEBF4);
   box-shadow:0 14px 0 -4px var(--slab),0 34px 50px rgba(115,150,175,.32),inset 0 1px 0 rgba(255,255,255,.8);
+  -webkit-tap-highlight-color:transparent;touch-action:manipulation;
   grid-column:1;grid-row:1;align-self:start;   /* 高度由 syncSceneHeight() 对齐互动按钮卡片底部 */
 }
 aside{grid-column:2;grid-row:1}
@@ -797,7 +798,7 @@ aside{grid-column:2;grid-row:1}
 .scene.playing{cursor:none}
 
 /* ---------- 猫咪（地面公告牌，可沿 Y 轴升高） ---------- */
-.cat-wrap{width:150px;z-index:9;cursor:pointer;
+.cat-wrap{width:150px;z-index:9;cursor:pointer;outline:none;touch-action:manipulation;
   transform:translate(-50%,-96%) translateZ(var(--h,0px))
             rotateX(calc(-1*var(--camx,57deg))) rotateY(calc(-1*var(--camy,0deg)));
   transform-origin:50% 100%;

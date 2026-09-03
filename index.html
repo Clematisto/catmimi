@@ -78,6 +78,10 @@ header{
 .btn3d.climb:active{box-shadow:0 1px 0 #B9CFA8}
 .btn3d.nap{background:linear-gradient(180deg,#ECE9F6,#DCD7EC);box-shadow:0 6px 0 #BCB4D6,0 12px 20px rgba(150,140,180,.25),inset 0 2px 0 #fff}
 .btn3d.nap:active{box-shadow:0 1px 0 #BCB4D6}
+.btn3d.fish{background:linear-gradient(180deg,#E6F4FA,#C6E4F2);box-shadow:0 6px 0 #9FC9DE,0 12px 20px rgba(115,160,190,.26),inset 0 2px 0 #fff}
+.btn3d.fish:active{box-shadow:0 1px 0 #9FC9DE}
+.btn3d.hunt{background:linear-gradient(180deg,#F3EBDD,#E4D5BB);box-shadow:0 6px 0 #C7AE88,0 12px 20px rgba(165,140,100,.26),inset 0 2px 0 #fff}
+.btn3d.hunt:active{box-shadow:0 1px 0 #C7AE88}
 .btn3d.danger{background:linear-gradient(180deg,#F8E5E3,#F0D2CF);box-shadow:0 6px 0 #DCB3AF,0 12px 18px rgba(190,130,125,.25),inset 0 2px 0 #fff;color:#9A5F58}
 .btn3d.danger:active{box-shadow:0 1px 0 #DCB3AF}
 
@@ -835,6 +839,9 @@ aside{grid-column:2;grid-row:1}
 .cat-wrap.sleeping .eyes-open,.cat-wrap.sleeping .mouth-g,.cat-wrap.sleeping .blush{display:none}
 .cat-wrap.sleeping .eyes-closed{display:block}
 .cat-wrap.sleeping .body-g{animation:sbreathe 2.6s ease-in-out infinite}
+/* 睡觉时把猫往前推一点，避免被高个猫窝（如 Lv2 帐篷）在 3D 排序里挡住 */
+.cat-wrap.sleeping{transform:translate(-50%,-96%) translateZ(8px)
+  rotateX(calc(-1*var(--camx,57deg))) rotateY(calc(-1*var(--camy,0deg)))}
 @keyframes sbreathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.94)}}
 .cat-wrap.eating .head-g,.cat-wrap.drinking .head-g{transform-box:view-box;transform-origin:110px 60px;
   animation:nom .55s ease-in-out infinite}
@@ -943,6 +950,30 @@ aside{grid-column:2;grid-row:1}
   75%{top:73%}
   100%{left:4%;top:72%;transform:scaleX(-1)}
 }
+/* 蜜蜂：飞行，比蝴蝶抖动更快更碎 */
+.bee-fly{position:absolute;z-index:6;font-size:19px;animation:beeFly 2s linear forwards;pointer-events:none}
+@keyframes beeFly{
+  0%{left:8%;top:36%;transform:rotate(-10deg)}
+  10%{top:27%}
+  20%{top:40%}
+  30%{top:24%}
+  40%{top:38%}
+  50%{top:26%}
+  60%{top:39%}
+  70%{top:25%}
+  80%{top:36%}
+  90%{top:29%}
+  100%{left:88%;top:32%;transform:rotate(8deg)}
+}
+/* 通用地面爬行（蚂蚁/瓢虫/蜗牛/壁虎共用路径，速度由各自 animation-duration 控制） */
+.critter-crawl{position:absolute;z-index:6;font-size:20px;animation:critterCrawl 2.4s linear forwards;pointer-events:none}
+@keyframes critterCrawl{
+  0%{left:88%;top:72%;transform:scaleX(-1)}
+  25%{top:74%}
+  50%{top:71%}
+  75%{top:73%}
+  100%{left:4%;top:72%;transform:scaleX(-1)}
+}
 /* 鸟：高空快速飞过 */
 .bird-fly{position:absolute;z-index:6;font-size:18px;animation:birdFly 0.9s linear forwards;pointer-events:none}
 @keyframes birdFly{
@@ -985,25 +1016,32 @@ aside{grid-column:2;grid-row:1}
 .coll-item .ci-n{font-size:11px;color:#5B7183;margin-top:3px;display:block}
 .coll-item .ci-c{font-size:10px;color:#8CA3B3}
 .coll-item .ci-r{font-size:9px;font-weight:700;padding:1px 5px;border-radius:6px;display:inline-block;margin-top:3px}
-.coll-item .ci-price{font-size:10px;color:#8CA3B3;margin-top:2px}
-.coll-item .ci-sell{position:absolute;top:4px;right:4px;font-size:10px;background:rgba(200,80,70,.85);color:#fff;
-  border:none;border-radius:6px;padding:2px 5px;cursor:pointer;opacity:0;transition:opacity .2s}
-.coll-item:hover .ci-sell{opacity:1}
 .coll-item.rarity-gold{animation:goldGlow 2s ease-in-out infinite alternate}
 .coll-item.rarity-purple{animation:purpleGlow 2.5s ease-in-out infinite alternate}
 @keyframes goldGlow{from{box-shadow:0 0 8px rgba(212,168,67,.3)}to{box-shadow:0 0 18px rgba(212,168,67,.6)}}
 @keyframes purpleGlow{from{box-shadow:0 0 6px rgba(155,107,198,.2)}to{box-shadow:0 0 14px rgba(155,107,198,.45)}}
 .coll-empty{grid-column:1/-1;color:var(--sub);font-size:13px;padding:16px 0}
+/* 收藏进度（收藏册右上角） */
+.coll-progress{display:flex;align-items:center;gap:6px;font-size:14px;font-weight:700;color:#D4A843;
+  background:linear-gradient(135deg,#FFF8E7,#FFEFC0);padding:3px 12px;border-radius:999px;
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 4px rgba(180,150,80,.2)}
+.coll-progress-label{font-size:11px;color:#B08D3E;font-weight:600}
 /* 猫币 HUD */
 .coin-display{display:flex;align-items:center;gap:4px;font-size:13px;font-weight:700;color:#D4A843;
   background:linear-gradient(135deg,#FFF8E7,#FFEFC0);padding:3px 10px;border-radius:999px;
   box-shadow:inset 0 1px 0 rgba(255,255,255,.8),0 2px 4px rgba(180,150,80,.2)}
 .coin-display .coin-icon{font-size:15px}
 /* 商店弹窗 */
+.shop-wrap{position:relative}
+.shop-toast{position:absolute;left:50%;top:-54px;transform:translateX(-50%) translateY(8px);
+  background:rgba(255,255,255,.98);border:1.5px solid #F2C9C2;color:#C2544A;font-size:13px;font-weight:600;
+  padding:10px 18px;border-radius:999px;box-shadow:0 5px 0 rgba(214,164,152,.5),0 12px 20px rgba(120,80,70,.28);
+  white-space:nowrap;opacity:0;transition:.28s;pointer-events:none;z-index:6}
+.shop-toast.on{opacity:1;transform:translateX(-50%) translateY(0)}
 .shop-tabs{display:flex;gap:6px;margin-bottom:10px}
-.shop-tab{flex:1;padding:6px;border:2px solid #DCE8F0;border-radius:10px;background:#F2F8FC;
+.shop-tab,.bag-tab{flex:1;padding:6px;border:2px solid #DCE8F0;border-radius:10px;background:#F2F8FC;
   text-align:center;font-size:12px;cursor:pointer;transition:all .15s}
-.shop-tab.active{border-color:#A3C6DC;background:#D5ECF8;font-weight:700}
+.shop-tab.active,.bag-tab.active{border-color:#A3C6DC;background:#D5ECF8;font-weight:700}
 .shop-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;max-height:300px;overflow:auto}
 .shop-item{background:#F2F8FC;border-radius:12px;padding:10px 4px;text-align:center;cursor:pointer;
   border:2px solid transparent;transition:all .15s}
@@ -1019,6 +1057,157 @@ aside{grid-column:2;grid-row:1}
 .med-act{grid-column:1/-1;flex-direction:row;gap:8px}
 .btn3d.pill{background:linear-gradient(180deg,#FBE3E0,#F3C9C4);box-shadow:0 6px 0 #DCACA6,0 12px 18px rgba(190,120,110,.25),inset 0 2px 0 #fff}
 .btn3d.pill:active{box-shadow:0 1px 0 #DCACA6}
+
+/* ================= 钓鱼 / 捕猎小游戏 ================= */
+#catchModal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;
+  background:rgba(90,115,135,.4);backdrop-filter:blur(3px)}
+#catchModal.on{display:flex}
+.catch-card{width:min(380px,92vw);background:linear-gradient(180deg,#FFFFFF,#F2F8FB);border-radius:26px;
+  padding:20px 22px 22px;text-align:center;
+  box-shadow:0 16px 0 -6px var(--slab),0 34px 56px rgba(90,125,150,.4),inset 0 1px 0 #fff;
+  animation:cardIn .4s cubic-bezier(.2,.8,.3,1)}
+.catch-card h2{font-size:19px;margin-bottom:4px}
+.catch-sub{font-size:12.5px;color:var(--sub);min-height:19px;margin-bottom:10px;font-weight:600}
+.catch-stage{position:relative;height:152px;border-radius:18px;overflow:hidden;margin-bottom:12px;
+  box-shadow:inset 0 3px 9px rgba(110,145,170,.28),inset 0 -1px 0 rgba(255,255,255,.6)}
+/* 场景：钓鱼 = 上半纯白 + 下半水面，捕猎 = 纯白只留草叶 */
+.catch-water{position:absolute;inset:0;overflow:hidden;background:#fff}
+/* ---- 河流（钓鱼，只保留水） ---- */
+.cw-river{position:absolute;left:0;right:0;bottom:0;height:50%;overflow:hidden;
+  background:linear-gradient(180deg,#8FC0DC 0%,#6BA3C6 42%,#41769F 100%)}
+.catch-card.hunt .cw-river{display:none}
+.catch-card.hunt .water-line{display:none}
+/* 水面波浪分界线：一排水柱，负延迟高度动画形成正弦波浪（参考阿里云 Chokcoco 波浪技巧）。
+   水柱底边对齐水面（河流顶边 = 50%），向白色天空方向起伏，蓝波峰取代原来笔直的分界线 */
+.water-line{position:absolute;left:0;right:0;top:calc(50% - 16px);height:16px;
+  display:flex;align-items:flex-end;pointer-events:none}
+.g-item{flex-grow:1;height:4px;background:#8FC0DC;border-radius:2px 2px 0 0;
+  animation:waveRise 2.6s ease-in-out infinite alternate}
+@keyframes waveRise{from{height:4px}to{height:16px}}
+.rv-wave{position:absolute;left:0;width:800px;height:22px}
+.rv-wave path{stroke-linecap:round}
+.rv-wave.w1{top:16%;animation:rvWave 8s linear infinite}
+.rv-wave.w2{top:52%;opacity:.55;animation:rvWave 12s linear infinite reverse}
+@keyframes rvWave{from{transform:translateX(0)}to{transform:translateX(-50%)}}
+/* ---- 草丛（捕猎，只保留草） ---- */
+.cw-grass{position:absolute;left:0;right:0;bottom:0;height:52%;display:none;overflow:hidden}
+.catch-card.hunt .cw-grass{display:block}
+.gr-blade{position:absolute;bottom:0;transform-origin:50% 100%;
+  border-radius:100% 0 100% 0;
+  background:linear-gradient(180deg,#B7DA95,#4C7C3D);
+  animation:grSway ease-in-out infinite alternate}
+.gr-blade.back{background:linear-gradient(180deg,#7FA863,#3F6A34);opacity:.85;filter:blur(.4px)}
+@keyframes grSway{from{transform:rotate(calc(var(--lean,0deg) - 5deg)) skewX(-2deg)}
+                  to{transform:rotate(calc(var(--lean,0deg) + 5deg)) skewX(2deg)}}
+/* ---- 结算展示时去掉场景分层，回到纯色背景 ---- */
+.catch-card.settled .cw-river,.catch-card.settled .cw-grass,
+.catch-card.settled .catch-target,.catch-card.settled .cw-bob,
+.catch-card.settled .water-line{display:none}
+/* ---- 浮标 / 涟漪 / 目标 ---- */
+.cw-bob{position:absolute;left:50%;top:50%;transform:translateX(-50%);font-size:26px;z-index:3;
+  filter:drop-shadow(0 3px 3px rgba(80,110,135,.35))}
+.catch-card.bite .cw-bob{animation:bobDip .26s ease-in-out infinite alternate}
+@keyframes bobDip{from{transform:translateX(-50%) translateY(0)}
+                  to{transform:translateX(-50%) translateY(13px)}}
+.cw-ripple{position:absolute;left:50%;top:50%;width:12px;height:12px;margin-left:-6px;border-radius:50%;
+  border:2px solid rgba(255,255,255,.9);opacity:0;transform:scale(.2);z-index:2}
+.cw-ripple.on{animation:rippleOut 1s ease-out infinite}
+@keyframes rippleOut{from{opacity:.9;transform:scale(.3)}to{opacity:0;transform:scale(3.4)}}
+.catch-target{position:absolute;left:50%;top:76%;font-size:40px;opacity:0;z-index:2;
+  transform:translate(-50%,-50%) scale(.2)}
+.catch-target.on{animation:targetPop .5s ease-out forwards}
+@keyframes targetPop{0%{opacity:0;transform:translate(-50%,-50%) scale(.2)}
+  62%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}
+  100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
+.catch-result{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
+  gap:4px;background:rgba(255,255,255,.88);backdrop-filter:blur(2px)}
+.catch-result:empty{display:none}
+.cr-e{font-size:46px;line-height:1;animation:starGlow 1s ease-in-out infinite alternate}
+.cr-n{font-size:14.5px;font-weight:800;color:#4E6373}
+.cr-g{font-size:10px;color:#fff;padding:2px 9px;border-radius:999px;font-weight:800}
+.cr-p{font-size:12.5px;color:#D4A843;font-weight:800}
+.cr-fail{font-size:13px;color:var(--sub);font-weight:600}
+.catch-bar{position:relative;height:22px;border-radius:999px;background:#E4EEF5;overflow:hidden;margin-bottom:10px;
+  box-shadow:inset 0 2px 4px rgba(120,150,175,.3);opacity:0;transform:scaleY(.55);
+  transition:opacity .18s,transform .18s}
+.catch-bar.on{opacity:1;transform:scaleY(1)}
+.cb-zone{position:absolute;top:0;bottom:0;background:linear-gradient(180deg,#BCE3C4,#8ECBA3);
+  box-shadow:inset 0 1px 0 rgba(255,255,255,.65)}
+.cb-mark{position:absolute;top:-2px;bottom:-2px;width:10%;margin-left:-5%;border-radius:8px;
+  background:linear-gradient(180deg,#FFFFFF,#DBE8F2);border:2px solid #7FA3BC;
+  box-shadow:0 2px 6px rgba(110,145,170,.4)}
+.catch-tip{font-size:11.5px;color:var(--sub);min-height:17px;margin-bottom:10px}
+.catch-btn{width:100%}
+/* ---- 打地鼠（捕猎小游戏） ---- */
+.whack-area{position:absolute;inset:0;display:none;z-index:4;padding:4px 12px 8px;
+  grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:2px;
+  user-select:none;-webkit-user-select:none;touch-action:manipulation;cursor:pointer}
+.catch-card.hunt.whack .whack-area{display:grid}
+.whack-hole{position:relative;display:flex;align-items:flex-end;justify-content:center}
+/* 土堆外圈：浅色系，轻微受光/投影 */
+.whack-hole::before{content:"";position:absolute;bottom:2px;left:50%;transform:translateX(-50%);
+  width:74%;height:15px;border-radius:50%;z-index:1;
+  background:radial-gradient(ellipse at 50% 30%,#EADCC4 0%,#D3BE9E 50%,#BCA686 100%);
+  box-shadow:0 2px 3px rgba(120,140,110,.22),
+             inset 0 1px 1px rgba(255,250,238,.6),
+             inset 0 -2px 3px rgba(150,124,94,.28)}
+/* 洞口：浅棕灰的小开口，只轻掩地鼠最底部，不挡身体 */
+.whack-hole::after{content:"";position:absolute;bottom:4px;left:50%;transform:translateX(-50%);
+  width:50%;height:6px;border-radius:50%;z-index:3;
+  background:radial-gradient(ellipse at 50% 40%,#9A8B74 0%,#AE9E86 60%,#C2B29A 100%);
+  box-shadow:inset 0 2px 2px rgba(100,90,70,.35)}
+.whack-clip{position:absolute;bottom:8px;width:60%;height:40px;overflow:hidden;z-index:2;
+  display:flex;justify-content:center;align-items:flex-end}
+.whack-mole{font-size:27px;line-height:1;transform:translateY(118%);
+  transition:transform .13s cubic-bezier(.2,.9,.3,1.25);will-change:transform}
+.whack-mole.up{transform:translateY(-4%)}
+.whack-mole.bonk{animation:moleBonk .22s ease-in forwards}
+@keyframes moleBonk{0%{transform:translateY(10%) scale(1.18) rotate(-8deg)}
+                    100%{transform:translateY(118%) scale(.85) rotate(6deg)}}
+.whack-pop{position:absolute;left:50%;top:16%;transform:translateX(-50%);font-size:19px;z-index:5;
+  pointer-events:none;animation:whackPop .45s ease-out forwards}
+@keyframes whackPop{0%{opacity:1;transform:translateX(-50%) translateY(0) scale(.6)}
+                    100%{opacity:0;transform:translateX(-50%) translateY(-20px) scale(1.3)}}
+.whack-count{position:absolute;inset:0;display:none;align-items:center;justify-content:center;z-index:6;
+  font-size:62px;font-weight:900;color:#4C7C3D;text-shadow:0 4px 0 rgba(255,255,255,.75);pointer-events:none}
+.whack-count.on{display:flex;animation:countPop .8s ease-out}
+@keyframes countPop{0%{opacity:0;transform:scale(.3)}30%{opacity:1;transform:scale(1.18)}100%{opacity:.95;transform:scale(1)}}
+/* 连击 HUD：打地鼠模式下取代判定条 */
+.whack-hud{display:none;align-items:center;gap:8px;margin-bottom:10px}
+.catch-card.hunt.whack .whack-hud{display:flex}
+.catch-card.hunt.whack .catch-bar{display:none}
+.whack-timer{flex:1;height:10px;border-radius:999px;background:#E4EEF5;overflow:hidden;
+  box-shadow:inset 0 2px 4px rgba(120,150,175,.3)}
+.whack-timer-fill{height:100%;width:100%;border-radius:999px;
+  background:linear-gradient(90deg,#8ECBA3,#5A9E6F)}
+.whack-combo{font-size:12.5px;font-weight:800;color:#8CA3B3;min-width:88px;text-align:right}
+.whack-combo.hot{color:#D4A843;animation:comboPulse .5s ease-in-out infinite alternate}
+@keyframes comboPulse{from{transform:scale(1)}to{transform:scale(1.1)}}
+/* 结算里的连击加成行 */
+.cr-combo{font-size:11.5px;color:#C2544A;font-weight:800}
+
+/* ================= 战利品袋 ================= */
+#bagModal{position:fixed;inset:0;z-index:126;display:none;align-items:center;justify-content:center;
+  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+#bagModal.on{display:flex}
+.bag-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;max-height:280px;overflow:auto}
+.bag-item{border-radius:12px;padding:10px 4px 8px;text-align:center;border:2px solid transparent;
+  transition:transform .15s,box-shadow .15s}
+.bag-item:hover{transform:translateY(-2px);box-shadow:0 4px 12px rgba(0,0,0,.1)}
+.bag-item.rarity-gold{animation:goldGlow 2s ease-in-out infinite alternate}
+.bag-item.rarity-purple{animation:purpleGlow 2.5s ease-in-out infinite alternate}
+.bi-e{font-size:24px;display:block}
+.bi-n{font-size:11px;color:#5B7183;margin-top:3px;display:block}
+.bi-g{font-size:9px;font-weight:800;padding:1px 5px;border-radius:6px;display:inline-block;margin-top:3px}
+.bi-p{font-size:11px;color:#D4A843;font-weight:800;margin-top:2px;display:block}
+.bi-acts{display:flex;gap:4px;margin-top:5px}
+.bi-acts button{flex:1;border:none;border-radius:7px;padding:3px 0;font-size:10px;cursor:pointer;
+  font-family:inherit;color:#fff;transition:filter .15s}
+.bi-acts button:hover{filter:brightness(1.08)}
+.bi-sell{background:rgba(198,88,78,.9)}
+.bi-feed{background:rgba(90,158,111,.9)}
+.bag-stat{font-size:11.5px;color:var(--sub);margin-top:2px;line-height:1.7}
+.bag-stat b{color:#5B7183}
 
 /* ---------- 右侧面板 ---------- */
 aside{display:flex;flex-direction:column;gap:18px}
@@ -1052,7 +1241,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 .act{display:flex;flex-direction:column;align-items:center;gap:3px;padding:12px 6px;border-radius:16px;font-size:14px}
 .act em{font-style:normal;font-size:22px;filter:drop-shadow(0 2px 1px rgba(110,140,165,.3))}
 .act-sub{font-size:11px;color:#8CA3B3;font-weight:400}
-.hint{margin-top:12px;font-size:12px;color:var(--sub);line-height:1.7}
+.hint{margin-top:12px;font-size:12px;color:var(--sub);line-height:1.7;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 
 /* 开关 */
 .switch{display:flex;align-items:center;gap:7px;cursor:pointer;font-size:13px;color:#5F7488}
@@ -1077,7 +1266,7 @@ aside{display:flex;flex-direction:column;gap:18px}
   animation:cardIn .7s cubic-bezier(.2,.8,.3,1)}
 .gate-card h1{font-size:26px;letter-spacing:2px;text-shadow:0 2px 0 rgba(190,212,228,.5)}
 .gate-card .sub{color:var(--sub);font-size:13px;margin:8px 0 14px}
-.gate-slots{display:grid;grid-template-columns:repeat(3,1fr);gap:12px}
+.gate-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
 .gate-slot{position:relative;border:none;background:linear-gradient(180deg,#F8FBFD,#EDF4F9);border-radius:18px;
   padding:14px 10px 12px;min-height:190px;cursor:pointer;transition:.18s;font-family:inherit;color:var(--ink);
   box-shadow:0 5px 0 var(--slab),0 9px 14px rgba(125,160,185,.2),inset 0 1px 0 #fff}
@@ -1093,8 +1282,30 @@ aside{display:flex;flex-direction:column;gap:18px}
 .gate-slot .g-empty{font-size:26px;margin-top:26px}
 .gate-slot .g-empty-t{font-size:13px;color:#9DB2C2;margin-top:10px}
 .gate-del{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:none;
-  background:#F3E0DE;color:#B97F76;font-size:13px;cursor:pointer;line-height:1}
+  background:#F3E0DE;color:#B97F76;font-size:13px;cursor:pointer;line-height:1;
+  display:flex;align-items:center;justify-content:center}
 .gate-del:hover{background:#ECCFCB}
+
+/* ================= 稀有猫舍（第 4 号养猫位，与其它 3 个尺寸一致，位于最右） ================= */
+.gate-slot.rare{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
+  text-align:center;padding:14px 10px 12px;min-height:190px;
+  background:linear-gradient(120deg,#FFFEFA,#FBF0D0 50%,#FFFEFA);
+  border:2px solid #EAD9A8;color:#A68C4A;
+  box-shadow:0 6px 0 #E6D19A,0 12px 22px rgba(210,180,110,.28),inset 0 1px 0 #fff;
+  animation:rareShine 2.6s ease-in-out infinite}
+.gate-slot.rare.occupied{display:block;color:var(--ink)}
+.gate-slot.rare.locked{filter:grayscale(.55) brightness(.98);cursor:not-allowed;animation:none;
+  border-color:#DACCA8;color:#A99A72;
+  box-shadow:0 6px 0 #D5C39A,0 12px 22px rgba(160,140,90,.18),inset 0 1px 0 #fff}
+.gate-slot.rare .rare-ico{font-size:30px;animation:rarePulse 2s ease-in-out infinite}
+.gate-slot.rare.locked .rare-ico{animation:none}
+.gate-slot.rare .rare-main{font-weight:800;font-size:16px;letter-spacing:1px}
+.gate-slot.rare .rare-sub{font-size:12px;color:#B79E6A;margin-top:3px;line-height:1.5}
+.gate-slot.rare .rare-badge{position:absolute;top:8px;left:8px;font-size:11px;font-weight:700;color:#9A7E3C;
+  background:linear-gradient(120deg,#FBEEC0,#F0DCA0);border-radius:999px;padding:3px 8px;box-shadow:0 2px 0 #E6D19A}
+@keyframes rareShine{0%,100%{box-shadow:0 6px 0 #E6D19A,0 12px 22px rgba(210,180,110,.28),inset 0 1px 0 #fff}
+  50%{box-shadow:0 6px 0 #E6D19A,0 14px 30px rgba(220,190,120,.5),inset 0 1px 0 #fff,0 0 0 3px rgba(230,210,150,.3)}}
+@keyframes rarePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
 /* ================= 开始界面（选猫领养） ================= */
 #startOverlay{position:fixed;inset:0;z-index:100;display:none;align-items:center;justify-content:center;
@@ -1128,20 +1339,23 @@ aside{display:flex;flex-direction:column;gap:18px}
 .breed-item span{display:block;font-size:12px;color:#5F7488;margin-top:4px}
 .big{width:100%;margin-top:22px;padding:15px;font-size:17px;border-radius:18px}
 .gate-back{margin-top:12px;font-size:13px;width:auto;display:inline-block;padding:8px 20px;border-radius:12px}
-/* 删除确认弹窗（需输入四位密码） */
+/* 删除确认弹窗（仅二次确认） */
 #delModal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;
   background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
 #delModal.on{display:flex}
 #delModal .modal-card{width:min(380px,92vw)}
 .del-title{font-size:17px;margin-bottom:6px}
 .del-sub{font-size:13px;color:var(--sub);line-height:1.7;margin-bottom:4px}
-#delInput{width:100%;margin-top:10px;padding:12px 15px;border-radius:14px;border:none;font-size:20px;
-  letter-spacing:12px;text-align:center;color:var(--ink);background:#EFF6FA;outline:none;font-family:inherit;
-  box-shadow:inset 0 3px 6px rgba(120,150,175,.22),0 1px 0 #fff}
-#delInput:focus{box-shadow:inset 0 3px 6px rgba(120,150,175,.22),0 0 0 2.5px #E3A7A2}
-#delErr{min-height:18px;margin-top:8px;font-size:12.5px;color:#C0726A}
-#delErr.shake{animation:shakeX .4s}
-@keyframes shakeX{0%,100%{transform:translateX(0)}25%{transform:translateX(-6px)}50%{transform:translateX(6px)}75%{transform:translateX(-4px)}}
+
+/* 修理损坏家具弹窗 */
+#repairModal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;
+  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+#repairModal.on{display:flex}
+#repairModal .modal-card{width:min(380px,92vw)}
+/* 损坏家具的视觉标识 */
+.billboard.broken{opacity:.72}
+.billboard.broken::after{content:"💢";position:absolute;top:-14px;right:-8px;font-size:22px;
+  filter:none;z-index:6;pointer-events:none}
 
 /* ================= 设置弹窗 ================= */
 #setModal{position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;
@@ -1343,11 +1557,16 @@ aside{display:flex;flex-direction:column;gap:18px}
           <button class="btn3d patrol act" id="btnPatrol"><em>🐾</em>巡视领地</button>
           <button class="btn3d climb act disabled" id="btnExercise" style="display:none"><em>🏃</em>健身</button>
           <button class="btn3d play act disabled" id="btnWatchTV" style="display:none"><em>📺</em>看电视</button>
+          <button class="btn3d fish act" id="btnFishing" style="display:none"><em>🎣</em>钓鱼</button>
+          <button class="btn3d hunt act" id="btnHunt" style="display:none"><em>🏹</em>捕猎</button>
           <button class="btn3d pill med-act act" id="btnMed" style="display:none"><em>💊</em>喂药</button>
         </div>
         <p class="hint" id="hintText">小提示：每次互动都会推进 1 小时游戏时间</p>
       </div>
-      <button class="btn3d coll-act" id="btnColl">🗂️ 收藏册</button>
+      <div style="display:flex;gap:8px;margin-top:10px">
+        <button class="btn3d coll-act" id="btnColl" style="margin-top:0">🗂️ 收藏册</button>
+        <button class="btn3d coll-act" id="btnBag" style="margin-top:0">🎒 战利品</button>
+      </div>
       <div style="display:flex;gap:8px;margin-top:8px">
         <div class="coin-display" style="flex:1;justify-content:center"><span class="coin-icon">🪙</span><span id="hudCoins">0</span> 猫币</div>
         <button class="btn3d food" id="btnShop" style="flex:1">🏪 商店</button>
@@ -1361,8 +1580,8 @@ aside{display:flex;flex-direction:column;gap:18px}
 <!-- NOTE: overlays must stay OUTSIDE #stage (perspective hijacks position:fixed) -->
 <div id="startOverlay">
   <div class="start-card">
-    <h1>🐱 领养新猫咪</h1>
-    <p class="sub">起好名字、挑好毛色，它就住进第 <b id="pendingSlot">1</b> 号猫窝</p>
+    <h1 id="startTitle">🐱 领养新猫咪</h1>
+    <p class="sub" id="startSub">起好名字、挑好毛色，它就住进第 <b id="pendingSlot">1</b> 号猫窝</p>
     <label class="field-label" for="nameInput">给猫咪起个名字</label>
     <input id="nameInput" maxlength="8" value="年糕">
     <label class="field-label">选择品种毛色</label>
@@ -1400,9 +1619,9 @@ aside{display:flex;flex-direction:column;gap:18px}
   <div class="modal-card">
     <div style="display:flex;justify-content:space-between;align-items:center">
       <h2>🗂️ 收藏册</h2>
-      <div class="coin-display"><span class="coin-icon">🪙</span><span id="collCoins">0</span></div>
+      <div class="coll-progress"><span class="coll-progress-label">收集进度</span><span id="collProgress">0%</span></div>
     </div>
-    <p style="font-size:12px;color:var(--sub);margin:4px 0 8px">点击物品可出售换猫币</p>
+    <p style="font-size:12px;color:var(--sub);margin:4px 0 8px">已收藏 <span id="collTypes">0</span>/<span id="collTotalN">83</span> 种（收藏品 + 家里的小动物 + 渔猎图鉴）</p>
     <div class="coll-grid" id="collGrid"></div>
     <div class="modal-btns">
       <button class="btn3d primary" id="collClose">收好</button>
@@ -1412,33 +1631,113 @@ aside{display:flex;flex-direction:column;gap:18px}
 
 <!-- 商店 -->
 <div id="shopModal">
-  <div class="modal-card">
-    <div style="display:flex;justify-content:space-between;align-items:center">
-      <h2>🏪 猫咪商店</h2>
-      <div class="coin-display"><span class="coin-icon">🪙</span><span id="shopCoins">0</span></div>
-    </div>
-    <div class="shop-tabs">
-      <div class="shop-tab active" data-cat="house">🏠 猫窝</div>
-      <div class="shop-tab" data-cat="toy">🎾 玩具</div>
-      <div class="shop-tab" data-cat="consumable">🐟 猫条</div>
-    </div>
-    <div class="shop-grid" id="shopGrid"></div>
-    <div class="modal-btns">
-      <button class="btn3d primary" id="shopClose">关了</button>
+  <div class="shop-wrap">
+    <div class="shop-toast" id="shopToast"></div>
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2>🏪 猫咪商店</h2>
+        <div class="coin-display"><span class="coin-icon">🪙</span><span id="shopCoins">0</span></div>
+      </div>
+      <div class="shop-tabs">
+        <div class="shop-tab active" data-cat="house">🏠 猫窝</div>
+        <div class="shop-tab" data-cat="toy">🎾 玩具</div>
+        <div class="shop-tab" data-cat="consumable">🐟 猫条</div>
+      </div>
+      <div class="shop-grid" id="shopGrid"></div>
+      <div class="modal-btns">
+        <button class="btn3d primary" id="shopClose">关了</button>
+      </div>
     </div>
   </div>
 </div>
 
-<!-- 放弃猫咪确认（四位密码） -->
+<!-- 钓鱼 / 捕猎 小游戏 -->
+<div id="catchModal">
+  <div class="catch-card" id="catchCard">
+    <h2 id="catchTitle">🎣 钓鱼</h2>
+    <div class="catch-sub" id="catchSub">甩竿入水，静静等待…</div>
+    <div class="catch-stage" id="catchStage">
+      <div class="catch-water" id="catchWater">
+        <div class="cw-river">
+          <svg class="rv-wave w1" viewBox="0 0 800 22"><path d="M0 11 Q 25 3 50 11 T 100 11 T 150 11 T 200 11 T 250 11 T 300 11 T 350 11 T 400 11 T 450 11 T 500 11 T 550 11 T 600 11 T 650 11 T 700 11 T 750 11 T 800 11" fill="none" stroke="rgba(255,255,255,.5)" stroke-width="2.5"/></svg>
+          <svg class="rv-wave w2" viewBox="0 0 800 22"><path d="M0 11 Q 25 3 50 11 T 100 11 T 150 11 T 200 11 T 250 11 T 300 11 T 350 11 T 400 11 T 450 11 T 500 11 T 550 11 T 600 11 T 650 11 T 700 11 T 750 11 T 800 11" fill="none" stroke="rgba(255,255,255,.45)" stroke-width="2"/></svg>
+        </div>
+        <div class="water-line" id="waterLine"></div>
+        <div class="cw-grass">
+          <div class="gr-blade back" style="left:5%;height:28px;width:9px;--lean:-14deg;animation-duration:2.6s"></div>
+          <div class="gr-blade back" style="left:24%;height:36px;width:10px;--lean:11deg;animation-duration:3.1s;animation-delay:-.8s"></div>
+          <div class="gr-blade back" style="left:46%;height:27px;width:9px;--lean:-11deg;animation-duration:2.9s;animation-delay:-1.4s"></div>
+          <div class="gr-blade back" style="left:66%;height:34px;width:10px;--lean:13deg;animation-duration:3.4s;animation-delay:-.5s"></div>
+          <div class="gr-blade back" style="left:86%;height:29px;width:9px;--lean:-13deg;animation-duration:2.7s;animation-delay:-1.9s"></div>
+          <div class="gr-blade" style="left:1%;height:42px;width:12px;--lean:-8deg;animation-duration:2.2s"></div>
+          <div class="gr-blade" style="left:15%;height:48px;width:13px;--lean:6deg;animation-duration:2.5s;animation-delay:-.9s"></div>
+          <div class="gr-blade" style="left:33%;height:44px;width:12px;--lean:-6deg;animation-duration:2.3s;animation-delay:-1.6s"></div>
+          <div class="gr-blade" style="left:57%;height:46px;width:13px;--lean:7deg;animation-duration:2.7s;animation-delay:-.4s"></div>
+          <div class="gr-blade" style="left:78%;height:43px;width:12px;--lean:-7deg;animation-duration:2.4s;animation-delay:-1.2s"></div>
+        </div>
+        <div class="cw-bob" id="catchBob">🎣</div>
+        <div class="cw-ripple" id="catchRipple"></div>
+        <div class="whack-area" id="whackArea"></div>
+      </div>
+      <div class="whack-count" id="whackCount"></div>
+      <div class="catch-target" id="catchTarget"></div>
+      <div class="catch-result" id="catchResult"></div>
+    </div>
+    <div class="whack-hud" id="whackHud">
+      <div class="whack-timer"><div class="whack-timer-fill" id="whackTimer"></div></div>
+      <div class="whack-combo" id="whackCombo">🔥 连击 x0</div>
+    </div>
+    <div class="catch-bar" id="catchBar">
+      <div class="cb-zone" id="catchZone"></div>
+      <div class="cb-mark" id="catchMark" style="left:0%"></div>
+    </div>
+    <div class="catch-tip" id="catchTip">绿色区间越窄，收获越珍贵</div>
+    <button class="btn3d primary catch-btn" id="catchBtn">🎣 收杆</button>
+  </div>
+</div>
+
+<!-- 战利品袋 -->
+<div id="bagModal">
+  <div class="modal-card">
+    <div style="display:flex;justify-content:space-between;align-items:center">
+      <h2>🎒 战利品袋</h2>
+      <div class="coin-display"><span class="coin-icon">🪙</span><span id="bagCoins">0</span></div>
+    </div>
+    <p style="font-size:12px;color:var(--sub);margin:4px 0 8px">钓鱼与捕猎的收获都在这儿，可出售换猫币，也能喂给猫猫</p>
+    <div class="shop-tabs">
+      <div class="bag-tab active" data-bag="all">🎒 全部</div>
+      <div class="bag-tab" data-bag="fish">🎣 渔获</div>
+      <div class="bag-tab" data-bag="prey">🏹 猎物</div>
+    </div>
+    <div class="bag-stat" id="bagStat"></div>
+    <div class="bag-grid" id="bagGrid"></div>
+    <div class="modal-btns">
+      <button class="btn3d clean" id="bagSellAll">💰 全部出售</button>
+      <button class="btn3d primary" id="bagClose">收好</button>
+    </div>
+  </div>
+</div>
+
+<!-- 放弃猫咪确认（无密码，仅确认） -->
 <div id="delModal">
   <div class="modal-card">
     <div class="del-title">😢 放弃这只猫？</div>
-    <div class="del-sub" id="delSub">此操作不可恢复，它的所有进度都会消失。<br>请输入删除密码确认：</div>
-    <input id="delInput" maxlength="4" inputmode="numeric" placeholder="····">
-    <div id="delErr"></div>
+    <div class="del-sub" id="delSub">此操作不可恢复，它的所有进度都会消失。</div>
     <div class="modal-btns">
       <button class="btn3d" id="delCancel">再想想</button>
       <button class="btn3d danger" id="delConfirm">确认放弃</button>
+    </div>
+  </div>
+</div>
+
+<!-- 修理损坏家具确认 -->
+<div id="repairModal">
+  <div class="modal-card">
+    <div class="del-title">🔧 家具坏掉了</div>
+    <div class="del-sub" id="repairSub">它被猫猫玩坏了，修理需要 🪙100。</div>
+    <div class="modal-btns">
+      <button class="btn3d" id="repairCancel">先不修</button>
+      <button class="btn3d primary" id="repairConfirm">花 100 猫币修理</button>
     </div>
   </div>
 </div>
@@ -1474,9 +1773,11 @@ aside{display:flex;flex-direction:column;gap:18px}
 })();
 
 /* ================= 基础数据 ================= */
-const SLOT_BASE="moranCatSave.v2.s";   /* 三个存档槽位：.s1 .s2 .s3 */
+const SLOT_BASE="moranCatSave.v2.s";   /* 存档槽位：.s1 .s2 .s3 .s4（第 4 号是稀有猫舍） */
 const OLD_KEY="moranCatSave.v2";
-const SLOTS=3;
+const ACCOUNT_KEY="moranCatAccount.v1";  /* 账号级「铲屎官等级」= 养过的猫里最高等级 */
+const SLOTS=4;
+const RARE_UNLOCK_LV=15;   /* 稀有猫舍解锁所需铲屎官等级 */
 const BREEDS={
   orange:{name:"橘猫",   body:"#E9BC8C",dark:"#D9A06B",belly:"#F7E7D2",muzzle:"#F7E7D2",eye:"#C98A4B",stripes:"#D69A62"},
   blue:  {name:"英短蓝猫",body:"#AEBBC7",dark:"#9AA8B6",belly:"#D3DCE3",muzzle:"#DCE4EA",eye:"#C98A4B"},
@@ -1488,11 +1789,18 @@ const BREEDS={
           tail:"#5B5B66",earL:"#E5B183",earR:"#5B5B66"},
   white: {name:"纯白猫", body:"#F8F6F1",dark:"#EDE8DF",belly:"#FFFFFF",muzzle:"#FFFFFF",eye:"#7FA8C9"},
   black: {name:"玄猫",   body:"#5A5A64",dark:"#4C4C56",belly:"#6A6A74",muzzle:"#6A6A74",eye:"#9BC07E"},
-  siamese:{name:"暹罗猫",body:"#E3D9CB",dark:"#D6CAB8",belly:"#EDE5D8",muzzle:"#EDE5D8",eye:"#6FA3CC",
-          points:"#8A6E5C",tail:"#8A6E5C"},
   ragdoll:{name:"布偶猫",body:"#F0EAE0",dark:"#E4DBCC",belly:"#FAF6EF",muzzle:"#FAF6EF",eye:"#5E93C4",
           points:"#B7A08A",tail:"#B7A08A"},
+  /* 稀有品种（Lv.15 稀有猫舍专属）——按特点改形态 */
+  norwegian:{name:"挪威森林猫",body:"#C9BDA9",dark:"#A69580",belly:"#EFE8DB",muzzle:"#F3EDE2",eye:"#7BA05B",
+          stripes:"#A69580",tail:"#A69580",fluff:true,rare:true},
+  scottish:{name:"苏格兰折耳猫",body:"#CAC3D2",dark:"#A79FB2",belly:"#EFEBF3",muzzle:"#F3EFF5",eye:"#C98A4B",
+          fold:true,rare:true},
+  siamese:{name:"暹罗猫",body:"#E3D9CB",dark:"#D6CAB8",belly:"#EDE5D8",muzzle:"#EDE5D8",eye:"#6FA3CC",
+          points:"#8A6E5C",tail:"#8A6E5C",rare:true},
 };
+const RARE_BREEDS=Object.keys(BREEDS).filter(b=>BREEDS[b].rare);
+const NORMAL_BREEDS=Object.keys(BREEDS).filter(b=>!BREEDS[b].rare);
 const TITLES=["见习铲屎官","初级铲屎官","持证铲屎官","金牌铲屎官","资深猫奴","猫咪行为学家","猫舍主理人","传说铲屎官"];
 const WANDER_LINES=["溜达溜达～","这里不错喵","伸个懒腰","咦，什么声音？","晒太阳真舒服","巡视领地中","打个哈欠～","踩踩小碎步"];
 const HINTS=[
@@ -1504,6 +1812,10 @@ const HINTS=[
   "小提示：精力太低时，用「睡一觉」快进恢复",
   "小提示：点「摸鱼」，猫猫会跑去鱼缸扒拉小鱼",
   "小提示：进度自动保存在浏览器里",
+  "小提示：钓鱼收杆要在绿色区间正中，越准越值钱",
+  "小提示：捕猎的反应窗口比钓鱼短，但猎物卖得更贵",
+  "小提示：战利品可以卖掉，也可以直接喂猫",
+  "小提示：战利品袋最多装 80 件，装满了记得先卖掉一些",
 ];
 /* 地面坐标（% of floor）：x=左右，y=前后（0=后墙边，100=镜头前） */
 const POS={food:[20.70,90.27],water:[30.70,90.27],litter:[85,30],bed:[72,90.1],fish:[14,30],center:[50,46],climbBase:[80,22],
@@ -1539,10 +1851,10 @@ let fishCd=0;                                     /* 摸鱼冷却 */
 var evLock=false,itemPending=false,lostActive=false,lostTimer=0,lastEvAt=0;
 /* ================= 稀有度 & 商店系统 ================= */
 var RARITY={
-  gold:  {name:"传说",color:"#D4A843",bg:"#FFF8E7",border:"#D4A843",price:120,chance:.03},
-  purple:{name:"稀有",color:"#9B6BC6",bg:"#F5EEFB",border:"#B88FDB",price:50, chance:.12},
-  green: {name:"精良",color:"#5A9E6F",bg:"#EDF7F0",border:"#7AB88D",price:20, chance:.30},
-  white: {name:"普通",color:"#8CA3B3",bg:"#F2F8FC",border:"#C8D8E4",price:5,  chance:.55}
+  gold:  {name:"传说",color:"#D4A843",bg:"#FFF8E7",border:"#D4A843",chance:.01},
+  purple:{name:"稀有",color:"#9B6BC6",bg:"#F5EEFB",border:"#B88FDB",chance:.12},
+  green: {name:"精良",color:"#5A9E6F",bg:"#EDF7F0",border:"#7AB88D",chance:.30},
+  white: {name:"普通",color:"#8CA3B3",bg:"#F2F8FC",border:"#C8D8E4",chance:.57}
 };
 /* 给物品按概率分配稀有度 */
 function rollRarity(){
@@ -1581,13 +1893,37 @@ var TREAT_EFFECTS={
   catnip:{mood:30,duration:4000,msg:"喵～～～好嗨哟～"}
 };
 
-/* 传说 */ /* 稀有 */ /* 精良 */ /* 普通 */
+/* 传说 5 · 稀有 10 · 精良 15 · 普通 20（共 50 种） */
 var FINDABLE=[
-  {e:"🔑",n:"神秘的小钥匙",r:"gold"},{e:"🔮",n:"月光宝盒",r:"gold"},
+  {e:"🔑",n:"神秘的小钥匙",r:"gold"},{e:"🔮",n:"月光宝盒",r:"gold"},{e:"💎",n:"永恒钻石",r:"gold"},{e:"🏆",n:"黄金奖杯",r:"gold"},{e:"👑",n:"猫王的王冠",r:"gold"},
   {e:"🧁",n:"小纸杯蛋糕",r:"purple"},{e:"🪙",n:"亮闪闪的圆片",r:"purple"},{e:"💠",n:"玻璃珠",r:"purple"},{e:"🔔",n:"小铃铛",r:"purple"},{e:"🪶",n:"漂亮的羽毛",r:"purple"},
-  {e:"🧶",n:"毛线团",r:"green"},{e:"🎀",n:"蝴蝶结",r:"green"},{e:"🌰",n:"橡果",r:"green"},{e:"🌸",n:"花瓣",r:"green"},{e:"🍬",n:"糖纸",r:"green"},{e:"🥜",n:"花生",r:"green"},{e:"🧦",n:"一只小袜子",r:"green"},{e:"🧷",n:"小别针",r:"green"},
-  {e:"🍂",n:"小树叶",r:"white"},{e:"📦",n:"小纸箱",r:"white"},{e:"🫧",n:"肥皂泡",r:"white"},{e:"🪵",n:"小树枝",r:"white"},{e:"🪨",n:"小石子",r:"white"},{e:"🏷️",n:"标签贴纸",r:"white"},{e:"📎",n:"回形针",r:"white"},{e:"🫙",n:"小瓶盖",r:"white"},{e:"🧹",n:"小羽毛掸",r:"white"},{e:"🖇️",n:"小链环",r:"white"},{e:"🪅",n:"彩纸碎",r:"white"},{e:"🧊",n:"小冰块",r:"white"}
+  {e:"🎻",n:"迷你小提琴",r:"purple"},{e:"🔭",n:"铜望远镜",r:"purple"},{e:"🖼️",n:"复古相框",r:"purple"},{e:"🎭",n:"威尼斯面具",r:"purple"},{e:"📿",n:"紫水晶手串",r:"purple"},
+  {e:"🧶",n:"毛线团",r:"green"},{e:"🎀",n:"蝴蝶结",r:"green"},{e:"🌰",n:"橡果",r:"green"},{e:"🌸",n:"花瓣",r:"green"},{e:"🍬",n:"糖纸",r:"green"},
+  {e:"🥜",n:"花生",r:"green"},{e:"🧦",n:"一只小袜子",r:"green"},{e:"🧷",n:"小别针",r:"green"},{e:"🍀",n:"四叶草",r:"green"},{e:"🎲",n:"小骰子",r:"green"},
+  {e:"🧩",n:"拼图块",r:"green"},{e:"🪴",n:"小盆栽",r:"green"},{e:"🐚",n:"海螺壳",r:"green"},{e:"🪀",n:"溜溜球",r:"green"},{e:"🔖",n:"叶脉书签",r:"green"},
+  {e:"🍂",n:"小树叶",r:"white"},{e:"📦",n:"小纸箱",r:"white"},{e:"🫧",n:"肥皂泡",r:"white"},{e:"🪵",n:"小树枝",r:"white"},{e:"🪨",n:"小石子",r:"white"},
+  {e:"🏷️",n:"标签贴纸",r:"white"},{e:"📎",n:"回形针",r:"white"},{e:"🫙",n:"小瓶盖",r:"white"},{e:"🧹",n:"小羽毛掸",r:"white"},{e:"🖇️",n:"小链环",r:"white"},
+  {e:"🪅",n:"彩纸碎",r:"white"},{e:"🧊",n:"小冰块",r:"white"},{e:"🖍️",n:"彩色蜡笔",r:"white"},{e:"✏️",n:"小铅笔",r:"white"},{e:"📏",n:"木直尺",r:"white"},
+  {e:"🧻",n:"纸巾卷",r:"white"},{e:"🥄",n:"小汤勺",r:"white"},{e:"🪣",n:"小水桶",r:"white"},{e:"🧂",n:"小盐罐",r:"white"},{e:"🥛",n:"空牛奶盒",r:"white"}
 ];
+/* 家里能捉到的小动物（也收录进收藏册）：稀有=瓢虫/甲虫，精良=蜜蜂/壁虎/蝴蝶，普通=蚂蚁/老鼠/蜗牛 */
+var HOME_PREY=[
+  {e:"🐭",n:"小老鼠",r:"white"},
+  {e:"🐜",n:"蚂蚁",r:"white"},
+  {e:"🐌",n:"蜗牛",r:"white"},
+  {e:"🐞",n:"瓢虫",r:"purple"},
+  {e:"🪲",n:"甲虫",r:"purple"},
+  {e:"🐝",n:"蜜蜂",r:"green"},
+  {e:"🦎",n:"壁虎",r:"green"},
+  {e:"🦋",n:"蝴蝶",r:"green"}
+];
+/* 收藏册总种类 = 收藏品 + 家里的小动物 + 渔猎战利品图鉴 */
+function collTotal(){
+  var t=FINDABLE.length+HOME_PREY.length,g;
+  for(g in FISH_BY_G)t+=FISH_BY_G[g].length;
+  for(g in PREY_BY_G)t+=PREY_BY_G[g].length;
+  return t;
+}
 const el={};
 
 /* ================= 猫咪 SVG（正面） ================= */
@@ -1613,9 +1949,22 @@ function catSVG(breed,uid){
       <path d="M98 48 q2 9 -1 15"/><path d="M110 46 q0 9 0 15"/><path d="M122 48 q-2 9 1 15"/>
       <path d="M72 142 q12 6 7 20"/><path d="M148 142 q-12 6 -7 20"/>
     </g>`:"";
+  const tailW=P.fluff?19:15;
+  /* 长毛（挪威森林猫）：头后一圈柔软毛晕 + 下巴一圈围脖 */
+  const fluffHalo=P.fluff?`<circle cx="110" cy="92" r="51" fill="${P.body}" opacity=".4"/>`:"";
+  const fluffRuff=P.fluff?`<g fill="${P.body}">
+    <ellipse cx="70" cy="122" rx="8" ry="9"/><ellipse cx="88" cy="130" rx="9" ry="10"/><ellipse cx="110" cy="134" rx="10" ry="10"/><ellipse cx="132" cy="130" rx="9" ry="10"/><ellipse cx="150" cy="122" rx="8" ry="9"/>
+  </g>`:"";
+  /* 折耳（苏格兰折耳猫）：耳朵向前下折，紧贴头顶 */
+  const ears=P.fold?
+    `<g class="ear-l-g"><path d="M82 52 Q68 55 74 70 Q79 76 92 70 Q96 60 90 51 Z" fill="${earL}"/><path d="M82 60 Q76 64 80 70 Q84 72 89 68 Z" fill="#E8B8C4"/></g>
+     <g class="ear-r-g"><path d="M138 52 Q152 55 146 70 Q141 76 128 70 Q124 60 130 51 Z" fill="${earR}"/><path d="M138 60 Q144 64 140 70 Q136 72 131 68 Z" fill="#E8B8C4"/></g>`
+    :
+    `<g class="ear-l-g"><path d="M74 64 L82 24 L104 52 Z" fill="${earL}"/><path d="M80 57 L84 36 L97 51 Z" fill="#F2C6C6"/></g>
+     <g class="ear-r-g"><path d="M146 64 L138 24 L116 52 Z" fill="${earR}"/><path d="M140 57 L136 36 L123 51 Z" fill="#F2C6C6"/></g>`;
   return `<svg class="cat-svg" viewBox="0 0 220 200">${defs}
     <ellipse cx="110" cy="191" rx="48" ry="8" fill="rgba(96,120,138,.14)"/>
-    <g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="${tailCol}" stroke-width="15" stroke-linecap="round"/></g>
+    <g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="${tailCol}" stroke-width="${tailW}" stroke-linecap="round"/></g>
     <g class="body-g">
       <ellipse cx="110" cy="160" rx="42" ry="32" fill="${P.body}"/>
       ${P.patches?`<g clip-path="url(#bd${uid})">${P.patches.body.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}" fill="${b[4]||pc}"/>`).join("")}</g>`:""}
@@ -1630,11 +1979,12 @@ function catSVG(breed,uid){
       ${stripes}
     </g>
     <g class="head-g">
-      <g class="ear-l-g"><path d="M74 64 L82 24 L104 52 Z" fill="${earL}"/><path d="M80 57 L84 36 L97 51 Z" fill="#F2C6C6"/></g>
-      <g class="ear-r-g"><path d="M146 64 L138 24 L116 52 Z" fill="${earR}"/><path d="M140 57 L136 36 L123 51 Z" fill="#F2C6C6"/></g>
+      ${fluffHalo}
+      ${ears}
       <circle cx="110" cy="92" r="46" fill="${P.body}"/>
       ${P.patches?`<g clip-path="url(#hd${uid})">${P.patches.head.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}" fill="${b[4]||pc}"/>`).join("")}</g>`:""}
       ${mask}
+      ${fluffRuff}
       <ellipse cx="110" cy="109" rx="22" ry="15" fill="${P.muzzle}"/>
       <g class="eyes-open">
         <ellipse cx="92" cy="90" rx="8" ry="10" fill="${P.eye}"/>
@@ -1707,9 +2057,17 @@ function catSVGBack(breed,uid){
   const haunch=`
     <ellipse cx="76" cy="174" rx="19" ry="16" fill="${P.dark}" opacity=".28"/>
     <ellipse cx="144" cy="174" rx="19" ry="16" fill="${P.dark}" opacity=".28"/>`;
+  const tailW=P.fluff?19:15;
+  const fluffHalo=P.fluff?`<circle cx="110" cy="92" r="51" fill="${P.body}" opacity=".4"/>`:"";
+  const ears=P.fold?
+    `<g class="ear-l-g"><path d="M78 54 Q68 56 76 70 Q80 74 90 69 Q94 62 88 54 Z" fill="${earL}"/></g>
+     <g class="ear-r-g"><path d="M142 54 Q152 56 144 70 Q140 74 130 69 Q126 62 132 54 Z" fill="${earR}"/></g>`
+    :
+    `<g class="ear-l-g"><path d="M74 64 L82 24 L104 52 Z" fill="${earL}"/></g>
+     <g class="ear-r-g"><path d="M146 64 L138 24 L116 52 Z" fill="${earR}"/></g>`;
   return `<svg class="cat-svg" viewBox="0 0 220 200">${defs}
     <ellipse cx="110" cy="191" rx="48" ry="8" fill="rgba(96,120,138,.14)"/>
-    <g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="${tailCol}" stroke-width="15" stroke-linecap="round"/></g>
+    <g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="${tailCol}" stroke-width="${tailW}" stroke-linecap="round"/></g>
     <g class="body-g">
       <ellipse cx="110" cy="160" rx="42" ry="32" fill="${P.body}"/>
       ${bodyPatch}
@@ -1718,8 +2076,8 @@ function catSVGBack(breed,uid){
       ${stripes}
     </g>
     <g class="head-g">
-      <g class="ear-l-g"><path d="M74 64 L82 24 L104 52 Z" fill="${earL}"/></g>
-      <g class="ear-r-g"><path d="M146 64 L138 24 L116 52 Z" fill="${earR}"/></g>
+      ${fluffHalo}
+      ${ears}
       <circle cx="110" cy="92" r="46" fill="${P.body}"/>
       ${headPatch}
       ${mask}
@@ -1732,8 +2090,8 @@ function catSVGBack(breed,uid){
 function animalSVG(type,uid){
   /* 狐狸/浣熊画矢量脑袋：emoji 在这两种动物上会随平台变化（安卓画全身、PC 画脑袋），
      用 SVG 脑袋才能在所有平台都稳定只显示脑袋。 */
-  var HEAD_FOX='<g><path d="M72 50 L58 8 L100 38 Z" fill="#E88040"/><path d="M148 50 L162 8 L120 38 Z" fill="#E88040"/><path d="M70 42 L63 20 L92 38 Z" fill="#F5E0C0"/><path d="M150 42 L157 20 L128 38 Z" fill="#F5E0C0"/><ellipse cx="110" cy="74" rx="42" ry="35" fill="#E88040"/><ellipse cx="74" cy="88" rx="13" ry="14" fill="#F8EFE0"/><ellipse cx="146" cy="88" rx="13" ry="14" fill="#F8EFE0"/><ellipse cx="110" cy="98" rx="19" ry="15" fill="#F8EFE0"/><ellipse cx="96" cy="68" rx="5" ry="6" fill="#2A1A12"/><ellipse cx="124" cy="68" rx="5" ry="6" fill="#2A1A12"/><circle cx="97.5" cy="66" r="1.7" fill="#fff"/><circle cx="125.5" cy="66" r="1.7" fill="#fff"/><ellipse cx="110" cy="90" rx="5.5" ry="4" fill="#2A1A12"/><path d="M110 94 v3 M104 97 q6 5 12 0" stroke="#2A1A12" stroke-width="2" fill="none" stroke-linecap="round"/></g>';
-  var HEAD_RACCOON='<g><path d="M74 50 L62 10 L100 38 Z" fill="#8B8B8B"/><path d="M146 50 L158 10 L120 38 Z" fill="#8B8B8B"/><path d="M72 42 L66 22 L92 37 Z" fill="#6B6B6B"/><path d="M148 42 L154 22 L128 37 Z" fill="#6B6B6B"/><ellipse cx="110" cy="74" rx="42" ry="35" fill="#8B8B8B"/><path d="M70 56 Q110 68 150 56 L150 80 Q110 92 70 80 Z" fill="#3A3A3A"/><ellipse cx="78" cy="98" rx="10" ry="12" fill="#E8E8E8"/><ellipse cx="142" cy="98" rx="10" ry="12" fill="#E8E8E8"/><ellipse cx="110" cy="102" rx="20" ry="14" fill="#F0F0F0"/><circle cx="96" cy="68" r="5.5" fill="#F5F5F5"/><circle cx="124" cy="68" r="5.5" fill="#F5F5F5"/><circle cx="96" cy="68" r="2.6" fill="#111"/><circle cx="124" cy="68" r="2.6" fill="#111"/><circle cx="97" cy="67" r="1" fill="#fff"/><circle cx="125" cy="67" r="1" fill="#fff"/><ellipse cx="110" cy="95" rx="5" ry="3.8" fill="#2A2A2A"/><path d="M110 99 v3 M105 102 q5 4 10 0" stroke="#2A2A2A" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>';
+  var HEAD_FOX='<g transform="translate(0,20)"><path d="M72 50 L58 8 L100 38 Z" fill="#E88040"/><path d="M148 50 L162 8 L120 38 Z" fill="#E88040"/><path d="M70 42 L63 20 L92 38 Z" fill="#F5E0C0"/><path d="M150 42 L157 20 L128 38 Z" fill="#F5E0C0"/><ellipse cx="110" cy="74" rx="42" ry="35" fill="#E88040"/><ellipse cx="74" cy="88" rx="13" ry="14" fill="#F8EFE0"/><ellipse cx="146" cy="88" rx="13" ry="14" fill="#F8EFE0"/><ellipse cx="110" cy="98" rx="19" ry="15" fill="#F8EFE0"/><ellipse cx="96" cy="68" rx="5" ry="6" fill="#2A1A12"/><ellipse cx="124" cy="68" rx="5" ry="6" fill="#2A1A12"/><circle cx="97.5" cy="66" r="1.7" fill="#fff"/><circle cx="125.5" cy="66" r="1.7" fill="#fff"/><ellipse cx="110" cy="90" rx="5.5" ry="4" fill="#2A1A12"/><path d="M110 94 v3 M104 97 q6 5 12 0" stroke="#2A1A12" stroke-width="2" fill="none" stroke-linecap="round"/></g>';
+  var HEAD_RACCOON='<g transform="translate(0,20)"><path d="M74 50 L62 10 L100 38 Z" fill="#8B8B8B"/><path d="M146 50 L158 10 L120 38 Z" fill="#8B8B8B"/><path d="M72 42 L66 22 L92 37 Z" fill="#6B6B6B"/><path d="M148 42 L154 22 L128 37 Z" fill="#6B6B6B"/><ellipse cx="110" cy="74" rx="42" ry="35" fill="#8B8B8B"/><path d="M70 56 Q110 68 150 56 L150 80 Q110 92 70 80 Z" fill="#3A3A3A"/><ellipse cx="78" cy="98" rx="10" ry="12" fill="#E8E8E8"/><ellipse cx="142" cy="98" rx="10" ry="12" fill="#E8E8E8"/><ellipse cx="110" cy="102" rx="20" ry="14" fill="#F0F0F0"/><circle cx="96" cy="68" r="5.5" fill="#F5F5F5"/><circle cx="124" cy="68" r="5.5" fill="#F5F5F5"/><circle cx="96" cy="68" r="2.6" fill="#111"/><circle cx="124" cy="68" r="2.6" fill="#111"/><circle cx="97" cy="67" r="1" fill="#fff"/><circle cx="125" cy="67" r="1" fill="#fff"/><ellipse cx="110" cy="95" rx="5" ry="3.8" fill="#2A2A2A"/><path d="M110 99 v3 M105 102 q5 4 10 0" stroke="#2A2A2A" stroke-width="1.8" fill="none" stroke-linecap="round"/></g>';
   var animals={
     dog:{body:"#D4A86A",dark:"#B88E50",tail:"#C49858",belly:"#F5E8D0",emoji:"🐶",
          stripes:"#C49858",patches:[[90,155,18,14,"#C4A060"],[130,148,12,10,"#C4A060"]]},
@@ -1782,7 +2140,7 @@ function animalSVG(type,uid){
     +'<path d="M84 186 v4"/><path d="M91 186 v4"/><path d="M128 186 v4"/><path d="M135 186 v4"/>'
     +'</g></g></g>'
     /* 头像：狐狸/浣熊用矢量脑袋，其余用 emoji（都是纯脑袋 emoji，各平台一致） */
-    +(a.head?a.head:'<text x="110" y="88" text-anchor="middle" dominant-baseline="central" font-size="84">'+a.emoji+'</text>')
+    +(a.head?a.head:'<text x="110" y="100" text-anchor="middle" dominant-baseline="central" font-size="88">'+a.emoji+'</text>')
     +'</svg>';
 }
 
@@ -1824,6 +2182,15 @@ function toast(msg){
   el.toasts.appendChild(t);
   while(el.toasts.children.length>3)el.toasts.firstChild.remove();
   setTimeout(()=>{t.classList.add("out");setTimeout(()=>t.remove(),320);},2300);
+}
+/* 商店内的提示：显示在商店框上方（用于余额不足等反馈） */
+var shopToastTimer=0;
+function shopToast(msg){
+  if(!el.shopToast)return;
+  el.shopToast.textContent=msg;
+  el.shopToast.classList.add("on");
+  clearTimeout(shopToastTimer);
+  shopToastTimer=setTimeout(()=>el.shopToast.classList.remove("on"),2200);
 }
 function bubble(msg,force){
   const now=Date.now();
@@ -1919,6 +2286,13 @@ function addXp(n){
     puff(el.catWrap,-10,-70,["💗","✨","💙","🎀"],5);
     toast(`🎉 升级到 Lv.${S.level} · ${title()}`);
     snd("level");
+    const prevMax=accountMaxLevel();
+    accountOnLevelUp(S.level);   /* 记录账号级铲屎官等级（用于稀有猫舍解锁） */
+    /* 到达 3 级解锁钓鱼、5 级解锁捕猎，并给出提示 */
+    if(S.level===3){toast(`🎣 ${S.name} 学会钓鱼了！`);}
+    if(S.level===5){toast(`🏹 ${S.name} 学会捕猎了！`);}
+    /* 账号级铲屎官首次达到 Lv.15：解锁稀有猫舍 */
+    if(prevMax<RARE_UNLOCK_LV&&accountMaxLevel()>=RARE_UNLOCK_LV){toast(`✨ 铲屎官 Lv.${RARE_UNLOCK_LV} 达成！稀有猫舍已解锁，快去猫窝大门看看～`);}
   }
 }
 
@@ -2246,6 +2620,7 @@ function onScoop(){
 async function onClimb(){
   cancelAuto();markActive();
   if(busy){toast("等一下，猫猫正在忙～");return;}
+  if(isBroken("cattree")){openRepair("cattree");return;}
   if(S.energy<15){bubble("累趴了…爬不动了…",true);return;}
   busy=true;
   const g=gen;
@@ -2266,6 +2641,7 @@ async function onClimb(){
   S.energy=Math.max(0,S.energy-12);
   addXp(12);
   advanceTime(1);
+  tryBreak("cattree",0.06);
   busy=false;
   needBubble();updateHUD();save();chain();
 }
@@ -2305,6 +2681,7 @@ async function onExercise(){
   if(busy){toast("等一下，猫猫正在忙～");return;}
   if(S.energy<20){bubble("太累了…跑不动了…",true);return;}
   if(!S.ownedItems||!S.ownedItems.treadmill){toast("还没有跑步机哦～去商店看看");return;}
+  if(isBroken("treadmill")){openRepair("treadmill");return;}
   busy=true;
   const g=gen;
   toast(S.name+" 上跑步机跑步！（+1 小时）");
@@ -2326,6 +2703,7 @@ async function onExercise(){
   S.thirst=clamp(S.thirst-6);
   addXp(10);
   advanceTime(1);
+  tryBreak("treadmill",0.07);
   puff(el.catWrap,0,-40,["💪","✨","💗"],3);
   setCheer(1500,true);
   busy=false;
@@ -2566,6 +2944,7 @@ async function onFishTouch(){
   cancelAuto();markActive();
   if(S.sleeping){toast("Zzz…猫猫睡得正香");return;}
   if(busy){toast("等一下，猫猫正在忙～");return;}
+  if(isBroken("fishtank")){openRepair("fishtank");return;}
   if(Date.now()<fishCd)return;
   fishCd=Date.now()+8000;
   busy=true;
@@ -2592,6 +2971,7 @@ async function onFishTouch(){
   bubble(pick(["摸到鱼啦！","小鱼别怕嘛～","啪叽！","水花四溅！"]),true);
   setCheer(1800,true);
   advanceTime(1);
+  tryBreak("fishtank",0.06);
   needBubble();updateHUD();save();chain();
 }
 
@@ -2614,6 +2994,7 @@ async function onWatchTV(){
   if(S.sleeping){toast("Zzz…猫猫睡得正香");return;}
   if(busy){toast("等一下，猫猫正在忙～");return;}
   if(!S.ownedItems||!S.ownedItems.tv){toast("还没有电视机哦～去商店看看");return;}
+  if(isBroken("tv")){openRepair("tv");return;}
   if(watchingTV){stopWatchingTV();return;}
   busy=true;watchingTV=true;
   const g=gen;
@@ -2640,6 +3021,7 @@ async function onWatchTV(){
   /* 定时切换节目 */
   tvProgramTimer=setInterval(function(){
     if(!watchingTV||g!==gen){clearInterval(tvProgramTimer);return;}
+    if(Math.random()<0.05&&doBreak("tv")){stopWatchingTV();return;}
     playRandomProgram(tvEl);
   },8000);
   /* 定时显示气泡 */
@@ -2743,8 +3125,17 @@ async function evFindItem(){
   evLock=true;itemPending=true;
   const prevBusy=busy;busy=true;      /* 等玩家选择期间，别让别的动作插进来 */
   try{
-    var base=pick(FINDABLE);
-    var it={e:base.e,n:base.n,r:base.r||"white"};
+    /* 稀有/传说只在 Lv.3 之后出现，且传说概率已调低 */
+    var lv=S.level||1;
+    var rr;
+    if(lv<3){
+      var g=RARITY.green.chance,w=RARITY.white.chance;
+      rr=Math.random()<g/(g+w)?"green":"white";
+    }else{
+      rr=rollRarity();
+    }
+    var base=pick(FINDABLE.filter(function(x){return x.r===rr;}));
+    var it={e:base.e,n:base.n,r:rr};
     setState("idle");
     /* 稀有度发光特效 */
     if(it.r==="gold"){
@@ -2767,76 +3158,55 @@ async function evFindItem(){
     updateHUD();save();
   }
 }
-async function evMouse(){
-  if(!S||el.app.hidden)return;
+/* 家里随机出现的小动物（数据驱动）：是飞是爬按种类匹配，蜗牛速度极慢 */
+var CRITTERS={
+  mouse:   {e:"🐭",n:"小老鼠",r:"white",cls:"mouse-run",animMs:1300,wait:1000,mood:10,xp:6,
+            toast:"有老鼠！{name} 压低身子猛扑过去！",init:{top:"58%",left:"6%"},pos:[62,55],puff:["🐭","⭐"],cheer:1600},
+  butterfly:{e:"🦋",n:"蝴蝶",r:"green",cls:"butterfly-fly",animMs:3000,wait:1400,mood:8,xp:5,
+            toast:"有蝴蝶！{name} 蹦跳着去追～",pos:[48,42],puff:["🦋","✨","🌸"],cheer:1600},
+  beetle:  {e:"🪲",n:"甲虫",r:"purple",cls:"critter-crawl",animMs:2600,wait:1600,mood:6,xp:4,
+            toast:"发现甲虫！{name} 悄悄靠近…",pos:[50,72],puff:["🪲","⭐","✨"],cheer:1600},
+  ant:     {e:"🐜",n:"蚂蚁",r:"white",cls:"critter-crawl",dur:"3.2s",animMs:3400,fs:15,wait:1500,mood:5,xp:3,
+            toast:"一只小蚂蚁在赶路……{name} 蹲下来研究了半天",pos:[52,73],puff:["🐜","⭐"],cheer:1400},
+  ladybug: {e:"🐞",n:"瓢虫",r:"purple",cls:"critter-crawl",dur:"2.8s",animMs:3000,fs:18,wait:1400,mood:7,xp:4,
+            toast:"瓢虫！{name} 目不转睛地盯着…",pos:[50,72],puff:["🐞","⭐","✨"],cheer:1500},
+  bee:     {e:"🐝",n:"蜜蜂",r:"green",cls:"bee-fly",animMs:2200,wait:1100,mood:8,xp:5,
+            toast:"有蜜蜂！{name} 跳起来去拍～",pos:[46,40],puff:["🐝","✨","⭐"],cheer:1600},
+  snail:   {e:"🐌",n:"蜗牛",r:"white",cls:"critter-crawl",dur:"7.5s",animMs:7800,fs:20,wait:2400,mood:5,xp:3,
+            toast:"蜗牛慢吞吞地路过…{name} 耐心等它爬近",pos:[55,74],puff:["🐌","✨"],cheer:1400},
+  gecko:   {e:"🦎",n:"壁虎",r:"green",cls:"critter-crawl",dur:"2s",animMs:2200,fs:19,wait:1300,mood:7,xp:4,
+            toast:"壁虎窜过墙角！{name} 猛追两步～",pos:[52,70],puff:["🦎","⭐","✨"],cheer:1500}
+};
+async function evCritter(key){
+  var c=CRITTERS[key];
+  if(!S||el.app.hidden||!c)return;
   evLock=true;busy=true;const g=gen;
   try{
-    toast("有老鼠！"+S.name+" 压低身子猛扑过去！");
+    toast(c.toast.replace("{name}",S.name));
     var m=document.createElement("span");
-    m.className="mouse-run";m.textContent="🐭";
-    m.style.top="58%";m.style.left="6%";
+    m.className=c.cls;m.textContent=c.e;
+    if(c.dur)m.style.animationDuration=c.dur;
+    if(c.fs)m.style.fontSize=c.fs+"px";
+    if(c.init){if(c.init.top)m.style.top=c.init.top;if(c.init.left)m.style.left=c.init.left;}
     el.scene.appendChild(m);
-    setTimeout(()=>m.remove(),1300);
+    setTimeout(()=>m.remove(),c.animMs);
     setState("playing");snd("play");
-    curX=62;curY=55;
-    el.catWrap.style.left="62%";el.catWrap.style.top="55%";placeShadow();
-    await sleepMs(1000);
-    puff(el.catWrap,0,-40,["🐭","⭐"],3);
-    setCheer(1600,true);
-    var keep=await offerItem({e:"🐭",n:"战利品小老鼠",r:"purple"});
-    if(g===gen&&keep)collectItem({e:"🐭",n:"战利品小老鼠",r:"purple"});
+    curX=c.pos[0];curY=c.pos[1];
+    el.catWrap.style.left=c.pos[0]+"%";el.catWrap.style.top=c.pos[1]+"%";placeShadow();
+    await sleepMs(c.wait);
+    if(g!==gen)return;
+    puff(el.catWrap,0,-40,c.puff,3);
+    setCheer(c.cheer,true);
+    var keep=await offerItem({e:c.e,n:c.n,r:c.r});
+    if(g===gen&&keep)collectItem({e:c.e,n:c.n,r:c.r});
     if(g===gen){
-      S.mood=clamp(S.mood+10);
-      addXp(6);
+      S.mood=clamp(S.mood+c.mood);
+      addXp(c.xp);
     }
   }finally{
     lastEvAt=Date.now();evLock=false;busy=false;
     if(S){updateHUD();save();}
   }
-}
-/* 蝴蝶事件：波浪飞行，猫跳起来抓 */
-async function evButterfly(){
-  if(!S||el.app.hidden)return;
-  evLock=true;busy=true;const g=gen;
-  try{
-    toast("有蝴蝶！"+S.name+" 蹦跳着去追～");
-    var b=document.createElement("span");
-    b.className="butterfly-fly";b.textContent="🦋";
-    el.scene.appendChild(b);
-    setTimeout(()=>b.remove(),3000);
-    setState("playing");snd("play");
-    curX=48;curY=42;
-    el.catWrap.style.left="48%";el.catWrap.style.top="42%";placeShadow();
-    await sleepMs(1400);
-    if(g!==gen)return;
-    puff(el.catWrap,0,-40,["🦋","✨","🌸"],3);
-    setCheer(1600,true);
-    var keep=await offerItem({e:"🦋",n:"战利品蝴蝶",r:"green"});
-    if(g===gen&&keep)collectItem({e:"🦋",n:"战利品蝴蝶",r:"green"});
-    if(g===gen){S.mood=clamp(S.mood+8);addXp(5);}
-  }finally{lastEvAt=Date.now();evLock=false;busy=false;if(S){updateHUD();save();}}
-}
-/* 甲虫事件：地面慢爬，猫低姿伏击 */
-async function evBeetle(){
-  if(!S||el.app.hidden)return;
-  evLock=true;busy=true;const g=gen;
-  try{
-    toast("发现甲虫！"+S.name+" 悄悄靠近…");
-    var k=document.createElement("span");
-    k.className="beetle-crawl";k.textContent="🪲";
-    el.scene.appendChild(k);
-    setTimeout(()=>k.remove(),2600);
-    setState("playing");snd("play");
-    curX=50;curY=72;
-    el.catWrap.style.left="50%";el.catWrap.style.top="72%";placeShadow();
-    await sleepMs(1600);
-    if(g!==gen)return;
-    puff(el.catWrap,0,-36,["🪲","⭐","✨"],3);
-    setCheer(1600,true);
-    var keep=await offerItem({e:"🪲",n:"战利品甲虫",r:"white"});
-    if(g===gen&&keep)collectItem({e:"🪲",n:"战利品甲虫",r:"white"});
-    if(g===gen){S.mood=clamp(S.mood+6);addXp(4);}
-  }finally{lastEvAt=Date.now();evLock=false;busy=false;if(S){updateHUD();save();}}
 }
 /* 鸟事件：高空快速飞过，猫仰头看 */
 async function evBird(){
@@ -3179,6 +3549,12 @@ function updateWatchTVBtn(){
   el.btnWatchTV.classList.toggle("disabled",!hasTV);
   el.btnWatchTV.disabled=!hasTV;
 }
+/* 钓鱼 3 级解锁、捕猎 5 级解锁 */
+function updateFishingHuntBtn(){
+  var lv=S.level||1;
+  el.btnFishing.style.display=lv>=3?"flex":"none";
+  el.btnHunt.style.display=lv>=5?"flex":"none";
+}
 function evLost(){
   if(!S||el.app.hidden)return;
   if(lostActive)return;
@@ -3228,8 +3604,7 @@ function clearLostState(){
 /* 收藏册 */
 function collCount(){
   if(!S.collection)return 0;
-  var t=0;for(var k in S.collection)t+=S.collection[k].n;
-  return t;
+  return Object.keys(S.collection).length;
 }
 function updateCollBtn(){
   var n=collCount();
@@ -3237,9 +3612,21 @@ function updateCollBtn(){
 }
 function renderColl(){
   el.collGrid.innerHTML="";
-  el.collCoins.textContent=S.catCoins||0;
   var keys=Object.keys(S.collection||{});
+  var types=keys.length;
+  var total=collTotal();
+  var pct=total?Math.round(types/total*100):0;
+  el.collProgress.textContent=pct+"%";
+  el.collTypes.textContent=types;
+  el.collTotalN.textContent=total;
   if(!keys.length){el.collGrid.innerHTML='<div class="coll-empty">还没有收藏任何宝贝，等猫猫捡到东西时选「收藏」吧</div>';return;}
+  /* 按稀有度从高到低展示 */
+  var order={gold:0,purple:1,green:2,white:3};
+  keys.sort(function(a,b){
+    var ra=order[S.collection[a].r||"white"];if(ra===undefined)ra=9;
+    var rb=order[S.collection[b].r||"white"];if(rb===undefined)rb=9;
+    return ra-rb||a.localeCompare(b,"zh");
+  });
   keys.forEach(function(k){
     var it=S.collection[k];
     var r=RARITY[it.r||"white"];
@@ -3248,26 +3635,9 @@ function renderColl(){
     d.style.background=r.bg;d.style.borderColor=r.border;
     d.innerHTML='<span class="ci-e">'+it.e+'</span><span class="ci-n">'+k+'</span>'
       +'<span class="ci-r" style="background:'+r.color+';color:#fff">'+r.name+'</span>'
-      +'<span class="ci-c">× '+it.n+'</span>'
-      +'<span class="ci-price">🪙 '+r.price+'/个</span>'
-      +'<button class="ci-sell" data-name="'+esc(k)+'">出售</button>';
-    d.querySelector(".ci-sell").onclick=function(e){
-      e.stopPropagation();
-      sellItem(k);
-    };
+      +'<span class="ci-c">× '+it.n+'</span>';
     el.collGrid.appendChild(d);
   });
-}
-function sellItem(name){
-  var it=S.collection[name];
-  if(!it||it.n<=0)return;
-  var r=RARITY[it.r||"white"];
-  it.n--;
-  S.catCoins=(S.catCoins||0)+r.price;
-  puff(el.catWrap,-16,-62,["🪙","✨"],2);
-  toast("出售 "+it.e+" "+name+" → 🪙"+r.price);
-  if(it.n<=0)delete S.collection[name];
-  renderColl();updateHUD();save();
 }
 /* 商店 */
 var shopCat="house";
@@ -3308,7 +3678,7 @@ function renderShop(){
   });
 }
 function upgradeHouse(h){
-  if((S.catCoins||0)<h.price){toast("猫币不够啦！还差 🪙"+(h.price-(S.catCoins||0)));return;}
+  if((S.catCoins||0)<h.price){shopToast("猫币不够啦！还差 🪙"+(h.price-(S.catCoins||0)));return;}
   S.catCoins-=h.price;
   S.catHouseLevel=h.lv;
   toast("🎉 猫窝升级为："+h.e+" "+h.name+"！");
@@ -3318,8 +3688,8 @@ function upgradeHouse(h){
   renderShop();updateHUD();save();
 }
 function buyItem(it){
-  if(busy){toast("猫咪正在忙，等一下～");return;}
-  if((S.catCoins||0)<it.price){toast("猫币不够啦！还差 🪙"+(it.price-(S.catCoins||0)));return;}
+  if((S.catCoins||0)<it.price){shopToast("猫币不够啦！还差 🪙"+(it.price-(S.catCoins||0)));return;}
+  if(it.cat==="consumable"&&busy){toast("猫咪正在忙，等一下～");return;}
   S.catCoins-=it.price;
   S.ownedItems=S.ownedItems||{};
   if(it.cat==="consumable"){
@@ -3368,6 +3738,593 @@ async function useTreat(it){
     addXp(3);
   }finally{if(g===gen){busy=false;catState="idle";renderCatClass();}updateHUD();save();}
 }
+/* ================= 钓鱼 / 捕猎系统 ================= */
+/* 收获品质（等级）：复用 RARITY 的配色与命名；按对局表现动态加权 */
+var CATCH_GRADE=["white","green","purple","gold"];
+/* 体型：影响售价 */
+var CATCH_SIZE=[["迷你",.72],["小型",.9],["普通",1.08],["大型",1.5],["巨型",2.2]];
+/* 渔获图鉴：按等级分组，p 为基准价 */
+var FISH_BY_G={
+  white: [{e:"🐟",n:"小鲫鱼",p:4},{e:"🦐",n:"河虾",p:5},{e:"🐌",n:"小田螺",p:3},{e:"🪱",n:"小蚯蚓",p:2}],
+  green: [{e:"🐠",n:"锦鲤",p:14},{e:"🦀",n:"小螃蟹",p:12},{e:"🐙",n:"小章鱼",p:16},{e:"🦑",n:"小鱿鱼",p:13}],
+  purple:[{e:"🐡",n:"河豚",p:33},{e:"🦞",n:"大龙虾",p:38},{e:"🐢",n:"长寿龟",p:32},{e:"🐟",n:"虹鳟鱼",p:35}],
+  gold:  [{e:"🐲",n:"金龙鱼",p:100},{e:"🦈",n:"鲨鱼幼崽",p:90},{e:"🐬",n:"小海豚",p:115}]
+};
+/* 猎物图鉴 */
+var PREY_BY_G={
+  white: [{e:"🐭",n:"田鼠",p:5},{e:"🪲",n:"大甲虫",p:3},{e:"🐛",n:"青虫",p:2},{e:"🦗",n:"蚱蜢",p:3}],
+  green: [{e:"🐦",n:"小麻雀",p:10},{e:"🐸",n:"青蛙",p:12},{e:"🦎",n:"小蜥蜴",p:11},{e:"🐿️",n:"小松鼠",p:15}],
+  purple:[{e:"🐇",n:"野兔",p:34},{e:"🦆",n:"野鸭",p:32},{e:"🦔",n:"刺猬",p:30},{e:"🦝",n:"小浣熊",p:36}],
+  gold:  [{e:"🦌",n:"小鹿",p:95},{e:"🦊",n:"赤狐",p:105},{e:"🐆",n:"小猎豹",p:120}]
+};
+var CATCH_CFG={
+  fish:{title:"🎣 钓鱼",wait:"甩竿入水，静静等待…",bite:"❗有鱼咬钩了！快收杆！",act:"🎣 收杆",
+        early:"嘘…水面上还没动静呢…",
+        tip:"绿色区间越窄，收获越珍贵。空格 = 收杆",
+        waitMin:1200,waitMax:3200,win:1000,speed:60,
+        miss:"鱼儿一甩尾，跑掉了…",half:"差一点！只捞上来一只小不点…"},
+  prey:{title:"🏹 捕猎",wait:"压低身子，屏住呼吸…",bite:"❗猎物出现了！扑上去！",act:"🏹 扑上去",
+        early:"嘘…别打草惊蛇，再等等…",
+        tip:"猎物更机警，反应窗口更短。空格 = 扑击",
+        waitMin:900, waitMax:2600,win:760, speed:94,
+        miss:"嗖——猎物钻进草丛不见了…",half:"扑了个空…只逮到一只小不点…"}
+};
+function newId(){return Date.now().toString(36)+Math.random().toString(36).slice(2,6);}
+/* 按对局质量 q(0~1) 抽等级：q 越高越可能出高级货 */
+function rollGrade(q){
+  q=Math.max(0,Math.min(1,q||0));
+  var b=Math.pow(q,1.5);
+  var w=[["white",64*(1-b*.75)],["green",27*(1+b*.30)],["purple",8.5*(1+b*1.25)],["gold",.9*(1+b*3.6)]];
+  var tot=0,i;for(i=0;i<w.length;i++)tot+=w[i][1];
+  var r=Math.random()*tot,acc=0;
+  for(i=0;i<w.length;i++){acc+=w[i][1];if(r<acc)return w[i][0];}
+  return "white";
+}
+/* 按对局质量抽体型 */
+function rollSize(q){
+  q=Math.max(0,Math.min(1,q||0));
+  var b=Math.pow(q,1.3);
+  var base=[16,26,30,19,9],out=[],i;
+  for(i=0;i<base.length;i++){
+    var v=base[i];
+    if(i>=3)v*=(0.35+b*1.6);       /* 大型/巨型：靠技术解锁 */
+    else if(i<=1)v*=(1.35-b*.9);   /* 迷你/小型：技术好就变少 */
+    out.push([CATCH_SIZE[i][0],CATCH_SIZE[i][1],Math.max(.5,v)]);
+  }
+  var tot=0;for(i=0;i<out.length;i++)tot+=out[i][2];
+  var r=Math.random()*tot,acc=0;
+  for(i=0;i<out.length;i++){acc+=out[i][2];if(r<acc)return out[i];}
+  return [CATCH_SIZE[2][0],CATCH_SIZE[2][1]];
+}
+/* 生成一件战利品 */
+function makeCatch(type,q){
+  var g=rollGrade(q),sz=rollSize(q);
+  var table=(type==="prey"?PREY_BY_G:FISH_BY_G)[g]||FISH_BY_G.white;
+  var sp=pick(table);
+  var price=Math.max(1,Math.round(sp.p*sz[1]*(0.9+Math.random()*.25)));
+  return {id:newId(),type:type==="prey"?"prey":"fish",e:sp.e,n:sp.n,g:g,sz:sz[0],
+          price:price,day:Math.floor(S.min/1440)+1};
+}
+function bagCount(){return (S&&S.bag)?S.bag.length:0;}
+function updateBagBtn(){
+  if(!el.btnBag)return;
+  var n=bagCount();
+  el.btnBag.textContent="🎒 战利品"+(n?" · "+n:"");
+}
+function bagStat(){ return S.bagStat=S.bagStat||{fish:0,prey:0,sold:0,earned:0,best:null}; }
+function addCatchItem(it){
+  S.bag=S.bag||[];
+  S.bag.unshift(it);
+  var st=bagStat();
+  if(it.type==="prey")st.prey=(st.prey||0)+1; else st.fish=(st.fish||0)+1;
+  if(!st.best||it.price>st.best.price)st.best={e:it.e,n:it.n,price:it.price,g:it.g};
+  /* 同步收录进收藏册：按种类去重，n 为终身捕获数，出售/喂食不影响收录 */
+  S.collection=S.collection||{};
+  if(!S.collection[it.n])S.collection[it.n]={e:it.e,n:0,r:it.g||"white"};
+  S.collection[it.n].n++;
+  updateCollBtn();
+  updateBagBtn();
+}
+function findCatch(id){
+  var l=S.bag||[];
+  for(var i=0;i<l.length;i++)if(l[i].id===id)return i;
+  return -1;
+}
+function sellCatch(id){
+  var i=findCatch(id); if(i<0)return;
+  var it=S.bag[i];
+  S.bag.splice(i,1);
+  S.catCoins=(S.catCoins||0)+it.price;
+  var st=bagStat(); st.sold=(st.sold||0)+1; st.earned=(st.earned||0)+it.price;
+  puff(el.catWrap,-16,-62,["🪙","✨"],2);
+  toast("卖出 "+it.e+" "+it.n+" → 🪙"+it.price);
+  snd("pop");
+  renderBag();updateHUD();save();
+}
+function sellCatchAll(){
+  var list=(S.bag||[]).filter(function(it){return bagTab==="all"||it.type===bagTab;});
+  if(!list.length){toast("这一栏没有可出售的东西");return;}
+  var total=0,n=0;
+  list.forEach(function(it){total+=it.price;n++;});
+  S.bag=(S.bag||[]).filter(function(it){return !(bagTab==="all"||it.type===bagTab);});
+  S.catCoins=(S.catCoins||0)+total;
+  var st=bagStat(); st.sold=(st.sold||0)+n; st.earned=(st.earned||0)+total;
+  puff(el.catWrap,-16,-62,["🪙","✨","💰"],4);
+  toast("售出 "+n+" 件战利品 → 🪙"+total);
+  snd("level");
+  renderBag();updateHUD();save();
+}
+/* 把战利品喂给猫猫：等级越高，心情加成越多 */
+function feedCatch(id){
+  if(busy){toast("猫猫正在忙，等一下～");return;}
+  if(S.sleeping){toast("Zzz…猫猫睡得正香");return;}
+  var i=findCatch(id); if(i<0)return;
+  var it=S.bag[i];
+  S.bag.splice(i,1);
+  var fill=it.g==="gold"?45:it.g==="purple"?35:it.g==="green"?25:16;
+  var moodAdd=it.g==="gold"?30:it.g==="purple"?22:it.g==="green"?16:11;
+  S.hunger=clamp(S.hunger+fill);
+  S.mood=clamp(S.mood+moodAdd);
+  snd("eat");
+  puff(el.catWrap,0,-40,[it.e,"😋","💗"],3);
+  bubble(pick(["好吃好吃！","吧唧吧唧～","自己抓的最香！","嗷呜——好满足！"]),true);
+  toast(S.name+" 吃掉了 "+it.e+" "+it.n+"（饱食 +"+fill+" 心情 +"+moodAdd+"）");
+  setCheer(1500,true);
+  addXp(4);
+  renderBag();updateHUD();save();
+}
+var bagTab="all";
+function renderBag(){
+  if(!S)return;
+  el.bagGrid.innerHTML="";
+  el.bagCoins.textContent=S.catCoins||0;
+  var st=bagStat(),bits=[];
+  bits.push("🎣 渔获 <b>"+(st.fish||0)+"</b>");
+  bits.push("🏹 猎物 <b>"+(st.prey||0)+"</b>");
+  bits.push("💰 已售 <b>"+(st.sold||0)+"</b>");
+  bits.push("🪙 累计收入 <b>"+(st.earned||0)+"</b>");
+  if(st.best)bits.push("🏆 最贵："+st.best.e+esc(st.best.n)+" <b>🪙"+st.best.price+"</b>");
+  el.bagStat.innerHTML=bits.join("　·　");
+  var list=(S.bag||[]).filter(function(it){return bagTab==="all"||it.type===bagTab;});
+  if(!list.length){el.bagGrid.innerHTML='<div class="coll-empty">这里还空空的，去钓钓鱼、打打猎吧～</div>';return;}
+  list.forEach(function(it){
+    var r=RARITY[it.g||"white"];
+    var d=document.createElement("div");
+    d.className="bag-item"+(it.g==="gold"?" rarity-gold":it.g==="purple"?" rarity-purple":"");
+    d.style.background=r.bg;d.style.borderColor=r.border;
+    d.innerHTML='<span class="bi-e">'+it.e+'</span>'
+      +'<span class="bi-n">'+esc(it.n)+'</span>'
+      +'<span class="bi-g" style="background:'+r.color+'">'+r.name+' · '+esc(it.sz)+'</span>'
+      +'<span class="bi-p">🪙 '+it.price+'</span>'
+      +'<div class="bi-acts">'
+      +'<button class="bi-sell" data-id="'+it.id+'">出售</button>'
+      +'<button class="bi-feed" data-id="'+it.id+'">喂猫</button>'
+      +'</div>';
+    d.querySelector(".bi-sell").onclick=function(){sellCatch(it.id);};
+    d.querySelector(".bi-feed").onclick=function(){feedCatch(it.id);};
+    el.bagGrid.appendChild(d);
+  });
+}
+/* ---------- 钓鱼 / 捕猎 小游戏（共用一个弹窗） ---------- */
+function showCatchResult(res,cfg){
+  el.catchCard.classList.add("settled");
+  if(!res){el.catchResult.innerHTML='<span class="cr-e">💨</span><div class="cr-fail">被打断了…</div>';return;}
+  var html="";
+  if(res.item){
+    var r=RARITY[res.item.g];
+    html='<span class="cr-e">'+res.item.e+'</span>'
+        +'<div class="cr-n">'+esc(res.item.n)+'</div>'
+        +'<div class="cr-g" style="background:'+r.color+'">'+r.name+' · '+esc(res.item.sz)+'</div>'
+        +'<div class="cr-p">🪙 '+res.item.price+'</div>'
+        +(res.comboLine?'<div class="cr-combo">'+esc(res.comboLine)+'</div>':"")
+        +(res.consolation?'<div class="cr-fail">'+esc(res.msg||"")+'</div>':"");
+    if(res.item.g==="gold"){puffScene(["✨","🌟","💫","⭐","💛"],6);snd("level");}
+    else if(res.item.g==="purple"){puffScene(["✨","💜","🔮","🟣"],5);snd("meow");}
+    else {puffScene(["✨","💫"],3);snd("pop");}
+  }else{
+    html='<span class="cr-e">💨</span><div class="cr-fail">'+esc(res.msg||"跑掉了…")+'</div>';
+    snd("scoop");
+  }
+  el.catchResult.innerHTML=html;
+}
+/* type:"fish"|"prey"；make(q) 由调用方注入，负责产出战利品对象 */
+function runCatchGame(mode){
+  /* mode: "fish" | "prey" —— 必须和战利品类型一致，否则查不到配置 */
+  var cfg=CATCH_CFG[mode]||CATCH_CFG.fish;
+  return new Promise(function(resolve){
+    var done=false,phase="wait",biteTo=0,hardTo=0,raf=0,gi=0,last=0;
+    var pos=0,dir=1,zoneL=0,zoneW=0,MARKW=10;
+    var myGen=gen;
+   try{
+
+    el.catchCard.classList.toggle("hunt",mode!=="fish");
+    el.catchCard.classList.remove("bite");
+    el.catchCard.classList.remove("settled");
+    el.catchCard.classList.remove("whack");
+    el.catchTitle.textContent=cfg.title;
+    el.catchSub.textContent=cfg.wait;
+    el.catchTip.textContent=cfg.tip;
+    el.catchBob.textContent=mode!=="fish"?"🐾":"🎣";
+    el.catchBob.style.display="";
+    el.catchResult.innerHTML="";
+    el.catchTarget.classList.remove("on");
+    el.catchRipple.classList.remove("on");
+    el.catchBar.classList.remove("on");
+    el.catchBtn.textContent=cfg.act;
+    el.catchBtn.disabled=false;
+    el.catchModal.classList.add("on");
+
+    function cleanup(){
+      clearTimeout(biteTo);clearTimeout(hardTo);cancelAnimationFrame(raf);clearInterval(gi);
+      document.removeEventListener("keydown",onKey,true);
+      el.catchBtn.onclick=null;
+      el.catchCard.classList.remove("bite");
+      el.catchRipple.classList.remove("on");
+      el.catchBtn.disabled=true;
+    }
+    function finish(res){
+      if(done)return;
+      done=true;
+      cleanup();
+      if(res&&(res.ok||res.consolation))res.item=makeCatch(mode,res.ok?res.quality:0);
+      showCatchResult(res,cfg);
+      setTimeout(function(){
+        el.catchModal.classList.remove("on");
+        resolve(res);
+      },(res&&res.item)?1800:1400);
+    }
+    function onKey(e){
+      if(e.key===" "||e.key==="Enter"||e.key==="Spacebar"){e.preventDefault();act();}
+    }
+    function act(){
+      if(done)return;
+      if(phase==="wait"){el.catchSub.textContent=cfg.early;return;}
+      if(phase==="bite"){
+        clearTimeout(hardTo);hardTo=0;
+        startBar();
+        return;
+      }
+      if(phase==="bar"){
+        var mc=pos+MARKW/2,zc=zoneL+zoneW/2,diff=Math.abs(mc-zc);
+        cancelAnimationFrame(raf);clearTimeout(hardTo);
+        el.catchBar.classList.remove("on");
+        if(diff<=zoneW/2){
+          var acc=1-diff/(zoneW/2);              /* 越靠中间越准 */
+          var rar=1-(zoneW-12)/22;               /* 区间越窄，稀有加成越高 */
+          finish({ok:true,quality:Math.max(0,Math.min(1,acc*.7+rar*.3))});
+        }else{
+          finish({ok:false,consolation:true,msg:cfg.half});
+        }
+      }
+    }
+    el.catchBtn.onclick=act;
+    document.addEventListener("keydown",onKey,true);
+
+    biteTo=setTimeout(function(){
+      phase="bite";
+      el.catchSub.textContent=cfg.bite;
+      el.catchCard.classList.add("bite");
+      el.catchRipple.classList.add("on");
+      el.catchTarget.textContent=mode!=="fish"?"🐭":"🐟";
+      el.catchTarget.classList.add("on");
+      snd("pop");
+      hardTo=setTimeout(function(){finish({ok:false,msg:cfg.miss});},cfg.win);
+    },cfg.waitMin+Math.random()*(cfg.waitMax-cfg.waitMin));
+
+    function startBar(){
+      phase="bar";
+      el.catchSub.textContent="就是现在！对准绿色区间！";
+      el.catchCard.classList.remove("bite");
+      el.catchRipple.classList.remove("on");
+      zoneW=12+Math.random()*22;
+      zoneL=Math.random()*(100-zoneW);
+      el.catchZone.style.left=zoneL+"%";
+      el.catchZone.style.width=zoneW+"%";
+      el.catchBar.classList.add("on");
+      snd("drink");
+      pos=0;dir=1;last=0;
+      hardTo=setTimeout(function(){if(!done)finish({ok:false,msg:cfg.miss});},4200);
+      function loop(t){
+        if(done)return;
+        if(!last)last=t;
+        var dt=Math.min(60,t-last)/1000;last=t;
+        pos+=dir*cfg.speed*dt;
+        if(pos>100-MARKW){pos=100-MARKW;dir=-1;}
+        if(pos<0){pos=0;dir=1;}
+        el.catchMark.style.left=pos.toFixed(2)+"%";
+        raf=requestAnimationFrame(loop);
+      }
+      raf=requestAnimationFrame(loop);
+    }
+    /* 被别的操作打断（gen 变化）时自动收场 */
+    gi=setInterval(function(){if(gen!==myGen&&!done)finish(null);},200);
+   }catch(err){
+     /* 兜底：小游戏里出任何岔子都必须收场，绝不能让动作锁卡死 */
+     console.error("[catch]",err);
+     done=true;
+     try{cleanup();}catch(e){}
+     el.catchModal.classList.remove("on");
+     resolve(null);
+   }
+  });
+}
+/* ---- 打地鼠捕猎：猎物从洞口探头，连续敲中积连击，连击越高奖励越丰厚 ---- */
+var WHACK_CFG={dur:16000,upStart:1150,upEnd:620,gapStart:520,gapEnd:240,
+  maxConcurrent:2,comboPrice:.05,comboCap:10,qDiv:280,
+  emotes:["🐭","🐹","🐰","🦔","🐦","🐸","🦗","🐿️","🐛"]};
+function runWhackGame(){
+  return new Promise(function(resolve){
+    var done=false,running=false,closed=false,lastRes=null,myGen=gen;
+    var startAt=0,raf=0,spawnTo=0,countTo=0,gi=0;
+    var score=0,combo=0,maxCombo=0,hits=0,misses=0;
+    var holes=[];
+    function lerp(a,b,t){return a+(b-a)*t;}
+    function buildHoles(){
+      el.whackArea.innerHTML="";
+      holes=[];
+      for(var i=0;i<9;i++){
+        var h=document.createElement("div");
+        h.className="whack-hole";
+        h.innerHTML='<div class="whack-clip"><span class="whack-mole"></span></div>';
+        (function(idx,node){
+          node.addEventListener("pointerdown",function(e){onHit(idx,e);});
+        })(i,h);
+        el.whackArea.appendChild(h);
+        holes.push({mole:h.querySelector(".whack-mole"),to:0,busy:false});
+      }
+    }
+    function updateCombo(){
+      el.whackCombo.textContent="🔥 连击 x"+combo;
+      el.whackCombo.classList.toggle("hot",combo>=5);
+    }
+    function showPop(h,txt){
+      var s=document.createElement("span");
+      s.className="whack-pop";s.textContent=txt;
+      h.mole.parentNode.parentNode.appendChild(s);
+      setTimeout(function(){s.remove();},480);
+    }
+    function breakCombo(msg){
+      if(combo>0){combo=0;updateCombo();el.catchSub.textContent=msg;}
+    }
+    function onHit(idx,e){
+      if(!running||done)return;
+      if(e&&e.preventDefault)e.preventDefault();
+      var h=holes[idx];
+      if(!h)return;
+      if(h.mole.classList.contains("up")){
+        clearTimeout(h.to);h.to=0;
+        combo++;maxCombo=Math.max(maxCombo,combo);
+        hits++;score+=10+combo*2;          /* 连击越高，单次得分越高 */
+        showPop(h,"💥");
+        h.mole.classList.remove("up");
+        h.mole.classList.add("bonk");
+        (function(m){setTimeout(function(){m.classList.remove("bonk");},240);})(h.mole);
+        h.busy=false;
+        updateCombo();
+        if(combo===5)el.catchSub.textContent="🔥 连击 x5！手感来了！";
+        else if(combo===8)el.catchSub.textContent="🔥 连击 x8！猎物害怕了！";
+        else if(combo===12)el.catchSub.textContent="🔥🔥 连击 x12！无敌猎手！";
+        snd("pop");
+      }else{
+        breakCombo("扑空了！连击断了…");
+        showPop(h,"💨");
+        snd("scoop");
+      }
+    }
+    function popUp(h,prog){
+      h.busy=true;
+      h.mole.classList.remove("bonk");
+      h.mole.textContent=pick(WHACK_CFG.emotes);
+      h.mole.classList.add("up");
+      var upMs=lerp(WHACK_CFG.upStart,WHACK_CFG.upEnd,prog);
+      h.to=setTimeout(function(){
+        if(h.mole.classList.contains("up")){
+          h.mole.classList.remove("up");
+          misses++;
+          breakCombo("猎物溜走了…连击断了");
+        }
+        h.busy=false;
+      },upMs);
+    }
+    function spawnLoop(){
+      if(!running||done)return;
+      var prog=Math.min(1,(Date.now()-startAt)/WHACK_CFG.dur);
+      var cap=prog<0.35?1:WHACK_CFG.maxConcurrent;
+      var active=0,free=[],i;
+      for(i=0;i<holes.length;i++){if(holes[i].busy)active++;else free.push(holes[i]);}
+      if(active<cap&&free.length)popUp(pick(free),prog);
+      spawnTo=setTimeout(spawnLoop,lerp(WHACK_CFG.gapStart,WHACK_CFG.gapEnd,prog));
+    }
+    function timerLoop(){
+      if(!running||done)return;
+      var prog=Math.min(1,(Date.now()-startAt)/WHACK_CFG.dur);
+      el.whackTimer.style.width=(100-prog*100).toFixed(2)+"%";
+      if(prog>=1){endGame();return;}
+      raf=requestAnimationFrame(timerLoop);
+    }
+    function startGame(){
+      if(running||done)return;
+      running=true;
+      el.catchBtn.disabled=true;
+      el.catchBtn.textContent="🐾 狩猎中…";
+      var n=3;
+      function count(){
+        if(done)return;
+        if(n>0){
+          el.whackCount.textContent=n;
+          el.whackCount.classList.remove("on");
+          void el.whackCount.offsetWidth;
+          el.whackCount.classList.add("on");
+          snd("pop");
+          n--;
+          countTo=setTimeout(count,800);
+        }else{
+          el.whackCount.textContent="上！";
+          el.whackCount.classList.remove("on");
+          void el.whackCount.offsetWidth;
+          el.whackCount.classList.add("on");
+          countTo=setTimeout(function(){el.whackCount.classList.remove("on");},600);
+          startAt=Date.now();
+          spawnLoop();
+          raf=requestAnimationFrame(timerLoop);
+        }
+      }
+      count();
+    }
+    function stopPlay(){
+      running=false;
+      clearTimeout(spawnTo);clearTimeout(countTo);
+      cancelAnimationFrame(raf);
+      for(var i=0;i<holes.length;i++){
+        clearTimeout(holes[i].to);holes[i].to=0;
+        holes[i].mole.classList.remove("up");
+        holes[i].mole.classList.remove("bonk");
+      }
+      el.whackCount.classList.remove("on");
+    }
+    function endGame(){
+      stopPlay();
+      if(hits<=0){finish({ok:false,msg:"一只猎物都没抓到…"});return;}
+      /* 得分主要由连击贡献：连击段越高单次得分越高，断连击就前功尽弃 */
+      var q=Math.max(0,Math.min(1,score/WHACK_CFG.qDiv));
+      finish({ok:true,quality:q,combo:maxCombo,hits:hits,score:score});
+    }
+    function cleanup(){
+      stopPlay();
+      clearInterval(gi);
+      document.removeEventListener("keydown",onKey,true);
+      el.catchBtn.onclick=null;
+      el.catchCard.classList.remove("whack");
+      el.whackArea.innerHTML="";
+      el.catchBob.style.display="";
+      el.catchBtn.disabled=true;
+    }
+    function finish(res){
+      if(done)return;
+      done=true;
+      lastRes=res;
+      cleanup();
+      if(res&&res.ok){
+        res.item=makeCatch("prey",res.quality);
+        /* 连击奖励：最大连击直接抬升售价 */
+        var bonus=1+Math.min(res.combo,WHACK_CFG.comboCap)*WHACK_CFG.comboPrice;
+        if(bonus>1){
+          res.item.price=Math.max(1,Math.round(res.item.price*bonus));
+          res.comboLine="🔥 最大连击 x"+res.combo+" · 售价加成 +"+Math.round((bonus-1)*100)+"%";
+        }
+      }
+      showCatchResult(res,{});
+      /* 结算画面手动关闭：点「收好」或按空格/回车 */
+      el.catchTip.textContent="点击「收好」或按空格键继续";
+      el.catchBtn.textContent="收好";
+      el.catchBtn.disabled=false;
+      el.catchBtn.onclick=closeNow;
+      document.addEventListener("keydown",onKeyClose,true);
+    }
+    function onKeyClose(e){
+      if(e.key===" "||e.key==="Enter"||e.key==="Spacebar"){e.preventDefault();closeNow();}
+    }
+    function closeNow(){
+      if(closed)return;
+      closed=true;
+      document.removeEventListener("keydown",onKeyClose,true);
+      el.catchBtn.onclick=null;
+      el.catchBtn.disabled=true;
+      el.catchModal.classList.remove("on");
+      resolve(lastRes);
+    }
+    function onKey(e){
+      if(e.key===" "||e.key==="Enter"||e.key==="Spacebar"){
+        e.preventDefault();
+        if(!running)startGame();
+      }
+    }
+   try{
+    el.catchCard.classList.add("hunt");
+    el.catchCard.classList.add("whack");
+    el.catchCard.classList.remove("bite");
+    el.catchCard.classList.remove("settled");
+    el.catchTitle.textContent="🐾 打地鼠捕猎";
+    el.catchSub.textContent="敲中探头猎物积累连击，连击越高奖励越丰厚！";
+    el.catchTip.textContent="扑空或让猎物溜走会打断连击";
+    el.catchBob.style.display="none";
+    el.catchResult.innerHTML="";
+    el.catchTarget.classList.remove("on");
+    el.catchBar.classList.remove("on");
+    el.whackCombo.textContent="🔥 连击 x0";
+    el.whackCombo.classList.remove("hot");
+    el.whackTimer.style.width="100%";
+    el.catchBtn.textContent="🐾 开始狩猎";
+    el.catchBtn.disabled=false;
+    el.catchModal.classList.add("on");
+    buildHoles();
+    el.catchBtn.onclick=startGame;
+    document.addEventListener("keydown",onKey,true);
+    /* 被别的操作打断（gen 变化）时自动收场 */
+    gi=setInterval(function(){if(gen!==myGen&&!done)finish(null);},200);
+   }catch(err){
+     /* 兜底：小游戏里出任何岔子都必须收场，绝不能让动作锁卡死 */
+     console.error("[whack]",err);
+     done=true;
+     try{cleanup();}catch(e){}
+     el.catchModal.classList.remove("on");
+     resolve(null);
+   }
+  });
+}
+/* 一次出动：钓鱼 / 捕猎 */
+var catchCd=0;
+async function doCatch(mode){
+  const isFish=mode!=="prey";
+  cancelAuto();markActive();
+  if(S.sleeping){toast("Zzz…猫猫睡得正香");return;}
+  if(busy){toast("等一下，猫猫正在忙～");return;}
+  const need=isFish?10:16, cost=isFish?8:14;
+  if(S.energy<need){bubble(isFish?"太累了…钓不动鱼了…":"没力气了…打不动猎了…",true);return;}
+  if((S.bag||[]).length>=80){toast("战利品袋装满啦！先去卖掉一些吧");return;}
+  if(Date.now()<catchCd)return;
+  catchCd=Date.now()+5000;
+  busy=true;
+  const g=gen;
+  try{
+  toast(isFish?`${S.name} 叼着小鱼竿去水边了…（+1 小时）`:`${S.name} 蹑手蹑脚出门打猎了…（+1 小时）`);
+  await goTo(isFish?POS.fish[0]+8:58,isFish?POS.fish[1]:92,"walking");
+  if(g!==gen){busy=false;return;}
+  setState(isFish?"swat":"playing");snd("play");
+  await sleepMs(isFish?700:600);
+  if(g!==gen){busy=false;return;}
+  setState("idle");
+  const r=await (isFish?runCatchGame("fish"):runWhackGame());
+  if(g!==gen){busy=false;return;}
+  if(!r){busy=false;return;}
+  if(r.item){
+    addCatchItem(r.item);
+    toast(`🎉 收获 ${r.item.e} ${r.item.n}【${RARITY[r.item.g].name}·${r.item.sz}】 🪙${r.item.price}`);
+    puff(el.catWrap,0,-50,[r.item.e,"✨",isFish?"💦":"🍃"],4);
+    bubble(pick(isFish?["钓到鱼啦！今晚加餐！","嘿咻——好重一条！","水花四溅！抓到了！"]
+                       :["猎物到手！我是最棒的猎手！","悄悄靠近…抓住了！","今晚有肉吃啦！"]),true);
+    setCheer(1500,true);
+    addXp(isFish?10:14);
+  }else{
+    toast(r.msg||"什么都没抓到…");
+    bubble(pick(isFish?["哎呀，跑了…","就差一点点…"]:["嗖——让它溜了…","下次一定抓到！"]),true);
+    addXp(2);
+  }
+  S.mood=clamp(S.mood+(isFish?10:14));
+  S.energy=Math.max(0,S.energy-cost);
+  advanceTime(1);
+  }catch(err){
+    /* 兜底：任何意外都要把动作锁放开，否则整个游戏会卡死 */
+    console.error("[doCatch]",err);
+    try{setState("idle");}catch(e){}
+  }finally{
+    busy=false;
+    if(g===gen&&S){needBubble();updateHUD();save();chain();}
+  }
+}
+function onFishing(){doCatch("fish");}
+function onHunt(){doCatch("prey");}
+
 /* 猫窝等级视觉渲染 */
 function renderHouse(){
   var lv=S.catHouseLevel||1;
@@ -3444,6 +4401,68 @@ function renderSceneItems(){
     }
     el.floor.appendChild(d);
   });
+  updateBrokenUI();
+}
+
+/* ================= 家具损坏与修理 ================= */
+var BREAKABLE={
+  fishtank:{name:"鱼缸",e:"🐠"},
+  tv:{name:"电视机",e:"📺"},
+  treadmill:{name:"跑步机",e:"🏃"},
+  cattree:{name:"攀爬架",e:"🧗"}
+};
+var currentRepairId=null;
+function isBroken(id){return !!(S&&S.brokenFurniture&&S.brokenFurniture[id]);}
+function doBreak(id){
+  var cfg=BREAKABLE[id];
+  if(!cfg)return false;
+  S.brokenFurniture=S.brokenFurniture||{};
+  if(S.brokenFurniture[id])return false;
+  S.brokenFurniture[id]=true;
+  toast(`💢 ${cfg.name}被猫猫弄坏了！花 🪙100 可修理`);
+  bubble("糟了…闯祸了…",true);
+  puff(el.catWrap,0,-40,["💢","💥"],2);
+  updateBrokenUI();
+  save();
+  return true;
+}
+function tryBreak(id,chance){
+  if(Math.random()>=chance)return false;
+  return doBreak(id);
+}
+/* 刷新损坏视觉标识（鱼缸/攀爬架是静态家具，电视/跑步机是购买的场景物件） */
+function updateBrokenUI(){
+  if(el.fishtank)el.fishtank.classList.toggle("broken",isBroken("fishtank"));
+  var ct=document.querySelector(".cattree"); if(ct)ct.classList.toggle("broken",isBroken("cattree"));
+  document.querySelectorAll(".scene-owned-item").forEach(function(n){
+    var id=n.classList.contains("tv-item")?"tv":(n.classList.contains("treadmill")?"treadmill":null);
+    if(id)n.classList.toggle("broken",isBroken(id));
+  });
+}
+function openRepair(id){
+  var cfg=BREAKABLE[id];
+  if(!cfg)return;
+  currentRepairId=id;
+  el.repairSub.textContent=cfg.e+" "+cfg.name+"被猫猫玩坏了，修理需要 🪙100。";
+  el.repairModal.classList.add("on");
+}
+function closeRepair(){el.repairModal.classList.remove("on");currentRepairId=null;}
+function confirmRepair(){
+  if(!currentRepairId)return;
+  var cfg=BREAKABLE[currentRepairId];
+  if((S.catCoins||0)<100){
+    el.repairSub.textContent="猫币不够啦！还差 🪙"+(100-(S.catCoins||0))+"。";
+    return;
+  }
+  S.catCoins-=100;
+  S.brokenFurniture=S.brokenFurniture||{};
+  delete S.brokenFurniture[currentRepairId];
+  toast(`🔧 ${cfg.name}修好啦！`);
+  puff(el.catWrap,0,-40,["🔧","✨"],3);
+  setCheer(1500,true);
+  closeRepair();
+  updateBrokenUI();
+  updateHUD();save();
 }
 
 /* ================= 天气系统 ================= */
@@ -3575,22 +4594,18 @@ function inGameEvTick(){
   if(!S.visit){
     var roll=Math.random();
     /* 幼猫期（第 1 天）不触发朋友来访：命中该概率段时重摇到其它事件区间 */
-    if(Math.floor(S.min/1440)+1<2&&roll>=0.57&&roll<0.82)roll=Math.random()*0.55;
+    if(Math.floor(S.min/1440)+1<2&&roll>=0.60&&roll<0.85)roll=Math.random()*0.60;
     if(roll<0.25)fire="find";
-    else if(roll<0.35)fire="mouse";
-    else if(roll<0.45)fire="butterfly";
-    else if(roll<0.52)fire="beetle";
-    else if(roll<0.57)fire="bird";
-    else if(roll<0.82)fire="friend";                       /* 朋友来访 25% */
-    else if(roll<0.92)fire="sick";
+    else if(roll<0.55)fire="critter";                      /* 家里的小动物 30%（8 种均分） */
+    else if(roll<0.60)fire="bird";
+    else if(roll<0.85)fire="friend";                       /* 朋友来访 25% */
+    else if(roll<0.95)fire="sick";
   }
   if(!fire)return;
   if(autoBusy)cancelAuto();
   if(catState==="cheer"||catState==="swat")return;
   if(fire==="find")evFindItem();
-  else if(fire==="mouse")evMouse();
-  else if(fire==="butterfly")evButterfly();
-  else if(fire==="beetle")evBeetle();
+  else if(fire==="critter")evCritter(pick(Object.keys(CRITTERS)));
   else if(fire==="bird")evBird();
   else if(fire==="friend")evFriend();
   else if(fire==="sick")evSick();
@@ -3670,8 +4685,11 @@ function updateHUD(){
   expr=S.sleeping?"neutral":(S.sick||S.mood<35||worst<22)?"sad":(S.mood>=60&&worst>=35)?"happy":"neutral";
   updateMedBtn();
   updateCollBtn();
+  updateBagBtn();
   updateExerciseBtn();
   updateWatchTVBtn();
+  updateFishingHuntBtn();
+  updateBrokenUI();
   el.hudCoins.textContent=S.catCoins||0;
   el.catWrap.style.width=(day<2?136:168)+"px";
   renderCatClass();
@@ -3681,7 +4699,7 @@ function updateHUD(){
 }
 
 /* ================= 存档（多槽位） ================= */
-let slotIdx=1;   /* 当前猫窝编号 1~3 */
+let slotIdx=1;   /* 当前猫窝编号 1~4（第 4 号是稀有猫舍） */
 /* 新猫初始状态：也是读档时缺失字段的补齐模板 */
 function newCat(name,breed){
   return {v:3,name:name,breed:breed,min:8*60,
@@ -3689,6 +4707,8 @@ function newCat(name,breed){
     foodBowl:0,waterBowl:0,
     xp:0,level:1,nextPotty:8*60+180,muted:false,sleeping:false,autoWander:true,
     collection:{},catCoins:0,ownedItems:{},catHouseLevel:1,
+    brokenFurniture:{},
+    bag:[],bagStat:{fish:0,prey:0,sold:0,earned:0,best:null},
     sick:false,sickSince:0,visit:null,nextLost:14*60};
 }
 /* 来访状态修补：坏档/旧档一律丢弃，且每次读档把离场时间往后延 8 分钟 */
@@ -3747,8 +4767,19 @@ function sanitize(s){
     if(!ci.r||!RARITY[ci.r])ci.r="white";
     if(ci.n<=0)delete o.collection[ck];
   }
+  /* 旧存档"战利品X"改名（去掉前缀），同名合并数量 */
+  var REN={"战利品小老鼠":"小老鼠","战利品蝴蝶":"蝴蝶","战利品甲虫":"甲虫"};
+  for(var rn in REN){
+    if(o.collection[rn]){
+      var tgt=REN[rn];
+      if(o.collection[tgt])o.collection[tgt].n=(o.collection[tgt].n||0)+(o.collection[rn].n||0);
+      else o.collection[tgt]=o.collection[rn];
+      delete o.collection[rn];
+    }
+  }
   o.catCoins=num(o.catCoins,0,0,1e9);
   if(!o.ownedItems||typeof o.ownedItems!=="object")o.ownedItems={};
+  if(!o.brokenFurniture||typeof o.brokenFurniture!=="object")o.brokenFurniture={};
   /* 旧存档玩具可能是布尔值true，转为带时间的对象（永久玩具保持true） */
   for(var oid in o.ownedItems){
     if(o.ownedItems[oid]===true){
@@ -3759,6 +4790,25 @@ function sanitize(s){
     }
   }
   o.catHouseLevel=num(o.catHouseLevel,1,1,HOUSE_LEVELS.length);
+  /* 战利品袋：清洗成受信任的结构，坏数据直接丢弃 */
+  if(!Array.isArray(o.bag))o.bag=[];
+  o.bag=o.bag.filter(function(it){return it&&typeof it==="object"&&typeof it.n==="string"&&it.n;})
+    .slice(0,80).map(function(it){
+      return {id:typeof it.id==="string"&&it.id?it.id:newId(),
+              type:it.type==="prey"?"prey":"fish",
+              e:typeof it.e==="string"&&it.e?it.e:"🐟",
+              n:String(it.n).slice(0,12),
+              g:RARITY[it.g]?it.g:"white",
+              sz:typeof it.sz==="string"&&it.sz?String(it.sz).slice(0,4):"普通",
+              price:Math.round(num(it.price,1,1,1e6)),
+              day:num(it.day,1,1,1e9)};
+    });
+  var bs=(o.bagStat&&typeof o.bagStat==="object")?o.bagStat:{};
+  var bBest=(bs.best&&typeof bs.best==="object"&&typeof bs.best.n==="string")?
+    {e:String(bs.best.e||"🐟"),n:String(bs.best.n).slice(0,12),price:num(bs.best.price,0,0,1e7),
+     g:RARITY[bs.best.g]?bs.best.g:"white"}:null;
+  o.bagStat={fish:num(bs.fish,0,0,1e7),prey:num(bs.prey,0,0,1e7),sold:num(bs.sold,0,0,1e7),
+             earned:num(bs.earned,0,0,1e9),best:bBest};
   o.visit=sanitizeVisit(o.visit,o);
   return o;
 }
@@ -3777,6 +4827,19 @@ function loadSlot(i){
   }catch(e){return null;}
 }
 function clearSlot(i){try{localStorage.removeItem(slotKey(i));}catch(e){}}
+/* 账号级「铲屎官等级」= 养过的所有猫里达到过的最高等级（跨槽位持久化，删猫也不掉） */
+function getAccount(){
+  try{const a=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"{}");return a&&typeof a==="object"?a:{};}
+  catch(e){return {};}
+}
+function accountMaxLevel(){return num(getAccount().maxLevel,0,0,9999);}
+function accountOnLevelUp(lv){
+  const a=getAccount();
+  if(lv>(a.maxLevel||0)){
+    a.maxLevel=lv;
+    try{localStorage.setItem(ACCOUNT_KEY,JSON.stringify(a));}catch(e){}
+  }
+}
 function migrateOld(){   /* 旧版单存档迁入 1 号猫窝 */
   try{
     const old=localStorage.getItem(OLD_KEY);
@@ -3786,31 +4849,27 @@ function migrateOld(){   /* 旧版单存档迁入 1 号猫窝 */
     localStorage.removeItem(OLD_KEY);
   }catch(e){}
 }
+/* 把已存在猫窝里各猫的等级同步进账号级铲屎官等级（保证稀有猫舍能正确显示当前等级） */
+function syncAccountLevel(){
+  for(let i=1;i<=SLOTS;i++){
+    const s=loadSlot(i);
+    if(s&&s.level)accountOnLevelUp(s.level);
+  }
+}
 
 /* ================= 猫窝大门（选择存档） ================= */
 var delSlotIdx=0;
 function openDelModal(i,name){
   delSlotIdx=i;
-  el.delSub.innerHTML=`<b>${esc(name)}</b> 的所有进度都会消失，此操作不可恢复。<br>请输入删除密码确认：`;
-  el.delInput.value="";
-  el.delErr.textContent="";
-  el.delErr.classList.remove("shake");
+  el.delSub.innerHTML=`<b>${esc(name)}</b> 的所有进度都会消失，此操作不可恢复。`;
   el.delModal.classList.add("on");
-  setTimeout(()=>el.delInput.focus(),60);
 }
 function closeDelModal(){el.delModal.classList.remove("on");}
 function confirmDelete(){
-  if(el.delInput.value==="0420"){
-    clearSlot(delSlotIdx);
-    closeDelModal();
-    renderGate();
-    toast("猫窝已腾空");
-  }else{
-    el.delErr.textContent="密码不对，再想想～";
-    el.delErr.classList.remove("shake");
-    void el.delErr.offsetWidth;
-    el.delErr.classList.add("shake");
-  }
+  clearSlot(delSlotIdx);
+  closeDelModal();
+  renderGate();
+  toast("猫窝已腾空");
 }
 function showGate(){
   noSave=false;
@@ -3821,14 +4880,17 @@ function showGate(){
 }
 function renderGate(){
   el.gateSlots.innerHTML="";
+  const rareUnlocked=accountMaxLevel()>=RARE_UNLOCK_LV;
   for(let i=1;i<=SLOTS;i++){
     const s=loadSlot(i);
+    const isRare=i===SLOTS;
     const card=document.createElement("button");
-    card.className="gate-slot"+(s?" occupied":" empty");
     if(s){
+      card.className="gate-slot"+(isRare?" rare occupied":" occupied");
       const day=Math.floor((s.min||0)/1440)+1;
       const mood=s.mood>=60?"😊":s.mood>=35?"😐":"☹️";
       card.innerHTML=
+        (isRare?`<span class="rare-badge">✨ 稀有</span>`:"")+
         `<span class="mini">${catSVG(s.breed,"g"+i)}</span>`+
         `<div class="g-name">${esc(s.name)}</div>`+
         `<div class="g-info">第 ${day} 天 · Lv.${s.level||1}<br>${mood} ${BREEDS[s.breed].name}</div>`+
@@ -3844,11 +4906,31 @@ function renderGate(){
         e.stopPropagation();
         openDelModal(i,s.name);
       };
+    }else if(isRare){
+      if(rareUnlocked){
+        card.className="gate-slot rare";
+        card.innerHTML=`<span class="rare-badge">✨ 稀有</span><span class="rare-ico">✨</span><span class="rare-main">领养稀有猫</span><span class="rare-sub">挪威森林猫 · 苏格兰折耳猫<br>暹罗猫</span>`;
+        card.onclick=()=>{
+          slotIdx=i;
+          rareAdopt=true;
+          selBreed=RARE_BREEDS[0];
+          el.gateOverlay.style.display="none";
+          el.startOverlay.style.display="flex";
+          el.nameInput.value=pick(["雪宝","琥珀","豆豆","栗子","小满"]);
+          buildStartUI();
+        };
+      }else{
+        card.className="gate-slot rare locked";
+        card.innerHTML=`<span class="rare-badge">🔒 稀有</span><span class="rare-ico">🔒</span><span class="rare-main">稀有猫舍</span><span class="rare-sub">需要铲屎官 Lv.${RARE_UNLOCK_LV} 解锁<br>当前 Lv.${accountMaxLevel()}</span>`;
+        card.onclick=()=>{toast(`稀有猫舍需要铲屎官 Lv.${RARE_UNLOCK_LV} 解锁（当前 Lv.${accountMaxLevel()}）`);};
+      }
     }else{
+      card.className="gate-slot empty";
       card.innerHTML=`<div class="g-empty">🧺</div><div class="g-empty-t">空猫窝<br>点此领养新猫</div>`;
       card.onclick=()=>{
         slotIdx=i;
-        el.pendingSlot.textContent=i;
+        rareAdopt=false;
+        selBreed="orange";
         el.gateOverlay.style.display="none";
         el.startOverlay.style.display="flex";
         el.nameInput.value=pick(["年糕","团子","布丁","麻薯","汤圆","雪球"]);
@@ -3904,15 +4986,25 @@ function enterGame(fresh){
 
 /* ================= 开始界面 ================= */
 let selBreed="orange";
+let rareAdopt=false;   /* true = 正在领养稀有猫（只显示稀有品种） */
 function buildStartUI(){
   el.breedGrid.innerHTML="";
-  Object.keys(BREEDS).forEach(b=>{
+  const list=rareAdopt?RARE_BREEDS:NORMAL_BREEDS;
+  list.forEach(b=>{
     const btn=document.createElement("button");
     btn.className="breed-item"+(b===selBreed?" sel":"");
     btn.innerHTML=`<span class="mini">${catSVG(b,"m"+b)}</span><span>${BREEDS[b].name}</span>`;
     btn.onclick=()=>{selBreed=b;buildStartUI();};
     el.breedGrid.appendChild(btn);
   });
+  if(rareAdopt){
+    el.startTitle.textContent="✨ 领养稀有猫";
+    el.startSub.innerHTML=`稀有的它，将住进第 <b id="pendingSlot">${slotIdx}</b> 号猫窝 · 专属稀有猫舍`;
+  }else{
+    el.startTitle.textContent="🐱 领养新猫咪";
+    el.startSub.innerHTML=`起好名字、挑好毛色，它就住进第 <b id="pendingSlot">${slotIdx}</b> 号猫窝`;
+  }
+  el.pendingSlot=$("#pendingSlot");
 }
 function syncSwitches(){
   el.muteSw2.checked=!!S.muted;
@@ -3954,6 +5046,8 @@ function bind(){
   el.btnExercise.onclick=onExercise;
   el.btnFishTouch.onclick=onFishTouch;
   el.btnWatchTV.onclick=onWatchTV;
+  el.btnFishing.onclick=onFishing;
+  el.btnHunt.onclick=onHunt;
   el.muteSw2.onchange=e=>{S.muted=e.target.checked;syncSwitches();save();};
   el.freeRoamSw.onchange=e=>{S.autoWander=e.target.checked;syncSwitches();save();
     toast(S.autoWander?"自由活动已开启：猫猫空闲时会自己溜达、吃饭上厕所":"自由活动已关闭");};
@@ -3975,6 +5069,18 @@ function bind(){
   el.btnShop.onclick=()=>{renderShop();el.shopModal.classList.add("on");};
   el.shopClose.onclick=()=>{el.shopModal.classList.remove("on");};
   el.shopModal.onclick=e=>{if(e.target===el.shopModal)el.shopModal.classList.remove("on");};
+  el.btnBag.onclick=()=>{renderBag();el.bagModal.classList.add("on");};
+  el.bagClose.onclick=()=>{el.bagModal.classList.remove("on");};
+  el.bagModal.onclick=e=>{if(e.target===el.bagModal)el.bagModal.classList.remove("on");};
+  el.bagSellAll.onclick=sellCatchAll;
+  document.querySelectorAll(".bag-tab").forEach(function(tab){
+    tab.onclick=function(){
+      document.querySelectorAll(".bag-tab").forEach(t=>t.classList.remove("active"));
+      tab.classList.add("active");
+      bagTab=tab.getAttribute("data-bag")||"all";
+      renderBag();
+    };
+  });
   document.querySelectorAll(".shop-tab").forEach(function(tab){
     tab.onclick=function(){
       document.querySelectorAll(".shop-tab").forEach(function(t){t.classList.remove("active");});
@@ -3987,9 +5093,10 @@ function bind(){
   el.btnFind.onclick=()=>doFind(false);
   el.delCancel.onclick=closeDelModal;
   el.delConfirm.onclick=confirmDelete;
-  el.delInput.oninput=()=>{el.delErr.textContent="";};
-  el.delInput.onkeydown=e=>{if(e.key==="Enter")confirmDelete();};
   el.delModal.onclick=e=>{if(e.target===el.delModal)closeDelModal();};
+  el.repairCancel.onclick=closeRepair;
+  el.repairConfirm.onclick=confirmRepair;
+  el.repairModal.onclick=e=>{if(e.target===el.repairModal)closeRepair();};
   window.addEventListener("beforeunload",()=>{
     if(!noSave)save();
   });
@@ -4010,14 +5117,16 @@ function bind(){
 window.__catGame={
   get state(){return S;},
   set(kv){if(S){Object.assign(S,kv);updateHUD();renderBowls();}},
-  ev:{find:evFindItem,mouse:evMouse,butterfly:evButterfly,beetle:evBeetle,bird:evBird,friend:evFriend,sick:evSick,lost:evLost},
+  ev:{find:evFindItem,critter:evCritter,critters:CRITTERS,bird:evBird,friend:evFriend,sick:evSick,lost:evLost},
+  bag(){return S?S.bag:[];},
+  give(type,q){if(S){var it=makeCatch(type==="prey"?"prey":"fish",q==null?1:q);addCatchItem(it);updateHUD();save();return it;}},
   bgVisit(){if(S){scheduleBgVisit();restoreVisit();}},
   friendLeave:friendLeave,
   weather:curWeather,setWeather:setWeather,weatherTypes:WEATHER_TYPES,
   dbg(){return {lostActive:lostActive,evLock:evLock,itemPending:itemPending,busy:busy,playMode:playMode,
     autoBusy:autoBusy,slotIdx:slotIdx,fBusy:fBusy,friendOn:friendOn(),visit:S&&S.visit,resLock:resLock,
     sick:S&&S.sick,nextLost:S&&S.nextLost,min:S&&S.min};},
-  hardReset(){noSave=true;for(var i=1;i<=3;i++)clearSlot(i);try{localStorage.removeItem("moranCatActive");}catch(e){}location.reload();}
+  hardReset(){noSave=true;for(var i=1;i<=SLOTS;i++)clearSlot(i);try{localStorage.removeItem("moranCatActive");localStorage.removeItem(ACCOUNT_KEY);}catch(e){}location.reload();}
 };
 
 /* ================= 启动 ================= */
@@ -4037,8 +5146,9 @@ function syncSceneHeight(){
 }
 
 function init(){
-  ["startOverlay","gateOverlay","gateSlots","gateBackLink","pendingSlot","delModal","delSub","delInput","delErr","delCancel","delConfirm","collModal","collGrid","collClose","collCoins","btnColl","btnMed","sickBadge","evCard","evEmoji","evName","evKeep","evDrop","lostBanner","btnFind","app","breedGrid","startBtn","nameInput","scene","room",
-   "shopModal","shopGrid","shopCoins","shopClose","btnShop","hudCoins",
+  ["startOverlay","gateOverlay","gateSlots","gateBackLink","pendingSlot","startTitle","startSub","delModal","delSub","delCancel","delConfirm","collModal","collGrid","collClose","collProgress","collTypes","collTotalN","btnColl","btnMed","sickBadge","evCard","evEmoji","evName","evKeep","evDrop","lostBanner","btnFind","app","breedGrid","startBtn","nameInput","scene","room",
+   "repairModal","repairSub","repairCancel","repairConfirm",
+   "shopModal","shopGrid","shopCoins","shopClose","btnShop","hudCoins","shopToast",
    "sky","sun","moon","fullmoon","stars","nightTint","glowOverlay","weatherLayer","fogLayer","lightningFlash","rainbowArc","particleLayer","catWrap","catShadow","catFlip","bubble","teaser","floor","friendCat",
    "friendShadow","friendFlip","friendTag",
    "foodBowl","waterBowl","foodFill","waterFill","litterBox","toasts","hudName","hudBreed","hudAge","hudLv",
@@ -4046,9 +5156,22 @@ function init(){
    "xpFill","bHunger","bThirst","bClean","bMood","bEnergy","vHunger","vThirst","vClean","vMood","vEnergy",
    "clockDay","clockTime","muteBtn","setBtn","btnFeed","btnWater","btnPlay","btnScoop","btnClimb","btnNap","btnExercise","btnWatchTV",
    "muteSw2","freeRoamSw","hintText",
-   "setModal","nameInput2","btnSwitchCat","closeSetBtn"
+   "setModal","nameInput2","btnSwitchCat","closeSetBtn",
+   "btnFishing","btnHunt","btnBag",
+   "catchModal","catchCard","catchTitle","catchSub","catchStage","catchWater","waterLine","catchBob","catchRipple",
+   "whackArea","whackCount","whackHud","whackTimer","whackCombo",
+   "catchTarget","catchResult","catchBar","catchZone","catchMark","catchTip","catchBtn",
+   "bagModal","bagGrid","bagCoins","bagStat","bagSellAll","bagClose"
   ].forEach(id=>el[id]=$("#"+id));
   el.cloud=[...document.querySelectorAll(".cloud")];  /* 云朵集合 */
+  /* 水面波浪分界线：生成 120 根水柱，负延迟高度动画形成正弦波浪 */
+  (function(){
+    var box=$("#waterLine");
+    if(!box)return;
+    var COUNT=240, SPEED=2.6, WAVES=3, f=(2*WAVES*SPEED)/-COUNT, s="";
+    for(var i=0;i<COUNT;i++) s+='<i class="g-item" style="animation-delay:'+(f*i).toFixed(4)+'s"></i>';
+    box.innerHTML=s;
+  })();
   bind();
   buildStartUI();
   let sceneHRAF=0;   /* rAF 防抖：合并同帧多次触发，也避免测量时切 display 引发 RO 循环告警 */
@@ -4059,6 +5182,7 @@ function init(){
   window.addEventListener("resize",scheduleSceneHeight);
   if(window.ResizeObserver&&el.actsCard) new ResizeObserver(scheduleSceneHeight).observe(el.actsCard);
   migrateOld();   /* 旧版单存档自动迁入 1 号猫窝 */
+  syncAccountLevel();   /* 同步账号级铲屎官等级，保证稀有猫舍正确显示 */
   showGate();     /* 每次打开先经过猫窝大门，选择要看的猫 */
 }
 init();

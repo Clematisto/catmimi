@@ -5,6 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <meta name="color-scheme" content="only light">
 <meta name="theme-color" content="#E7F0F6">
+<meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
+<meta http-equiv="Pragma" content="no-cache">
+<meta http-equiv="Expires" content="0">
 <title>莫兰迪猫舍 · 云养猫日记</title>
 <style>
 @property --h { syntax:"<length>"; inherits:false; initial-value:0px; }
@@ -1267,6 +1270,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 .gate-card h1{font-size:26px;letter-spacing:2px;text-shadow:0 2px 0 rgba(190,212,228,.5)}
 .gate-card .sub{color:var(--sub);font-size:13px;margin:8px 0 14px}
 .gate-slots{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+.gate-ver{margin:14px 0 0;font-size:11px;color:#A9BCCC;text-align:center;letter-spacing:.5px;user-select:none}
 .gate-slot{position:relative;border:none;background:linear-gradient(180deg,#F8FBFD,#EDF4F9);border-radius:18px;
   padding:14px 10px 12px;min-height:190px;cursor:pointer;transition:.18s;font-family:inherit;color:var(--ink);
   box-shadow:0 5px 0 var(--slab),0 9px 14px rgba(125,160,185,.2),inset 0 1px 0 #fff}
@@ -1611,6 +1615,7 @@ aside{display:flex;flex-direction:column;gap:18px}
     <h1>🐱 莫兰迪猫舍</h1>
     <p class="sub">选择要看望的猫猫，或领养一只新的</p>
     <div class="gate-slots" id="gateSlots"></div>
+    <p class="gate-ver" id="gateVer"></p>
   </div>
 </div>
 
@@ -1776,6 +1781,31 @@ aside{display:flex;flex-direction:column;gap:18px}
 const SLOT_BASE="moranCatSave.v2.s";   /* 存档槽位：.s1 .s2 .s3 .s4（第 4 号是稀有猫舍） */
 const OLD_KEY="moranCatSave.v2";
 const ACCOUNT_KEY="moranCatAccount.v1";  /* 账号级「铲屎官等级」= 养过的猫里最高等级 */
+const GAME_VERSION="2.0";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
+/* 版本守卫：检测到版本变化时——
+   1) http/https 下带 ?v=版本号 重新加载一次页面，强制绕过浏览器缓存的旧 HTML；
+   2) file:// 直接打开时不需要刷新（本地文件不缓存），只记录新版本并在进入游戏后提示「已更新」。
+   提示规则：只要上次标记的版本不是当前版本（含「从没记录过版本号的老玩家」，
+   以是否存在存档区分老玩家与全新玩家），都弹「游戏已更新」提示。
+   存档走 localStorage（moranCatSave.*），不受此刷新影响，进度不会丢。 */
+var verJustChanged=false;
+(function(){
+  var K="moranCatVer",seen=null,hasSave=false;
+  try{seen=localStorage.getItem(K);}catch(e){}
+  if(seen===GAME_VERSION)return;
+  try{
+    hasSave=!!(localStorage.getItem(slotKey(1))||localStorage.getItem(slotKey(2))||
+               localStorage.getItem(slotKey(3))||localStorage.getItem(slotKey(4))||
+               localStorage.getItem(OLD_KEY));
+  }catch(e){}
+  /* 有旧版本标记＝老玩家；没标记但有任何存档＝版本功能加入前的老玩家；两者都提示更新，全新玩家不提示 */
+  verJustChanged=(seen!==null)||hasSave;
+  try{localStorage.setItem(K,GAME_VERSION);}catch(e){}
+  var m=location.search.match(/[?&]v=([^&]*)/),urlV=m?decodeURIComponent(m[1]):null;
+  if(/^https?:$/.test(location.protocol)&&urlV!==GAME_VERSION){
+    location.replace(location.pathname+"?v="+encodeURIComponent(GAME_VERSION)+location.hash);
+  }
+})();
 const SLOTS=4;
 const RARE_UNLOCK_LV=15;   /* 稀有猫舍解锁所需铲屎官等级 */
 const BREEDS={
@@ -5146,7 +5176,7 @@ function syncSceneHeight(){
 }
 
 function init(){
-  ["startOverlay","gateOverlay","gateSlots","gateBackLink","pendingSlot","startTitle","startSub","delModal","delSub","delCancel","delConfirm","collModal","collGrid","collClose","collProgress","collTypes","collTotalN","btnColl","btnMed","sickBadge","evCard","evEmoji","evName","evKeep","evDrop","lostBanner","btnFind","app","breedGrid","startBtn","nameInput","scene","room",
+  ["startOverlay","gateOverlay","gateSlots","gateVer","gateBackLink","pendingSlot","startTitle","startSub","delModal","delSub","delCancel","delConfirm","collModal","collGrid","collClose","collProgress","collTypes","collTotalN","btnColl","btnMed","sickBadge","evCard","evEmoji","evName","evKeep","evDrop","lostBanner","btnFind","app","breedGrid","startBtn","nameInput","scene","room",
    "repairModal","repairSub","repairCancel","repairConfirm",
    "shopModal","shopGrid","shopCoins","shopClose","btnShop","hudCoins","shopToast",
    "sky","sun","moon","fullmoon","stars","nightTint","glowOverlay","weatherLayer","fogLayer","lightningFlash","rainbowArc","particleLayer","catWrap","catShadow","catFlip","bubble","teaser","floor","friendCat",
@@ -5164,6 +5194,8 @@ function init(){
    "bagModal","bagGrid","bagCoins","bagStat","bagSellAll","bagClose"
   ].forEach(id=>el[id]=$("#"+id));
   el.cloud=[...document.querySelectorAll(".cloud")];  /* 云朵集合 */
+  el.gateVer.textContent="V"+GAME_VERSION;   /* 猫窝大门底部显示当前版本号 */
+  if(verJustChanged)toast("🔄 游戏已更新到 V"+GAME_VERSION);   /* 本次打开检测到版本变化（含版本功能加入前的老玩家） */
   /* 水面波浪分界线：生成 120 根水柱，负延迟高度动画形成正弦波浪 */
   (function(){
     var box=$("#waterLine");

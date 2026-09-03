@@ -1008,7 +1008,7 @@ aside{grid-column:2;grid-row:1}
 .coll-act{width:100%;margin-top:10px;padding:9px 6px;font-size:13px}
 /* 收藏册弹窗（默认隐藏） */
 #collModal,#shopModal{position:fixed;inset:0;z-index:125;display:none;align-items:center;justify-content:center;
-  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+  background:rgba(90,115,135,.35);-webkit-backdrop-filter,backdrop-filter:blur(3px)}
 #collModal.on,#shopModal.on{display:flex}
 /* 收藏册弹窗 */
 .coll-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;max-height:320px;overflow:auto}
@@ -1063,7 +1063,7 @@ aside{grid-column:2;grid-row:1}
 
 /* ================= 钓鱼 / 捕猎小游戏 ================= */
 #catchModal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;
-  background:rgba(90,115,135,.4);backdrop-filter:blur(3px)}
+  background:rgba(90,115,135,.4);-webkit-backdrop-filter,backdrop-filter:blur(3px)}
 #catchModal.on{display:flex}
 .catch-card{width:min(380px,92vw);background:linear-gradient(180deg,#FFFFFF,#F2F8FB);border-radius:26px;
   padding:20px 22px 22px;text-align:center;
@@ -1123,7 +1123,7 @@ aside{grid-column:2;grid-row:1}
   62%{opacity:1;transform:translate(-50%,-50%) scale(1.18)}
   100%{opacity:1;transform:translate(-50%,-50%) scale(1)}}
 .catch-result{position:absolute;inset:0;display:flex;flex-direction:column;align-items:center;justify-content:center;
-  gap:4px;background:rgba(255,255,255,.88);backdrop-filter:blur(2px)}
+  gap:4px;background:rgba(255,255,255,.88);-webkit-backdrop-filter,backdrop-filter:blur(2px)}
 .catch-result:empty{display:none}
 .cr-e{font-size:46px;line-height:1;animation:starGlow 1s ease-in-out infinite alternate}
 .cr-n{font-size:14.5px;font-weight:800;color:#4E6373}
@@ -1191,7 +1191,7 @@ aside{grid-column:2;grid-row:1}
 
 /* ================= 战利品袋 ================= */
 #bagModal{position:fixed;inset:0;z-index:126;display:none;align-items:center;justify-content:center;
-  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+  background:rgba(90,115,135,.35);-webkit-backdrop-filter,backdrop-filter:blur(3px)}
 #bagModal.on{display:flex}
 .bag-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;max-height:280px;overflow:auto}
 .bag-item{border-radius:12px;padding:10px 4px 8px;text-align:center;border:2px solid transparent;
@@ -1345,7 +1345,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 .gate-back{margin-top:12px;font-size:13px;width:auto;display:inline-block;padding:8px 20px;border-radius:12px}
 /* 删除确认弹窗（仅二次确认） */
 #delModal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;
-  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+  background:rgba(90,115,135,.35);-webkit-backdrop-filter,backdrop-filter:blur(3px)}
 #delModal.on{display:flex}
 #delModal .modal-card{width:min(380px,92vw)}
 .del-title{font-size:17px;margin-bottom:6px}
@@ -1353,7 +1353,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 
 /* 修理损坏家具弹窗 */
 #repairModal{position:fixed;inset:0;z-index:130;display:none;align-items:center;justify-content:center;
-  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+  background:rgba(90,115,135,.35);-webkit-backdrop-filter,backdrop-filter:blur(3px)}
 #repairModal.on{display:flex}
 #repairModal .modal-card{width:min(380px,92vw)}
 /* 损坏家具的视觉标识 */
@@ -1363,7 +1363,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 
 /* ================= 设置弹窗 ================= */
 #setModal{position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;
-  background:rgba(90,115,135,.35);backdrop-filter:blur(3px)}
+  background:rgba(90,115,135,.35);-webkit-backdrop-filter,backdrop-filter:blur(3px)}
 #setModal.on{display:flex}
 .modal-card{background:linear-gradient(180deg,#FFFFFF,#F2F8FB);border-radius:24px;padding:22px 24px;
   width:min(440px,92vw);max-height:92vh;overflow:auto;
@@ -1427,6 +1427,16 @@ aside{display:flex;flex-direction:column;gap:18px}
   .act-sub{font-size:10px}
   .hint{margin-top:8px;font-size:11px}
   .card:last-child{flex:none}
+  /* 猫窝大门：窄屏改 2×2 网格，避免 4 列挤成一条（每格仅 ~63px 宽，文字竖排换行） */
+  .gate-card{padding:20px 16px;border-radius:22px}
+  .gate-card h1{font-size:21px;letter-spacing:1px}
+  .gate-card .sub{font-size:12px;margin:6px 0 12px}
+  .gate-slots{grid-template-columns:repeat(2,1fr);gap:10px}
+  .gate-slot{min-height:150px;padding:12px 8px 10px}
+  .gate-slot .mini{height:52px}
+  .gate-slot .mini svg{width:52px}
+  .gate-slot .g-name{font-size:13px}
+  .gate-slot .g-info{font-size:10px}
   /* 极窄屏：顶栏防换行 + 按钮 3 个一排防文字挤压 */
   @media (max-width:360px){
     header{flex-wrap:nowrap}
@@ -1781,7 +1791,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 const SLOT_BASE="moranCatSave.v2.s";   /* 存档槽位：.s1 .s2 .s3 .s4（第 4 号是稀有猫舍） */
 const OLD_KEY="moranCatSave.v2";
 const ACCOUNT_KEY="moranCatAccount.v1";  /* 账号级「铲屎官等级」= 养过的猫里最高等级 */
-const GAME_VERSION="2.0";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
+const GAME_VERSION="2.0.1";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
 /* 版本守卫：检测到版本变化时——
    1) http/https 下带 ?v=版本号 重新加载一次页面，强制绕过浏览器缓存的旧 HTML；
    2) file:// 直接打开时不需要刷新（本地文件不缓存），只记录新版本并在进入游戏后提示「已更新」。

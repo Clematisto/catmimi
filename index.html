@@ -8,9 +8,13 @@
 <meta http-equiv="Cache-Control" content="no-cache, no-store, must-revalidate">
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
-<title>莫兰迪猫舍 · 云养猫日记</title>
+<title>猫猫快乐屋 · 云养猫日记</title>
 <style>
 @property --h { syntax:"<length>"; inherits:false; initial-value:0px; }
+/* 猫咪/影子位移用 --mx/--my 承载（合成器加速的 translate3d），注册后可按 <length> 过渡，
+   避免 left/top 这类布局属性在 preserve-3d 场景里每帧触发整块重排导致移动卡顿 */
+@property --mx { syntax:"<length>"; inherits:false; initial-value:0px; }
+@property --my { syntax:"<length>"; inherits:false; initial-value:0px; }
 :root{
   color-scheme:light;   /* 老浏览器兜底 */
   color-scheme:only light;   /* 禁用 UA 自动深色（Chrome Auto Dark / 强制深色） */
@@ -138,6 +142,8 @@ aside{grid-column:2;grid-row:1}
   transform-origin:bottom center;transform:rotateX(-90deg);
   background:transparent;
   overflow:hidden;
+  /* 让天气粒子层的 translateZ(-80px) 真正生效，使其处于 3D 空间中猫的后方 */
+  transform-style:preserve-3d;
 }
 .wall-b::before{
   content:"";position:absolute;inset:0;
@@ -163,7 +169,8 @@ aside{grid-column:2;grid-row:1}
   background:linear-gradient(180deg,rgba(230,240,248,.12) 0%,rgba(230,240,248,.04) 100%);
   pointer-events:none;z-index:4}
 /* 大雾 */
-.fog-layer{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity 2s}
+.fog-layer{position:absolute;inset:0;z-index:6;pointer-events:none;opacity:0;transition:opacity 2s;
+  transform:translateZ(120px)}
 .fog-layer.on{opacity:1}
 .fog-band{position:absolute;left:-20%;width:140%;height:30%;
   background:linear-gradient(180deg,rgba(200,215,230,0),rgba(200,215,230,.6),rgba(200,215,230,0));
@@ -191,12 +198,14 @@ aside{grid-column:2;grid-row:1}
   left:calc(var(--cw)*.14);top:calc(var(--ch)*-1.05)}
 .cloud::after{width:calc(var(--ch)*1.3);height:calc(var(--ch)*1.3);
   left:calc(var(--cw)*.5);top:calc(var(--ch)*-.7)}
-.c1{--cw:64px;--ch:18px;width:var(--cw);height:var(--ch);left:50%;top:32%;animation:cloudDrift 38s linear infinite}
-.c2{--cw:42px;--ch:13px;width:var(--cw);height:var(--ch);left:20%;top:55%;animation:cloudDrift 52s linear infinite reverse}
-.c3{--cw:55px;--ch:16px;width:var(--cw);height:var(--ch);left:75%;top:45%;animation:cloudDrift 44s linear infinite}
-@keyframes cloudDrift{from{transform:translateX(0)}to{transform:translateX(120px)}}
+.c1{--cw:64px;--ch:18px;width:var(--cw);height:var(--ch);left:28%;top:25%;animation:cloudDrift 38s linear infinite}
+.c2{--cw:48px;--ch:14px;width:var(--cw);height:var(--ch);left:54%;top:38%;animation:cloudDrift 52s linear infinite reverse}
+.c3{--cw:58px;--ch:16px;width:var(--cw);height:var(--ch);left:76%;top:30%;animation:cloudDrift 44s linear infinite}
+@keyframes cloudDrift{from{transform:translateX(0)}to{transform:translateX(80px)}}
 /* 天气粒子层 */
-.weather-layer{position:absolute;inset:0;z-index:5;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 1.5s}
+.weather-layer{position:absolute;inset:0;z-index:1;pointer-events:none;overflow:hidden;opacity:0;transition:opacity 1.5s;
+  /* 沿墙面法向向后推，确保雨/雪/流星处于猫/气泡的后方 */
+  transform:translateZ(120px)}
 .weather-layer.on{opacity:1}
 /* 下雨 */
 .rain-drop{position:absolute;width:2.5px;
@@ -221,7 +230,8 @@ aside{grid-column:2;grid-row:1}
 }
 /* 闪电 */
 .lightning-flash{position:absolute;inset:0;z-index:7;pointer-events:none;
-  background:rgba(200,220,255,.9);opacity:0;transition:opacity .04s}
+  background:rgba(200,220,255,.9);opacity:0;transition:opacity .04s;
+  transform:translateZ(120px)}
 /* 朝霞/晚霞光晕 */
 .glow-overlay{position:absolute;inset:0;z-index:2;pointer-events:none;opacity:0;transition:opacity 2s}
 .glow-overlay.on{opacity:1}
@@ -272,6 +282,14 @@ aside{grid-column:2;grid-row:1}
   box-shadow:0 0 30px 12px rgba(255,255,200,.35),0 0 60px 24px rgba(255,255,200,.15);
   pointer-events:none;z-index:4;opacity:0;transition:opacity 2s}
 .fullmoon.on{opacity:1}
+/* 满月 / 普通月互斥：统一由 .sky 上的 is-full 驱动。
+   原来两边各自淡入淡出（月 1.2s 淡出 vs 满月 2s 淡入）会重叠约 1~2 秒，
+   期间天上同时挂着一大一小两个月亮。改成：出场的一方瞬间消失（transition:none），
+   入场的一方保留淡入，两者永不共存。 */
+.sky.is-full .moon{opacity:0!important;transition:none}
+.sky.is-full .fullmoon{opacity:1;transition:opacity 2s}
+.sky:not(.is-full) .fullmoon{opacity:0!important;transition:none}
+.sky:not(.is-full) .moon{transition:opacity 1.2s}
 .fullmoon .crater{position:absolute;border-radius:50%;background:rgba(180,170,140,.25)}
 .fullmoon .crater.c1{width:8px;height:8px;left:14px;top:12px}
 .fullmoon .crater.c2{width:6px;height:6px;left:28px;top:20px}
@@ -806,16 +824,18 @@ aside{grid-column:2;grid-row:1}
 
 /* ---------- 猫咪（地面公告牌，可沿 Y 轴升高） ---------- */
 .cat-wrap{width:150px;z-index:9;cursor:pointer;outline:none;touch-action:manipulation;
-  transform:translate(-50%,-96%) translateZ(var(--h,0px))
+  left:0;top:0;  /* 位置改由 --mx/--my 的 translate3d 控制，left/top 固定为 0 */
+  transform:translate3d(var(--mx,0px),var(--my,0px),0) translate(-50%,-96%) translateZ(var(--h,0px))
             rotateX(calc(-1*var(--camx,57deg))) rotateY(calc(-1*var(--camy,0deg)));
   transform-origin:50% 100%;
-  transition:left 1.15s ease-in-out,top 1.15s ease-in-out,--h .55s cubic-bezier(.35,1.5,.55,1);
+  transition:--mx 1.15s ease-in-out,--my 1.15s ease-in-out,--h .55s cubic-bezier(.35,1.5,.55,1);
 }
-.cat-shadow{width:96px;height:26px;border-radius:50%;transform:translate(-50%,-50%);
+.cat-shadow{width:96px;height:26px;border-radius:50%;left:0;top:0;
+  transform:translate3d(var(--mx,0px),var(--my,0px),0) translate(-50%,-50%);
   background:radial-gradient(ellipse,rgba(80,105,125,.32) 0%,rgba(80,105,125,0) 68%);
-  transition:left 1.15s ease-in-out,top 1.15s ease-in-out,opacity .4s;pointer-events:none}
+  transition:--mx 1.15s ease-in-out,--my 1.15s ease-in-out,opacity .4s;pointer-events:none}
 /* 逗猫追踪时影子与猫同速 */
-.cat-shadow.fast{transition:left .45s ease-out,top .45s ease-out,opacity .3s}
+.cat-shadow.fast{transition:--mx .45s ease-out,--my .45s ease-out,opacity .3s}
 .cat-flip{transition:transform .3s}
 .cat-flip.face-l{transform:scaleX(-1)}
 .cat-view{width:100%;display:block}
@@ -843,7 +863,10 @@ aside{grid-column:2;grid-row:1}
 .cat-wrap.sleeping .eyes-closed{display:block}
 .cat-wrap.sleeping .body-g{animation:sbreathe 2.6s ease-in-out infinite}
 /* 睡觉时把猫往前推一点，避免被高个猫窝（如 Lv2 帐篷）在 3D 排序里挡住 */
-.cat-wrap.sleeping{transform:translate(-50%,-96%) translateZ(8px)
+.cat-wrap.sleeping{transform:translate3d(var(--mx,0px),var(--my,0px),0) translate(-50%,-96%) translateZ(8px)
+  rotateX(calc(-1*var(--camx,57deg))) rotateY(calc(-1*var(--camy,0deg)))}
+/* 吃饭/喝水时猫身体前探，盖住身前的碗：看到猫的后背而非碗（猫层级高于碗） */
+.cat-wrap.eating,.cat-wrap.drinking{transform:translate3d(var(--mx,0px),var(--my,0px),0) translate(-50%,-96%) translateZ(8px)
   rotateX(calc(-1*var(--camx,57deg))) rotateY(calc(-1*var(--camy,0deg)))}
 @keyframes sbreathe{0%,100%{transform:scaleY(1)}50%{transform:scaleY(.94)}}
 .cat-wrap.eating .head-g,.cat-wrap.drinking .head-g{transform-box:view-box;transform-origin:110px 60px;
@@ -869,7 +892,7 @@ aside{grid-column:2;grid-row:1}
 .cat-wrap.cheer .cat-svg{animation:cheerJump .55s ease-in-out infinite}
 @keyframes cheerJump{0%,100%{transform:translateY(0) scale(1,1)}30%{transform:translateY(-30px) scale(1.02,.96)}60%{transform:translateY(0) scale(1.05,.93)}}
 /* 逗猫模式下猫的追踪移动更灵敏 */
-.cat-wrap.playing{transition:left .45s ease-out,top .45s ease-out,--h .24s cubic-bezier(.35,1.5,.55,1)}
+.cat-wrap.playing{transition:--mx .45s ease-out,--my .45s ease-out,--h .24s cubic-bezier(.35,1.5,.55,1)}
 .cat-wrap.walking .cat-svg{animation:hop .36s ease-in-out infinite}
 @keyframes hop{0%,100%{transform:translateY(0)}50%{transform:translateY(-9px)}}
 
@@ -1141,6 +1164,11 @@ aside{grid-column:2;grid-row:1}
   box-shadow:0 2px 6px rgba(110,145,170,.4)}
 .catch-tip{font-size:11.5px;color:var(--sub);min-height:17px;margin-bottom:10px}
 .catch-btn{width:100%}
+/* ---- 结算界面：不再自动关闭，改由「继续 / 离开」两个按钮手动收尾 ---- */
+.catch-settle{display:none;gap:12px}
+.catch-card.settled .catch-settle{display:flex}
+.catch-settle .btn3d{flex:1}
+.catch-card.settled .catch-btn,.catch-card.settled .catch-bar{display:none}
 /* ---- 打地鼠（捕猎小游戏） ---- */
 .whack-area{position:absolute;inset:0;display:none;z-index:4;padding:4px 12px 8px;
   grid-template-columns:repeat(3,1fr);grid-template-rows:repeat(3,1fr);gap:2px;
@@ -1161,7 +1189,7 @@ aside{grid-column:2;grid-row:1}
   box-shadow:inset 0 2px 2px rgba(100,90,70,.35)}
 .whack-clip{position:absolute;bottom:8px;width:60%;height:40px;overflow:hidden;z-index:2;
   display:flex;justify-content:center;align-items:flex-end}
-.whack-mole{font-size:27px;line-height:1;transform:translateY(118%);
+.whack-mole{font-size:36px;line-height:1;transform:translateY(118%);
   transition:transform .13s cubic-bezier(.2,.9,.3,1.25);will-change:transform}
 .whack-mole.up{transform:translateY(-4%)}
 .whack-mole.bonk{animation:moleBonk .22s ease-in forwards}
@@ -1273,18 +1301,21 @@ aside{display:flex;flex-direction:column;gap:18px}
 .gate-ver{margin:14px 0 0;font-size:11px;color:#A9BCCC;text-align:center;letter-spacing:.5px;user-select:none}
 .gate-slot{position:relative;border:none;background:linear-gradient(180deg,#F8FBFD,#EDF4F9);border-radius:18px;
   padding:14px 10px 12px;min-height:190px;cursor:pointer;transition:.18s;font-family:inherit;color:var(--ink);
-  box-shadow:0 5px 0 var(--slab),0 9px 14px rgba(125,160,185,.2),inset 0 1px 0 #fff}
+  display:flex;flex-direction:column;align-items:center;justify-content:center;gap:2px;
+  box-shadow:0 6px 0 var(--slab),0 10px 16px rgba(125,160,185,.2),inset 0 1px 0 #fff}
+.gate-slot.occupied{justify-content:center}
 .gate-slot:hover{filter:brightness(1.03)}
 .gate-slot:active{transform:translateY(3px);box-shadow:0 2px 0 var(--slab)}
 .gate-slot.occupied{background:linear-gradient(180deg,#F2F8FC,#E3EFF7)}
 .gate-slot.empty{background:linear-gradient(180deg,#F6F9FB,#EDF3F7);box-shadow:0 5px 0 #DDE8F0;
-  border:2px dashed #C9DCE9;color:#9DB2C2}
+  border:2px dashed #C9DCE9;color:#9DB2C2;
+  box-shadow:0 6px 0 #DDE8F0,0 10px 16px rgba(125,160,185,.15),inset 0 1px 0 #fff}
 .gate-slot .mini{height:64px;display:flex;align-items:flex-end;justify-content:center}
 .gate-slot .mini svg{width:64px}
-.gate-slot .g-name{font-weight:700;font-size:14.5px;margin-top:4px}
-.gate-slot .g-info{font-size:11px;color:var(--sub);margin-top:3px;line-height:1.6}
-.gate-slot .g-empty{font-size:26px;margin-top:26px}
-.gate-slot .g-empty-t{font-size:13px;color:#9DB2C2;margin-top:10px}
+.gate-slot .g-name{font-weight:700;font-size:14.5px;margin-top:2px}
+.gate-slot .g-info{font-size:11px;color:var(--sub);margin-top:1px;line-height:1.5}
+.gate-slot .g-empty{font-size:26px;margin-top:0}
+.gate-slot .g-empty-t{font-size:13px;color:#9DB2C2;margin-top:6px}
 .gate-del{position:absolute;top:8px;right:8px;width:24px;height:24px;border-radius:50%;border:none;
   background:#F3E0DE;color:#B97F76;font-size:13px;cursor:pointer;line-height:1;
   display:flex;align-items:center;justify-content:center}
@@ -1293,22 +1324,24 @@ aside{display:flex;flex-direction:column;gap:18px}
 /* ================= 稀有猫舍（第 4 号养猫位，与其它 3 个尺寸一致，位于最右） ================= */
 .gate-slot.rare{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:6px;
   text-align:center;padding:14px 10px 12px;min-height:190px;
-  background:linear-gradient(120deg,#FFFEFA,#FBF0D0 50%,#FFFEFA);
-  border:2px solid #EAD9A8;color:#A68C4A;
-  box-shadow:0 6px 0 #E6D19A,0 12px 22px rgba(210,180,110,.28),inset 0 1px 0 #fff;
-  animation:rareShine 2.6s ease-in-out infinite}
-.gate-slot.rare.occupied{display:block;color:var(--ink)}
+  background:linear-gradient(120deg,#FFFCF2,#F0DDB0 50%,#FFFCF2);
+  border:2px solid #DFCFA0;color:#A89040;
+  box-shadow:0 6px 0 #D8C898,0 12px 22px rgba(190,160,80,.18),inset 0 1px 0 #fff;
+  animation:rareShine 2.6s ease-in-out infinite;overflow:hidden}
+.gate-slot.rare::before{content:"👑";position:absolute;top:6px;left:6px;
+  font-size:20px;line-height:1;
+  filter:drop-shadow(0 1px 2px rgba(180,140,60,.4));
+  pointer-events:none;z-index:10}
+.gate-slot.rare.occupied{display:flex;color:var(--ink)}
 .gate-slot.rare.locked{filter:grayscale(.55) brightness(.98);cursor:not-allowed;animation:none;
-  border-color:#DACCA8;color:#A99A72;
-  box-shadow:0 6px 0 #D5C39A,0 12px 22px rgba(160,140,90,.18),inset 0 1px 0 #fff}
+  border-color:#DBC890;color:#C4A450;
+  box-shadow:0 6px 0 #D0BA80,0 12px 22px rgba(180,150,70,.15),inset 0 1px 0 #fff}
 .gate-slot.rare .rare-ico{font-size:30px;animation:rarePulse 2s ease-in-out infinite}
 .gate-slot.rare.locked .rare-ico{animation:none}
 .gate-slot.rare .rare-main{font-weight:800;font-size:16px;letter-spacing:1px}
-.gate-slot.rare .rare-sub{font-size:12px;color:#B79E6A;margin-top:3px;line-height:1.5}
-.gate-slot.rare .rare-badge{position:absolute;top:8px;left:8px;font-size:11px;font-weight:700;color:#9A7E3C;
-  background:linear-gradient(120deg,#FBEEC0,#F0DCA0);border-radius:999px;padding:3px 8px;box-shadow:0 2px 0 #E6D19A}
-@keyframes rareShine{0%,100%{box-shadow:0 6px 0 #E6D19A,0 12px 22px rgba(210,180,110,.28),inset 0 1px 0 #fff}
-  50%{box-shadow:0 6px 0 #E6D19A,0 14px 30px rgba(220,190,120,.5),inset 0 1px 0 #fff,0 0 0 3px rgba(230,210,150,.3)}}
+.gate-slot.rare .rare-sub{font-size:12px;color:#BDA850;margin-top:3px;line-height:1.5}
+@keyframes rareShine{0%,100%{box-shadow:0 6px 0 #D8C898,0 12px 22px rgba(190,160,80,.18),inset 0 1px 0 #fff}
+  50%{box-shadow:0 6px 0 #D8C898,0 14px 30px rgba(210,180,100,.3),inset 0 1px 0 #fff,0 0 0 3px rgba(220,200,120,.18)}}
 @keyframes rarePulse{0%,100%{transform:scale(1)}50%{transform:scale(1.12)}}
 
 /* ================= 开始界面（选猫领养） ================= */
@@ -1357,9 +1390,9 @@ aside{display:flex;flex-direction:column;gap:18px}
 #repairModal.on{display:flex}
 #repairModal .modal-card{width:min(380px,92vw)}
 /* 损坏家具的视觉标识 */
-.billboard.broken{opacity:.72}
+.billboard.broken{opacity:.72;position:relative}
 .billboard.broken::after{content:"💢";position:absolute;top:-14px;right:-8px;font-size:22px;
-  filter:none;z-index:6;pointer-events:none}
+  filter:none;z-index:20;pointer-events:none}
 
 /* ================= 设置弹窗 ================= */
 #setModal{position:fixed;inset:0;z-index:110;display:none;align-items:center;justify-content:center;
@@ -1388,11 +1421,24 @@ aside{display:flex;flex-direction:column;gap:18px}
   /* 声音/设置图标去掉立体（3D）效果，改平 */
   .btn3d.icon{box-shadow:inset 0 0 0 1px #D8E4ED}
   .btn3d.icon:active{transform:none}
-  /* 单列 + 场景收窄（aside 修正到场景下方第二行，避免落入隐式第二列） */
-  main{position:relative;grid-template-columns:1fr;gap:10px;padding-top:164px}
-  aside{grid-column:1;grid-row:2}
-  .scene{--roomH:400px;height:400px;perspective-origin:50% 26%}
+  /* 所有 btn3d 移动端弱化立体阴影：去掉底部厚实色块，改为轻柔投影 */
+  .btn3d,.btn3d.food,.btn3d.water,.btn3d.play,.btn3d.clean,.btn3d.climb,
+  .btn3d.nap,.btn3d.fish,.btn3d.hunt,.btn3d.danger,.btn3d.patrol,.btn3d.pill,
+  .btn3d.primary,.btn3d.coll-act,.act{
+    box-shadow:0 2px 6px rgba(125,155,175,.15),inset 0 1px 0 rgba(255,255,255,.7)!important;
+    transform:none!important}
+  .btn3d:active,.act:active{
+    transform:scale(.97)!important;box-shadow:inset 0 1px 3px rgba(120,150,180,.18)!important}
+  /* 单列 + 场景收窄；aside 用 display:contents 让子卡直接参与 main 网格，便于把状态卡提到场景上方 */
+  main{position:relative;grid-template-columns:1fr;gap:10px;padding-top:0}
+  aside{display:contents}
+  .scene{--roomH:420px;height:420px;perspective-origin:50% 26%;border-radius:20px;
+    grid-column:auto;grid-row:auto}
   .cat-wrap{width:140px}
+  /* 睡觉时不要再往前抬（原 8px 会让猫浮到猫窝上方，脚与猫窝底边对不齐）；
+     降到 1px：仍略靠前避免与猫窝共面导致 3D 排序闪烁，但脚基本贴地、与猫窝底边齐平 */
+  .cat-wrap.sleeping{transform:translate3d(var(--mx,0px),var(--my,0px),0) translate(-50%,-96%) translateZ(1px)
+    rotateX(calc(-1*var(--camx,57deg))) rotateY(calc(-1*var(--camy,0deg)))}
   /* 猫爬架随房间高度等比缩放：避免移动端窄房时被场景顶部 overflow:hidden 裁掉。
      3D 包围盒跟着缩（width/height=缩放后），内层模型用 transform: scale() 等价缩放，
      沿用项目既定的「容器尺寸=缩放后尺寸 + 内层 scale」模式（见 memory）。 */
@@ -1400,29 +1446,39 @@ aside{display:flex;flex-direction:column;gap:18px}
   .ct-wrap{position:absolute;left:50%;bottom:0;width:130px;height:240px;
     transform:translateX(-50%) scale(.5634);
     transform-origin:bottom center;transform-style:flat}
-  /* 互动栏提到状态栏之前（对换位置） */
-  aside{gap:10px}
-  #actsCard{order:-1}
+  /* 状态卡提到场景上方（order:-1 领先 scene 默认 0；其余子卡按 DOM 顺序跟随 scene） */
+  aside > .card:first-of-type{order:-1}
   .card{padding:12px;border-radius:18px}
-  /* 状态栏上移到猫舍名称栏下方（从 aside 抽出，绝对定位到 main 顶部）+ 尽量缩窄 */
+  /* 状态栏：独立卡片，两列布局——左侧名字/年龄/等级，右侧状态条（含名称、无emoji） */
   aside > .card:first-of-type{
-    position:absolute;top:0;left:0;right:0;
-    height:154px;overflow:hidden;
-    padding:8px 12px;border-radius:16px;
-    box-shadow:0 6px 0 -2px var(--slab),0 14px 20px rgba(115,150,175,.22),inset 0 1px 0 #fff;
+    position:static;width:100%;height:auto;z-index:auto;
+    padding:10px 14px;border-radius:18px;
+    display:grid;grid-template-columns:auto 1fr;column-gap:20px;align-items:stretch;
+    box-shadow:0 6px 0 -2px var(--slab),0 12px 18px rgba(115,150,175,.22),inset 0 1px 0 #fff;
   }
-  aside > .card:first-of-type .cat-title{font-size:14.5px;gap:6px}
-  aside > .card:first-of-type .age-row{font-size:10.5px;margin:3px 0 4px}
-  aside > .card:first-of-type .xpbar{height:5px;margin-bottom:5px}
-  aside > .card:first-of-type .stat{margin:2px 0;font-size:10.5px;
-    grid-template-columns:20px 30px 1fr 26px;gap:6px}
-  aside > .card:first-of-type .si{font-size:12.5px}
-  aside > .card:first-of-type .bar{height:7px}
-  aside > .card:first-of-type .sv{font-size:10.5px}
-  /* 互动按钮：去掉 emoji 图标、纯文字、4 个一排、文字放大 */
+  /* 左列：名字顶部、等级底部（与精力条底部齐平），两列等高 */
+  aside > .card:first-of-type .cat-info{display:flex;flex-direction:column;justify-content:space-between}
+  aside > .card:first-of-type .age-row{display:flex;flex-direction:column;justify-content:space-between;
+    flex:1;gap:2px;margin:0;font-size:10px;color:var(--sub);padding:4px 0}
+  aside > .card:first-of-type .age-row #hudLv{font-size:11px;font-weight:400;color:var(--sub)}
+  /* 右列状态条：恢复名称、隐藏emoji，名称+进度条+数值 */
+  aside > .card:first-of-type .stats-right{display:flex;flex-direction:column}
+  aside > .card:first-of-type .si{display:none}
+  aside > .card:first-of-type .sn{display:block;font-size:10px;color:#6C8296}
+  aside > .card:first-of-type .stat{display:grid;grid-template-columns:36px 1fr 24px;gap:6px;
+    align-items:center;margin:2px 0;font-size:10px}
+  aside > .card:first-of-type .bar{height:6px}
+  aside > .card:first-of-type .sv{font-size:10px}
+  aside > .card:first-of-type .xpbar{height:4px;margin-bottom:4px}
+  /* 互动按钮：iPhone 光感风格，去掉 emoji 图标、纯文字、4 个一排 */
   .acts-grid{grid-template-columns:repeat(4,1fr);gap:6px}
   .act{flex-direction:row;justify-content:center;align-items:center;gap:4px;
-    padding:9px 2px;font-size:13px;border-radius:12px;white-space:nowrap;line-height:1}
+    padding:9px 2px;font-size:13px;border-radius:12px;white-space:nowrap;line-height:1;
+    background:rgba(255,255,255,.55);-webkit-backdrop-filter:blur(12px);backdrop-filter:blur(12px);
+    box-shadow:0 1px 3px rgba(120,150,180,.12),inset 0 1px 0 rgba(255,255,255,.7);
+    font-weight:400;transition:background .15s,box-shadow .15s}
+  .act:active{background:rgba(200,220,240,.35);box-shadow:inset 0 1px 3px rgba(120,150,180,.18)}
+  .act[disabled],.act.disabled{opacity:.45;pointer-events:none}
   .act em{display:none}
   .act-sub{font-size:10px}
   .hint{margin-top:8px;font-size:11px}
@@ -1431,12 +1487,42 @@ aside{display:flex;flex-direction:column;gap:18px}
   .gate-card{padding:20px 16px;border-radius:22px}
   .gate-card h1{font-size:21px;letter-spacing:1px}
   .gate-card .sub{font-size:12px;margin:6px 0 12px}
-  .gate-slots{grid-template-columns:repeat(2,1fr);gap:10px}
-  .gate-slot{min-height:150px;padding:12px 8px 10px}
+  .gate-slots{grid-template-columns:repeat(2,1fr);grid-auto-rows:1fr;gap:10px}
+  .gate-slot{min-height:150px;padding:12px 8px 10px;display:flex;flex-direction:column;align-items:center;justify-content:center}
+  .gate-slot.occupied{justify-content:center;padding-top:16px}
   .gate-slot .mini{height:52px}
   .gate-slot .mini svg{width:52px}
   .gate-slot .g-name{font-size:13px}
   .gate-slot .g-info{font-size:10px}
+  .gate-slot.empty .g-empty{font-size:22px;margin-top:0}
+  .gate-slot.empty .g-empty-t{font-size:11px;margin-top:6px}
+  .gate-slot.rare .rare-ico{font-size:24px}
+  .gate-slot.rare .rare-main{font-size:13px}
+  /* 移动端：墙高 340 / 房间 420 = 81%，天空面板投影的上半部分会被场景顶 overflow:hidden 裁掉，
+     导致太阳/月亮/满月/彩虹/上半部分星星根本看不见（实测 sun rect y=-93 完全在场景外）。
+     把墙高压到 190px，使整面墙（连同窗框）都在场景可见区内，与 PC 的 340/710=48% 比例接近。
+     同时把窗框（::before 36px / ::after 6px）一起缩小，避免窗框占满小窗户。 */
+  .wall-b{height:190px;bottom:77.5%}
+  .wall-b::before{border-width:22px solid #C8DAE8}
+  .wall-b::after{left:22px;right:22px;top:22px;bottom:22px;border-width:4px}
+  /* 太阳：移动端缩小 30% 并移到窗内（墙投影高 ≈155px，原 18% 正好投影到场景外） */
+  .sun{width:28px;height:28px;left:24%;top:30%;box-shadow:0 0 16px 5px rgba(255,230,160,.55)}
+  /* 月亮 */
+  .moon{width:22px;height:22px;left:68%;top:24%;box-shadow:inset -4px -3px 0 #C9D2E2}
+  /* 满月（月亮的特殊版，带陨石坑，移动端放正中偏左） */
+  .fullmoon{width:46px;height:46px;left:48%;top:18%}
+  .fullmoon .crater{width:5px;height:5px}
+  /* 彩虹：收窄避免超出窗 */
+  .rainbow-arc{left:18%;top:8%;width:64%;height:60%}
+  /* 天气云按窗内可见区域重新分布（原 60%/75%/65% 是凑合位置，改均匀分布且落在窗内） */
+  .c1{--cw:46px;--ch:14px;left:18%;top:50%}
+  .c2{--cw:34px;--ch:10px;left:52%;top:68%}
+  .c3{--cw:40px;--ch:12px;left:74%;top:58%}
+  @keyframes cloudDrift{from{transform:translateX(0)}to{transform:translateX(40px)}}
+  /* 猫碗错开：食碗保持原位、水碗下移半盆高度（~22px） */
+  #foodBowl{--oy:88!important}
+  #waterBowl{--oy:92!important}
+  .gate-slot.rare .rare-sub{font-size:10px}
   /* 极窄屏：顶栏防换行 + 按钮 3 个一排防文字挤压 */
   @media (max-width:360px){
     header{flex-wrap:nowrap}
@@ -1453,7 +1539,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 <!-- 游戏 -->
 <div id="app" hidden>
   <header>
-    <div class="logo">🐱 莫兰迪猫舍</div>
+    <div class="logo">🐱 猫猫快乐屋</div>
     <div class="clock">
       <span id="clockDay">第 1 天</span>
       <span id="clockTime">08:00 🌅</span>
@@ -1519,8 +1605,8 @@ aside{display:flex;flex-direction:column;gap:18px}
           </div>
           <div class="friend-shadow" id="friendShadow"></div>
           <div class="friend-cat" id="friendCat"><div class="friend-tag" id="friendTag">🐾 客人</div><div class="friend-flip" id="friendFlip"></div></div>
-          <div class="flat cat-shadow" id="catShadow" style="left:50%;top:46%"></div>
-          <div class="billboard cat-wrap" id="catWrap" style="left:50%;top:46%" title="点我摸摸猫">
+          <div class="flat cat-shadow" id="catShadow"></div>
+          <div class="billboard cat-wrap" id="catWrap" title="点我摸摸猫">
             <div class="cat-flip" id="catFlip"></div>
             <div class="zzz"><span>z</span><span>z</span><span>Z</span></div>
             <div class="sick-badge" id="sickBadge">💊</div>
@@ -1550,14 +1636,18 @@ aside{display:flex;flex-direction:column;gap:18px}
   </section>
   <aside>
       <div class="card">
-        <div class="cat-title"><b id="hudName">年糕</b><span class="chip" id="hudBreed">橘猫</span></div>
-        <div class="age-row"><span id="hudAge">第 1 天 · 幼猫</span><span id="hudLv">Lv.1 见习铲屎官</span></div>
-        <div class="xpbar"><i id="xpFill"></i></div>
-        <div class="stat"><span class="si">🍖</span><span class="sn">饱食</span><div class="bar"><i id="bHunger" class="f-hunger"></i></div><b class="sv" id="vHunger">70</b></div>
-        <div class="stat"><span class="si">💧</span><span class="sn">水分</span><div class="bar"><i id="bThirst" class="f-thirst"></i></div><b class="sv" id="vThirst">70</b></div>
-        <div class="stat"><span class="si">🧼</span><span class="sn">清洁</span><div class="bar"><i id="bClean" class="f-clean"></i></div><b class="sv" id="vClean">85</b></div>
-        <div class="stat"><span class="si">🎀</span><span class="sn">心情</span><div class="bar"><i id="bMood" class="f-mood"></i></div><b class="sv" id="vMood">75</b></div>
-        <div class="stat"><span class="si">⚡</span><span class="sn">精力</span><div class="bar"><i id="bEnergy" class="f-energy"></i></div><b class="sv" id="vEnergy">80</b></div>
+        <div class="cat-info">
+          <div class="cat-title"><b id="hudName">年糕</b><span class="chip" id="hudBreed">橘猫</span></div>
+          <div class="age-row"><span id="hudAge">第 1 天 · 幼猫</span><span id="hudLv">Lv.1 见习铲屎官</span></div>
+        </div>
+        <div class="stats-right">
+          <div class="xpbar"><i id="xpFill"></i></div>
+          <div class="stat"><span class="si">🍖</span><span class="sn">饱食</span><div class="bar"><i id="bHunger" class="f-hunger"></i></div><b class="sv" id="vHunger">70</b></div>
+          <div class="stat"><span class="si">💧</span><span class="sn">水分</span><div class="bar"><i id="bThirst" class="f-thirst"></i></div><b class="sv" id="vThirst">70</b></div>
+          <div class="stat"><span class="si">🧼</span><span class="sn">清洁</span><div class="bar"><i id="bClean" class="f-clean"></i></div><b class="sv" id="vClean">85</b></div>
+          <div class="stat"><span class="si">🎀</span><span class="sn">心情</span><div class="bar"><i id="bMood" class="f-mood"></i></div><b class="sv" id="vMood">75</b></div>
+          <div class="stat"><span class="si">⚡</span><span class="sn">精力</span><div class="bar"><i id="bEnergy" class="f-energy"></i></div><b class="sv" id="vEnergy">80</b></div>
+        </div>
       </div>
       <div class="card" id="actsCard">
         <div class="acts-grid">
@@ -1622,7 +1712,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 <!-- 猫窝大门（多存档选择） -->
 <div id="gateOverlay">
   <div class="gate-card">
-    <h1>🐱 莫兰迪猫舍</h1>
+    <h1>🐱 猫猫快乐屋</h1>
     <p class="sub">选择要看望的猫猫，或领养一只新的</p>
     <div class="gate-slots" id="gateSlots"></div>
     <p class="gate-ver" id="gateVer"></p>
@@ -1708,6 +1798,10 @@ aside{display:flex;flex-direction:column;gap:18px}
     </div>
     <div class="catch-tip" id="catchTip">绿色区间越窄，收获越珍贵</div>
     <button class="btn3d primary catch-btn" id="catchBtn">🎣 收杆</button>
+    <div class="catch-settle" id="catchSettle">
+      <button class="btn3d fish" id="catchAgain">🎣 继续</button>
+      <button class="btn3d primary" id="catchLeave">👋 离开</button>
+    </div>
   </div>
 </div>
 
@@ -1749,10 +1843,10 @@ aside{display:flex;flex-direction:column;gap:18px}
 <div id="repairModal">
   <div class="modal-card">
     <div class="del-title">🔧 家具坏掉了</div>
-    <div class="del-sub" id="repairSub">它被猫猫玩坏了，修理需要 🪙100。</div>
+    <div class="del-sub" id="repairSub">它被猫猫玩坏了，修理需要 🪙50。</div>
     <div class="modal-btns">
       <button class="btn3d" id="repairCancel">先不修</button>
-      <button class="btn3d primary" id="repairConfirm">花 100 猫币修理</button>
+      <button class="btn3d primary" id="repairConfirm">花 50 猫币修理</button>
     </div>
   </div>
 </div>
@@ -1791,7 +1885,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 const SLOT_BASE="moranCatSave.v2.s";   /* 存档槽位：.s1 .s2 .s3 .s4（第 4 号是稀有猫舍） */
 const OLD_KEY="moranCatSave.v2";
 const ACCOUNT_KEY="moranCatAccount.v1";  /* 账号级「铲屎官等级」= 养过的猫里最高等级 */
-const GAME_VERSION="2.0.1";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
+const GAME_VERSION="2.1.0";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
 /* 版本守卫：检测到版本变化时——
    1) http/https 下带 ?v=版本号 重新加载一次页面，强制绕过浏览器缓存的旧 HTML；
    2) file:// 直接打开时不需要刷新（本地文件不缓存），只记录新版本并在进入游戏后提示「已更新」。
@@ -1858,7 +1952,7 @@ const HINTS=[
   "小提示：战利品袋最多装 80 件，装满了记得先卖掉一些",
 ];
 /* 地面坐标（% of floor）：x=左右，y=前后（0=后墙边，100=镜头前） */
-const POS={food:[20.70,90.27],water:[30.70,90.27],litter:[85,30],bed:[72,90.1],fish:[14,30],center:[50,46],climbBase:[80,22],
+const POS={food:[20.70,91.77],water:[30.70,91.77],litter:[85,30],bed:[72,90.1],fish:[14,30],center:[50,46],climbBase:[80,22],
            shelf1:[74,14],shelf2:[77,13],shelf3:[73,12]};
 const BASE_SHELF_H=[74,130,186];   /* 三层木板高度（房间 Y 轴 px，与墙面位置对应），基准 710px 房间 */
 /* 移动端房间缩到 400px 后，猫爬架已用 CSS scale 等比缩放（见 .ct-wrap），
@@ -2247,17 +2341,23 @@ function bubble(msg,force){
    requestAnimationFrame 跟随：气泡可见期间每帧跟随猫移动，保证 60fps 流畅。
    加场景边界约束：避免猫靠边时气泡被 #scene 的 overflow:hidden 裁掉。*/
 let bubbleFollowRAF=0;
+let bubbleCache=null;
 function positionBubble(){
   if(!el.bubble.classList.contains("on")){
     cancelAnimationFrame(bubbleFollowRAF); bubbleFollowRAF=0;
+    bubbleCache=null;
     return;
   }
   const scene=document.getElementById("scene");
-  const sr=scene.getBoundingClientRect();
+  /* 气泡可见期间 scene 矩形与气泡尺寸不变：缓存起来，避免每帧读 offsetWidth/getBoundingClientRect
+     触发同步布局（猫咪走动卡顿的放大源之一）。只有气泡文案变化才重新测量。 */
+  const txt=el.bubble.textContent;
+  if(!bubbleCache||bubbleCache.txt!==txt){
+    bubbleCache={txt:txt,sr:scene.getBoundingClientRect(),bw:el.bubble.offsetWidth||120,bh:el.bubble.offsetHeight||34};
+  }
+  const sr=bubbleCache.sr,bw=bubbleCache.bw,bh=bubbleCache.bh;
   // 注意：scene 设了 perspective:1250px，它就是 bubble 的 containing block。
   // 所以 style.left/top 是相对 scene 内的坐标，要用 viewport 坐标减去 sr.left/top。
-  const bw=el.bubble.offsetWidth||120;
-  const bh=el.bubble.offsetHeight||34;
   const r=el.catWrap.getBoundingClientRect();
   const desiredX_v=r.left+r.width/2;
   const desiredY_v=r.top-16;
@@ -2402,9 +2502,27 @@ function setH(h){
   el.catWrap.style.setProperty("--h",h+"px");
   el.catShadow.style.opacity=Math.max(0,0.9-h/380).toFixed(2);
 }
+/* 把百分比坐标 curX/curY 换算成 floor 内像素，写入 --mx/--my（猫+影子同步）。
+   floor 是 preserve-3d，其 offsetWidth/offsetHeight 是未变换的布局尺寸，正好是 left/top 百分比的基准。 */
+function setCatPos(x,y){
+  const fw=el.floor.offsetWidth||1, fh=el.floor.offsetHeight||1;
+  const mx=(x/100*fw)+"px", my=(y/100*fh)+"px";
+  el.catWrap.style.setProperty("--mx",mx);
+  el.catWrap.style.setProperty("--my",my);
+  el.catShadow.style.setProperty("--mx",mx);
+  el.catShadow.style.setProperty("--my",my);
+}
+/* resize 后 floor 像素尺寸变化：无过渡地重算位置，避免产生滑动动画 */
+function resyncCatPos(){
+  if(!S||el.app.hidden)return;
+  const t=el.catWrap.style.transition, ts=el.catShadow.style.transition;
+  el.catWrap.style.transition="none"; el.catShadow.style.transition="none";
+  setCatPos(curX,curY);
+  void el.catWrap.offsetWidth;   /* 强制回流，让新值立即生效 */
+  el.catWrap.style.transition=t; el.catShadow.style.transition=ts;
+}
 function placeShadow(){
-  el.catShadow.style.left=curX+"%";
-  el.catShadow.style.top=curY+"%";
+  setCatPos(curX,curY);
   updateBowlFront();
 }
 function updateBowlFront(){ /* 猫站在碗后方附近时，碗挡在猫身前 */
@@ -2420,8 +2538,6 @@ function goTo(x,y,after){
       if(x<curX-1)el.catFlip.classList.add("face-l");
       else if(x>curX+1)el.catFlip.classList.remove("face-l");
       curX=x;curY=y;
-      el.catWrap.style.left=x+"%";
-      el.catWrap.style.top=y+"%";
       placeShadow();
       positionBubble();
       await sleepMs(1200);
@@ -2433,8 +2549,6 @@ function goTo(x,y,after){
 async function hopTo(x,y,h){
   setState("climbing");snd("jump");
   curX=x;curY=y;
-  el.catWrap.style.left=x+"%";
-  el.catWrap.style.top=y+"%";
   placeShadow();
   positionBubble();
   setH(h);
@@ -2444,8 +2558,6 @@ async function hopTo(x,y,h){
 async function jumpDown(toX,toY){
   setState("climbing");snd("land");
   curX=toX;curY=toY;
-  el.catWrap.style.left=toX+"%";
-  el.catWrap.style.top=toY+"%";
   placeShadow();
   positionBubble();
   setH(0);
@@ -2467,6 +2579,7 @@ async function startEat(auto=false){
     S.hunger=clamp(S.hunger+gained);
     S.foodBowl=Math.max(0,S.foodBowl-gained*1.6);
     if(!auto)addXp(6);snd("eat");puff(el.foodBowl,0,-8,["🍚","✨"],2);
+    updateHUD();   /* 吃完立刻刷新碗存量+状态条（原来要等猫走回中央、chain() 里才刷，差好几秒） */
     curAction=null;
     await goTo(...POS.center,"idle");
     busy=false;chain();
@@ -2485,6 +2598,7 @@ async function startDrink(auto=false){
     S.thirst=clamp(S.thirst+gained);
     S.waterBowl=Math.max(0,S.waterBowl-gained*1.1);
     if(!auto)addXp(4);snd("drink");puff(el.waterBowl,0,-8,["💧"],2);
+    updateHUD();   /* 喝完立刻刷新碗存量+状态条 */
     curAction=null;
     await goTo(...POS.center,"idle");
     busy=false;chain();
@@ -2502,6 +2616,7 @@ async function doPotty(){
     S.clean=clamp(S.clean-12);
     if(S.clean<22){S.mood=clamp(S.mood-4);bubble("讨厌…猫砂盆脏脏的…");}
     puff(el.litterBox,0,-20,["💨"],2);
+    updateHUD();   /* 上完立刻刷新清洁条+猫砂盆脏污状态 */
     S.nextPotty=S.min+210+Math.random()*120;
     curAction=null;
     await goTo(...POS.center,"idle");
@@ -2854,8 +2969,6 @@ function catFollow(){
     lastFollow=now;
     curX=Math.max(4,Math.min(96,wand.x-Math.sign(dx)*6.5));
     curY=Math.max(7,Math.min(97,wand.y-Math.sign(dy)*5.5));
-    el.catWrap.style.left=curX+"%";
-    el.catWrap.style.top=curY+"%";
     placeShadow();
   }else if(now-lastPounce>820){
     lastPounce=now;
@@ -3232,7 +3345,7 @@ async function evCritter(key){
     setTimeout(()=>m.remove(),c.animMs);
     setState("playing");snd("play");
     curX=c.pos[0];curY=c.pos[1];
-    el.catWrap.style.left=c.pos[0]+"%";el.catWrap.style.top=c.pos[1]+"%";placeShadow();
+    placeShadow();
     await sleepMs(c.wait);
     if(g!==gen)return;
     puff(el.catWrap,0,-40,c.puff,3);
@@ -3619,7 +3732,6 @@ async function doFind(auto){
   el.catWrap.style.visibility="";
   el.catShadow.style.visibility="";
   curX=50;curY=46;
-  el.catWrap.style.left="50%";el.catWrap.style.top="46%";
   placeShadow();setH(0);setState("idle");
   S.clean=clamp(S.clean-15);
   S.mood=clamp(S.mood-8);
@@ -3893,6 +4005,7 @@ function sellCatchAll(){
   toast("售出 "+n+" 件战利品 → 🪙"+total);
   snd("level");
   renderBag();updateHUD();save();
+  if(!(S.bag||[]).length){el.bagModal.classList.remove("on");}   /* 全部卖光自动收起面板 */
 }
 /* 把战利品喂给猫猫：等级越高，心情加成越多 */
 function feedCatch(id){
@@ -3967,6 +4080,30 @@ function showCatchResult(res,cfg){
   }
   el.catchResult.innerHTML=html;
 }
+/* 结算界面手动收尾：弹出「继续 / 离开」两个按钮，等玩家自己选。
+   resolve(true)=继续（再钓一次 / 再猎一次）；resolve(false)=离开。
+   若期间被别的操作打断（gen 变化），自动按「离开」收场，避免弹窗卡死。 */
+function settleChoice(label,myGen){
+  return new Promise(function(resolve){
+    if(!el.catchSettle||!el.catchAgain||!el.catchLeave){resolve(false);return;}
+    var picked=false;
+    el.catchAgain.textContent=label||"🎣 继续";
+    el.catchSettle.classList.add("on");
+    function end(again){
+      if(picked)return;
+      picked=true;
+      clearInterval(gi);
+      el.catchAgain.onclick=null;
+      el.catchLeave.onclick=null;
+      el.catchSettle.classList.remove("on");
+      el.catchModal.classList.remove("on");
+      resolve(again);
+    }
+    var gi=setInterval(function(){if(gen!==myGen)end(false);},200);
+    el.catchAgain.onclick=function(){end(true);};
+    el.catchLeave.onclick=function(){end(false);};
+  });
+}
 /* type:"fish"|"prey"；make(q) 由调用方注入，负责产出战利品对象 */
 function runCatchGame(mode){
   /* mode: "fish" | "prey" —— 必须和战利品类型一致，否则查不到配置 */
@@ -4008,10 +4145,18 @@ function runCatchGame(mode){
       cleanup();
       if(res&&(res.ok||res.consolation))res.item=makeCatch(mode,res.ok?res.quality:0);
       showCatchResult(res,cfg);
-      setTimeout(function(){
-        el.catchModal.classList.remove("on");
+      if(!res){                          /* 被别的操作打断：直接收场，不必等玩家点 */
+        setTimeout(function(){el.catchModal.classList.remove("on");resolve(null);},900);
+        return;
+      }
+      /* 结算界面不再自动关闭：点「继续」再来一次，点「离开」收工 */
+      el.catchBar.classList.remove("on");
+      el.catchSub.textContent="";
+      el.catchTip.textContent="想再来一次点「继续」，收工点「离开」";
+      settleChoice(mode!=="fish"?"🏹 继续":"🎣 继续",myGen).then(function(again){
+        if(res)res.again=again;      /* 交给 doCatch 决定是否连开下一局 */
         resolve(res);
-      },(res&&res.item)?1800:1400);
+      });
     }
     function onKey(e){
       if(e.key===" "||e.key==="Enter"||e.key==="Spacebar"){e.preventDefault();act();}
@@ -4091,7 +4236,7 @@ function runCatchGame(mode){
 /* ---- 打地鼠捕猎：猎物从洞口探头，连续敲中积连击，连击越高奖励越丰厚 ---- */
 var WHACK_CFG={dur:16000,upStart:1150,upEnd:620,gapStart:520,gapEnd:240,
   maxConcurrent:2,comboPrice:.05,comboCap:10,qDiv:280,
-  emotes:["🐭","🐹","🐰","🦔","🐦","🐸","🦗","🐿️","🐛"]};
+  emotes:["🐭","🐹","🐰","🦊","🐼","🐨","🐯","🦁","🐸"]};
 function runWhackGame(){
   return new Promise(function(resolve){
     var done=false,running=false,closed=false,lastRes=null,myGen=gen;
@@ -4254,24 +4399,18 @@ function runWhackGame(){
         }
       }
       showCatchResult(res,{});
-      /* 结算画面手动关闭：点「收好」或按空格/回车 */
-      el.catchTip.textContent="点击「收好」或按空格键继续";
-      el.catchBtn.textContent="收好";
-      el.catchBtn.disabled=false;
-      el.catchBtn.onclick=closeNow;
-      document.addEventListener("keydown",onKeyClose,true);
-    }
-    function onKeyClose(e){
-      if(e.key===" "||e.key==="Enter"||e.key==="Spacebar"){e.preventDefault();closeNow();}
-    }
-    function closeNow(){
-      if(closed)return;
-      closed=true;
-      document.removeEventListener("keydown",onKeyClose,true);
-      el.catchBtn.onclick=null;
-      el.catchBtn.disabled=true;
-      el.catchModal.classList.remove("on");
-      resolve(lastRes);
+      if(!res){                          /* 被打断：直接收场 */
+        setTimeout(function(){el.catchModal.classList.remove("on");resolve(null);},900);
+        return;
+      }
+      /* 结算界面手动结束：与钓鱼一致，点「继续」再猎一次，点「离开」收工 */
+      el.catchSub.textContent="";
+      el.catchTip.textContent="想再来一次点「继续」，收工点「离开」";
+      settleChoice("🏹 继续",myGen).then(function(again){
+        closed=true;
+        res.again=again;                 /* 交给 doCatch 决定是否连开下一局 */
+        resolve(res);
+      });
     }
     function onKey(e){
       if(e.key===" "||e.key==="Enter"||e.key==="Spacebar"){
@@ -4314,7 +4453,8 @@ function runWhackGame(){
 }
 /* 一次出动：钓鱼 / 捕猎 */
 var catchCd=0;
-async function doCatch(mode){
+/* skipCd：结算界面点「继续」连开下一局时，跳过 5s 冷却 */
+async function doCatch(mode,skipCd){
   const isFish=mode!=="prey";
   cancelAuto();markActive();
   if(S.sleeping){toast("Zzz…猫猫睡得正香");return;}
@@ -4322,10 +4462,11 @@ async function doCatch(mode){
   const need=isFish?10:16, cost=isFish?8:14;
   if(S.energy<need){bubble(isFish?"太累了…钓不动鱼了…":"没力气了…打不动猎了…",true);return;}
   if((S.bag||[]).length>=80){toast("战利品袋装满啦！先去卖掉一些吧");return;}
-  if(Date.now()<catchCd)return;
+  if(!skipCd&&Date.now()<catchCd)return;
   catchCd=Date.now()+5000;
   busy=true;
   const g=gen;
+  var again=false;                        /* 结算界面是否点了「继续」 */
   try{
   toast(isFish?`${S.name} 叼着小鱼竿去水边了…（+1 小时）`:`${S.name} 蹑手蹑脚出门打猎了…（+1 小时）`);
   await goTo(isFish?POS.fish[0]+8:58,isFish?POS.fish[1]:92,"walking");
@@ -4353,14 +4494,18 @@ async function doCatch(mode){
   S.mood=clamp(S.mood+(isFish?10:14));
   S.energy=Math.max(0,S.energy-cost);
   advanceTime(1);
+  again=(g===gen)&&!!r.again;             /* gen 变了说明被打断，不再续局 */
   }catch(err){
     /* 兜底：任何意外都要把动作锁放开，否则整个游戏会卡死 */
     console.error("[doCatch]",err);
     try{setState("idle");}catch(e){}
   }finally{
     busy=false;
-    if(g===gen&&S){needBubble();updateHUD();save();chain();}
+    if(g===gen&&S){needBubble();updateHUD();save();}
   }
+  /* 结算界面点了「继续」：直接再开一局（跳过冷却）；否则才交还给自主活动链 */
+  if(again&&g===gen&&S&&!S.sleeping&&!busy){catchCd=0;doCatch(mode,true);return;}
+  if(g===gen&&S&&!busy)chain();
 }
 function onFishing(){doCatch("fish");}
 function onHunt(){doCatch("prey");}
@@ -4452,6 +4597,7 @@ var BREAKABLE={
   cattree:{name:"攀爬架",e:"🧗"}
 };
 var currentRepairId=null;
+var REPAIR_COST=50;   /* 修理统一价格：实际扣款/文案都用这一个常量，避免再出现显示与扣款不一致 */
 function isBroken(id){return !!(S&&S.brokenFurniture&&S.brokenFurniture[id]);}
 function doBreak(id){
   var cfg=BREAKABLE[id];
@@ -4459,7 +4605,7 @@ function doBreak(id){
   S.brokenFurniture=S.brokenFurniture||{};
   if(S.brokenFurniture[id])return false;
   S.brokenFurniture[id]=true;
-  toast(`💢 ${cfg.name}被猫猫弄坏了！花 🪙100 可修理`);
+  toast(`💢 ${cfg.name}被猫猫弄坏了！花 🪙50 可修理`);
   bubble("糟了…闯祸了…",true);
   puff(el.catWrap,0,-40,["💢","💥"],2);
   updateBrokenUI();
@@ -4467,6 +4613,7 @@ function doBreak(id){
   return true;
 }
 function tryBreak(id,chance){
+  if(!S||S.level<3)return false;   /* Lv.3 之前家具不会坏 */
   if(Math.random()>=chance)return false;
   return doBreak(id);
 }
@@ -4483,18 +4630,19 @@ function openRepair(id){
   var cfg=BREAKABLE[id];
   if(!cfg)return;
   currentRepairId=id;
-  el.repairSub.textContent=cfg.e+" "+cfg.name+"被猫猫玩坏了，修理需要 🪙100。";
+  el.repairSub.textContent=cfg.e+" "+cfg.name+"被猫猫玩坏了，修理需要 🪙"+REPAIR_COST+"。";
+  el.repairConfirm.textContent="花 "+REPAIR_COST+" 猫币修理";
   el.repairModal.classList.add("on");
 }
 function closeRepair(){el.repairModal.classList.remove("on");currentRepairId=null;}
 function confirmRepair(){
   if(!currentRepairId)return;
   var cfg=BREAKABLE[currentRepairId];
-  if((S.catCoins||0)<100){
-    el.repairSub.textContent="猫币不够啦！还差 🪙"+(100-(S.catCoins||0))+"。";
+  if((S.catCoins||0)<REPAIR_COST){
+    el.repairSub.textContent="猫币不够啦！还差 🪙"+(REPAIR_COST-(S.catCoins||0))+"。";
     return;
   }
-  S.catCoins-=100;
+  S.catCoins-=REPAIR_COST;
   S.brokenFurniture=S.brokenFurniture||{};
   delete S.brokenFurniture[currentRepairId];
   toast(`🔧 ${cfg.name}修好啦！`);
@@ -4529,6 +4677,7 @@ function setWeather(w){
   clearInterval(lightningTimer);lightningTimer=0;
   el.glowOverlay.classList.remove("on");
   el.fullmoon.classList.remove("on");
+  el.sky.classList.remove("is-full");      /* 统一关闭满月（CSS 会顺带瞬间隐藏满月、放普通月出来） */
   el.cloud.forEach(function(c){c.style.opacity="";});
   if(w==="clear")return;
   /* 大晴天时云更少 */
@@ -4591,10 +4740,10 @@ function setWeather(w){
       el.weatherLayer.appendChild(m);
     }
   }
-  /* 满月 */
+  /* 满月：只开 .sky.is-full，普通月由 CSS 瞬间隐藏（不再自己改 opacity，避免两边淡入淡出重叠） */
   if(w==="fullmoon"){
     el.fullmoon.classList.add("on");
-    el.moon.style.opacity="0"; /* 隐藏普通月亮 */
+    el.sky.classList.add("is-full");
   }
 }
 function weatherTick(){
@@ -4604,7 +4753,7 @@ function weatherTick(){
   /* 天气持续 40~90 秒（游戏内时间），换算为真实时间约 16~36 秒 */
   weatherEndAt=now+(16000+Math.random()*20000);
   var w=pickWeather();
-  if(w!==curWeather)setWeather(w);
+  if(w!==curWeather){setWeather(w);renderEnv();}   /* 天气切换立刻同步天空配色/日月，不等下一次 updateHUD */
 }
 
 /* ================= 事件调度 ================= */
@@ -4639,7 +4788,7 @@ function inGameEvTick(){
     else if(roll<0.55)fire="critter";                      /* 家里的小动物 30%（8 种均分） */
     else if(roll<0.60)fire="bird";
     else if(roll<0.85)fire="friend";                       /* 朋友来访 25% */
-    else if(roll<0.95)fire="sick";
+    else if(roll<0.88)fire="sick";                         /* 生病 3%（原 10%，事件冷却仅 20s，太高会频繁生病） */
   }
   if(!fire)return;
   if(autoBusy)cancelAuto();
@@ -4658,6 +4807,25 @@ function renderBowls(){
   el.waterFill.style.height=(S.waterBowl*0.72)+"%";
   el.litterBox.classList.toggle("dirty",S.clean<70);
   el.litterBox.classList.toggle("stinky",S.clean<45);
+  /* 移动端：水碗下移半盆高度（~22px），与食碗错开 */
+  if(window.innerWidth<=920){
+    el.waterBowl.style.top="calc(92% + 22px)";
+  } else {
+    el.waterBowl.style.top="";
+  }
+  /* 同步 POS，让猫走到碗的实际锚点（碗位置已被 --oy / top 移动，必须保持一致）：
+     食碗移动端 --oy 改为 88；水碗 top 改为 calc(92% + 22px)。
+     22px 是绝对像素，而 POS 的 Y 是百分比（setCatPos 里 y/100*floorH），故按 floor 高度换算。
+     EAT_CAT_DROP：吃饭/喝水的猫比碗锚点再往下沉 1.5%（用户要求猫的位置略低于碗，主猫/朋友猫共用） */
+  const EAT_CAT_DROP=1.5;
+  if(window.innerWidth<=920){
+    const fh=el.floor.offsetHeight||1;
+    POS.food=[20.70,88+EAT_CAT_DROP];
+    POS.water=[30.70,92+2200/fh+EAT_CAT_DROP];
+  } else {
+    POS.food=[20.70,90.27+EAT_CAT_DROP];
+    POS.water=[30.70,90.27+EAT_CAT_DROP]; /* 原始位置 */
+  }
 }
 function renderEnv(){
   const h=gameHour();
@@ -4687,6 +4855,9 @@ function renderEnv(){
   el.sun.style.top="18%";
   el.sun.style.transform="scale(1)";
   el.moon.style.opacity=(night&&w!=="fullmoon")?1:0;
+  /* is-full 在此也统一驱动一次：天气没变但跨到白天/夜晚时（setWeather 不会被调用），
+     靠这里把残留的满月收掉——否则白天会同时挂着太阳和满月，看着像两个月亮 */
+  el.sky.classList.toggle("is-full",w==="fullmoon"&&night);
   el.stars.style.setProperty("opacity",night?"1":"0","important");
   /* 动态生成星星点（仅首次） */
   if(night&&!el.stars.children.length){
@@ -4694,7 +4865,10 @@ function renderEnv(){
       var dot=document.createElement("div");
       dot.className="star-dot";
       var sz=2+Math.random()*4;
-      dot.style.cssText="width:"+sz+"px;height:"+sz+"px;left:"+(5+Math.random()*90)+"%;top:"+(5+Math.random()*50)+"%;animation-duration:"+(1.5+Math.random()*3)+"s;animation-delay:"+(Math.random()*3)+"s";
+      var isNarrow=window.innerWidth<=920;
+      /* PC: 5~55%（落在窗内上半段）；移动端：35~90%（避免落到墙顶裁切区） */
+      var topR=isNarrow?(35+Math.random()*55):(5+Math.random()*50);
+      dot.style.cssText="width:"+sz+"px;height:"+sz+"px;left:"+(5+Math.random()*90)+"%;top:"+topR+"%;animation-duration:"+(1.5+Math.random()*3)+"s;animation-delay:"+(Math.random()*3)+"s";
       el.stars.appendChild(dot);
     }
   }
@@ -4930,7 +5104,6 @@ function renderGate(){
       const day=Math.floor((s.min||0)/1440)+1;
       const mood=s.mood>=60?"😊":s.mood>=35?"😐":"☹️";
       card.innerHTML=
-        (isRare?`<span class="rare-badge">✨ 稀有</span>`:"")+
         `<span class="mini">${catSVG(s.breed,"g"+i)}</span>`+
         `<div class="g-name">${esc(s.name)}</div>`+
         `<div class="g-info">第 ${day} 天 · Lv.${s.level||1}<br>${mood} ${BREEDS[s.breed].name}</div>`+
@@ -4949,7 +5122,7 @@ function renderGate(){
     }else if(isRare){
       if(rareUnlocked){
         card.className="gate-slot rare";
-        card.innerHTML=`<span class="rare-badge">✨ 稀有</span><span class="rare-ico">✨</span><span class="rare-main">领养稀有猫</span><span class="rare-sub">挪威森林猫 · 苏格兰折耳猫<br>暹罗猫</span>`;
+        card.innerHTML=`<span class="rare-ico">✨</span><span class="rare-main">领养稀有猫</span><span class="rare-sub">挪威森林猫<br>苏格兰折耳猫<br>暹罗猫</span>`;
         card.onclick=()=>{
           slotIdx=i;
           rareAdopt=true;
@@ -4961,7 +5134,7 @@ function renderGate(){
         };
       }else{
         card.className="gate-slot rare locked";
-        card.innerHTML=`<span class="rare-badge">🔒 稀有</span><span class="rare-ico">🔒</span><span class="rare-main">稀有猫舍</span><span class="rare-sub">需要铲屎官 Lv.${RARE_UNLOCK_LV} 解锁<br>当前 Lv.${accountMaxLevel()}</span>`;
+        card.innerHTML=`<span class="rare-ico">🔒</span><span class="rare-main">稀有猫舍</span><span class="rare-sub">需要铲屎官 Lv.${RARE_UNLOCK_LV} 解锁<br>当前 Lv.${accountMaxLevel()}</span>`;
         card.onclick=()=>{toast(`稀有猫舍需要铲屎官 Lv.${RARE_UNLOCK_LV} 解锁（当前 Lv.${accountMaxLevel()}）`);};
       }
     }else{
@@ -5006,8 +5179,6 @@ function enterGame(fresh){
   syncSceneHeight();
   buildCat();
   curX=POS.center[0];curY=POS.center[1];setH(0);
-  el.catWrap.style.left=curX+"%";
-  el.catWrap.style.top=curY+"%";
   placeShadow();
   setState("idle");
   updateHUD();syncSwitches();
@@ -5052,13 +5223,11 @@ function syncSwitches(){
   el.muteBtn.textContent=S.muted?"🔇":"🔊";
 }
 
-/* ================= 场景点击（摸猫命中测试） ================= */
+/* ================= 场景点击（仅摸猫命中测试） ================= */
 function bindSceneTap(){
   el.scene.addEventListener("click",e=>{
-    const r=el.scene.getBoundingClientRect();
-    const px=e.clientX-r.left,py=e.clientY-r.top;
     const cr=el.catWrap.getBoundingClientRect();
-    if(px>=cr.left-r.left-12&&px<=cr.right-r.left+12&&py>=cr.top-r.top-12&&py<=cr.bottom-r.top+8){
+    if(e.clientX>=cr.left-12&&e.clientX<=cr.right+12&&e.clientY>=cr.top-12&&e.clientY<=cr.bottom+8){
       onPet();
     }
   });
@@ -5201,6 +5370,7 @@ function init(){
    "catchModal","catchCard","catchTitle","catchSub","catchStage","catchWater","waterLine","catchBob","catchRipple",
    "whackArea","whackCount","whackHud","whackTimer","whackCombo",
    "catchTarget","catchResult","catchBar","catchZone","catchMark","catchTip","catchBtn",
+   "catchSettle","catchAgain","catchLeave",
    "bagModal","bagGrid","bagCoins","bagStat","bagSellAll","bagClose"
   ].forEach(id=>el[id]=$("#"+id));
   el.cloud=[...document.querySelectorAll(".cloud")];  /* 云朵集合 */
@@ -5222,6 +5392,7 @@ function init(){
     sceneHRAF=requestAnimationFrame(()=>{ sceneHRAF=0; syncSceneHeight(); });
   };
   window.addEventListener("resize",scheduleSceneHeight);
+  window.addEventListener("resize",resyncCatPos);   /* 窗口尺寸变化时，重算猫/影子的像素位置 */
   if(window.ResizeObserver&&el.actsCard) new ResizeObserver(scheduleSceneHeight).observe(el.actsCard);
   migrateOld();   /* 旧版单存档自动迁入 1 号猫窝 */
   syncAccountLevel();   /* 同步账号级铲屎官等级，保证稀有猫舍正确显示 */

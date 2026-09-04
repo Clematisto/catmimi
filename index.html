@@ -1893,7 +1893,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 const SLOT_BASE="moranCatSave.v2.s";   /* 存档槽位：.s1 .s2 .s3 .s4（第 4 号是稀有猫舍） */
 const OLD_KEY="moranCatSave.v2";
 const ACCOUNT_KEY="moranCatAccount.v1";  /* 账号级「铲屎官等级」= 养过的猫里最高等级 */
-const GAME_VERSION="2.1.0";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
+const GAME_VERSION="2.1.1";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
 /* 版本守卫：检测到版本变化时——
    1) http/https 下带 ?v=版本号 重新加载一次页面，强制绕过浏览器缓存的旧 HTML；
    2) file:// 直接打开时不需要刷新（本地文件不缓存），只记录新版本并在进入游戏后提示「已更新」。
@@ -2446,9 +2446,10 @@ function addXp(n){
     snd("level");
     const prevMax=accountMaxLevel();
     accountOnLevelUp(S.level);   /* 记录账号级铲屎官等级（用于稀有猫舍解锁） */
-    /* 到达 3 级解锁钓鱼、5 级解锁捕猎，并给出提示 */
-    if(S.level===3){toast(`🎣 ${S.name} 学会钓鱼了！`);}
+    /* 到达 2 级解锁钓鱼、5 级解锁捕猎，并给出提示 */
+    if(S.level===2){toast(`🎣 ${S.name} 学会钓鱼了！`);}
     if(S.level===5){toast(`🏹 ${S.name} 学会捕猎了！`);}
+    updateFishingHuntBtn();   /* 升级后立即刷新钓鱼/捕猎按钮显隐，不等下一次 updateHUD */
     /* 账号级铲屎官首次达到 Lv.15：解锁稀有猫舍 */
     if(prevMax<RARE_UNLOCK_LV&&accountMaxLevel()>=RARE_UNLOCK_LV){toast(`✨ 铲屎官 Lv.${RARE_UNLOCK_LV} 达成！稀有猫舍已解锁，快去猫窝大门看看～`);}
     /* GA 统计：首次达到 Lv.10 只记一次，以后升到 Lv.11/20 也不重复（老存档在 enterGame 里补记） */
@@ -3726,10 +3727,10 @@ function updateWatchTVBtn(){
   el.btnWatchTV.classList.toggle("disabled",!hasTV);
   el.btnWatchTV.disabled=!hasTV;
 }
-/* 钓鱼 3 级解锁、捕猎 5 级解锁 */
+/* 钓鱼 2 级解锁、捕猎 5 级解锁 */
 function updateFishingHuntBtn(){
   var lv=S.level||1;
-  el.btnFishing.style.display=lv>=3?"flex":"none";
+  el.btnFishing.style.display=lv>=2?"flex":"none";
   el.btnHunt.style.display=lv>=5?"flex":"none";
 }
 function evLost(){

@@ -9,6 +9,14 @@
 <meta http-equiv="Pragma" content="no-cache">
 <meta http-equiv="Expires" content="0">
 <title>猫猫快乐屋 · 云养猫日记</title>
+<!-- Google tag (gtag.js) -->
+<script async src="https://www.googletagmanager.com/gtag/js?id=G-BHPWL5BQ2L"></script>
+<script>
+window.dataLayer = window.dataLayer || [];
+function gtag(){dataLayer.push(arguments);}
+gtag('js', new Date());
+gtag('config', 'G-BHPWL5BQ2L');
+</script>
 <style>
 @property --h { syntax:"<length>"; inherits:false; initial-value:0px; }
 /* 猫咪/影子位移用 --mx/--my 承载（合成器加速的 translate3d），注册后可按 <length> 过渡，
@@ -1910,6 +1918,16 @@ var verJustChanged=false;
     location.replace(location.pathname+"?v="+encodeURIComponent(GAME_VERSION)+location.hash);
   }
 })();
+/* ================= Google Analytics 埋点 =================
+   事件一览：
+   - game_start            每次真正进入游戏（领养新猫/读取存档），带 breed / house_lv / player_lv 参数
+   - level_10_reached      首次达到 Lv.10 时记录一次（存档标记 S.lv10Tracked 保证每个玩家只计一次，老存档进游戏补记）
+   - breed_select          领养时选定的品种，参数 breed
+   - house_upgrade         猫窝升级到新等级，参数 house_lv
+   - minigame_start        小游戏实际开玩，参数 mode ("fish"|"prey")                              */
+function trackEvent(name,params){
+  try{if(window.gtag)gtag("event",name,params||{});}catch(e){}
+}
 const SLOTS=4;
 const RARE_UNLOCK_LV=15;   /* 稀有猫舍解锁所需铲屎官等级 */
 const BREEDS={
@@ -2433,6 +2451,12 @@ function addXp(n){
     if(S.level===5){toast(`🏹 ${S.name} 学会捕猎了！`);}
     /* 账号级铲屎官首次达到 Lv.15：解锁稀有猫舍 */
     if(prevMax<RARE_UNLOCK_LV&&accountMaxLevel()>=RARE_UNLOCK_LV){toast(`✨ 铲屎官 Lv.${RARE_UNLOCK_LV} 达成！稀有猫舍已解锁，快去猫窝大门看看～`);}
+    /* GA 统计：首次达到 Lv.10 只记一次，以后升到 Lv.11/20 也不重复（老存档在 enterGame 里补记） */
+    if(S.level>=10&&!S.lv10Tracked){
+      S.lv10Tracked=true;
+      trackEvent("level_10_reached",{player_lv:S.level});
+      save();   /* 立即持久化标记，防止玩家升级后立刻关游戏导致下次重记 */
+    }
   }
 }
 
@@ -3833,6 +3857,7 @@ function upgradeHouse(h){
   if((S.catCoins||0)<h.price){shopToast("猫币不够啦！还差 🪙"+(h.price-(S.catCoins||0)));return;}
   S.catCoins-=h.price;
   S.catHouseLevel=h.lv;
+  trackEvent("house_upgrade",{house_lv:h.lv});   /* GA 统计：猫窝升级到各等级 */
   toast("🎉 猫窝升级为："+h.e+" "+h.name+"！");
   puff(el.catWrap,-16,-62,[h.e,"✨","🪙","💗"],4);
   setCheer(2000,true);
@@ -4475,6 +4500,7 @@ async function doCatch(mode,skipCd){
   await sleepMs(isFish?700:600);
   if(g!==gen){busy=false;return;}
   setState("idle");
+  trackEvent("minigame_start",{mode:isFish?"fish":"prey"});   /* GA 统计：小游戏实际开玩次数 */
   const r=await (isFish?runCatchGame("fish"):runWhackGame());
   if(g!==gen){busy=false;return;}
   if(!r){busy=false;return;}
@@ -5193,6 +5219,14 @@ function enterGame(fresh){
     toast(`欢迎回家，${S.name}！`);snd("meow");
     setTimeout(()=>bubble("这就是我的新家吗？好开心！",true),900);
   }
+  /* GA 统计：每次真正进入游戏记一次（不只是打开网页） */
+  trackEvent("game_start",{breed:S.breed,house_lv:S.catHouseLevel||1,player_lv:S.level||1});
+  /* GA 统计：已达到 Lv.10 的老存档，在首次进入新版时补记一次 level_10_reached */
+  if((S.level||1)>=10&&!S.lv10Tracked){
+    S.lv10Tracked=true;
+    trackEvent("level_10_reached",{player_lv:S.level});
+    save();
+  }
 }
 
 /* ================= 开始界面 ================= */
@@ -5239,6 +5273,7 @@ function bind(){
   el.startBtn.onclick=()=>{
     const name=(el.nameInput.value||"").trim()||pick(["年糕","团子","布丁","麻薯","汤圆","雪球"]);
     S=newCat(name,selBreed);
+    trackEvent("breed_select",{breed:selBreed});   /* GA 统计：不同猫品种选择人数 */
     gen++;
     lastPlayerAct=Date.now();
     try{localStorage.setItem("moranCatActive",String(slotIdx));}catch(e){}

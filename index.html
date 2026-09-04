@@ -1038,9 +1038,9 @@ aside{grid-column:2;grid-row:1}
 .friend-cat.potty .head-g{transform-box:view-box;transform-origin:110px 60px;animation:nom .4s ease-in-out infinite}
 .coll-act{width:100%;margin-top:10px;padding:9px 6px;font-size:13px}
 /* 收藏册弹窗（默认隐藏） */
-#collModal,#shopModal{position:fixed;inset:0;z-index:125;display:none;align-items:center;justify-content:center;
+#collModal,#shopModal,#beautyModal{position:fixed;inset:0;z-index:125;display:none;align-items:center;justify-content:center;
   background:rgba(90,115,135,.35);-webkit-backdrop-filter,backdrop-filter:blur(3px)}
-#collModal.on,#shopModal.on{display:flex}
+#collModal.on,#shopModal.on,#beautyModal.on{display:flex}
 /* 收藏册弹窗 */
 .coll-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-top:10px;max-height:320px;overflow:auto}
 .coll-item{border-radius:12px;padding:10px 4px 8px;text-align:center;cursor:pointer;transition:transform .15s,box-shadow .15s;
@@ -1085,6 +1085,40 @@ aside{grid-column:2;grid-row:1}
 .shop-item .si-n{font-size:11px;color:#5B7183;margin-top:2px;display:block}
 .shop-item .si-price{font-size:11px;color:#D4A843;font-weight:700;margin-top:3px}
 .shop-item .si-owned{font-size:10px;color:#5A9E6F;margin-top:3px}
+/* ================= 美容沙龙 ================= */
+.beauty-hint{position:absolute;left:0;right:0;top:100%;margin-top:5px;font-size:10px;text-align:center;color:#9AB0C0;white-space:nowrap}
+#btnShop .shop-coin{font-size:11px;opacity:.92;margin-left:3px;font-weight:700;line-height:1;vertical-align:1px}
+.beauty-confirm{display:none;align-items:center;gap:8px;margin-top:8px;padding:8px 10px;background:#FFF7E8;border:2px solid #F2C14E;border-radius:10px}
+.beauty-confirm.on{display:flex}
+.beauty-confirm span{flex:1;font-size:12px;color:#7A5A16;font-weight:700}
+.beauty-confirm .btn3d{flex:none;box-shadow:none;padding:7px 14px;font-size:12px}
+.beauty-confirm .btn3d:active{transform:none;box-shadow:none}
+.btn3d.locked{opacity:.55;filter:saturate(.5)}
+.beauty-cell{border:2px solid transparent}
+.beauty-cell:hover{transform:translateY(-2px)}
+.beauty-cell.sel{border-color:#E5A0B4;background:#FDF1F5}
+.beauty-cell.equipped{border-color:#7FBF8E;background:#EFF8F1}
+.beauty-cell.free{color:#5A9E6F}
+.beauty-cell .bs-eye{width:30px;height:37px;border-radius:50% 50% 46% 46%;display:inline-flex;align-items:center;justify-content:center;box-shadow:inset 0 -3px 5px rgba(0,0,0,.18)}
+.beauty-cell .bs-eye i{width:9px;height:15px;border-radius:50%;display:block}
+.beauty-cell .bs-eye.hetero{background:linear-gradient(90deg,#E5A83C 50%,#5E93C4 50%)}
+.beauty-cell .bs-skin{width:30px;height:30px;border-radius:50%;display:inline-block;box-shadow:inset 0 -4px 6px rgba(0,0,0,.18),inset 0 3px 4px rgba(255,255,255,.4)}
+.beauty-cell .bs-neck{display:block;height:44px}
+.beauty-side{display:flex;gap:6px;justify-content:center;margin-bottom:8px}
+.beauty-side .side-chip{font-size:11px;padding:3px 12px;border-radius:99px;border:2px solid #C9DAE6;background:#fff;cursor:pointer;font-weight:700;color:#5B7183}
+.beauty-side .side-chip.active{border-color:#E5A0B4;background:#FDF1F5;color:#C05B7E}
+.beauty-note{font-size:10px;color:#8CA3B3;text-align:center;margin:4px 0 8px}
+/* 窗口内左侧猫咪预览面板 */
+#beautyModal .modal-card{width:min(660px,94vw)}
+.beauty-body{display:flex;gap:12px;align-items:flex-start}
+.beauty-cat-pane{width:160px;flex:none;background:linear-gradient(180deg,#EAF4FB,#D9E9F5);border-radius:16px;padding:12px 6px 8px;text-align:center}
+.beauty-cat-pane svg{width:128px;display:block;margin:0 auto}
+.beauty-cat-tip{font-size:10px;color:#7E96A8;margin-top:2px}
+.beauty-right{flex:1;min-width:0}
+@media (max-width:920px){
+  .beauty-cat-pane{width:118px}
+  .beauty-cat-pane svg{width:96px}
+}
 .shop-item .si-desc{font-size:10px;color:#8CA3B3}
 .shop-item.locked{opacity:.4;cursor:not-allowed}
 @keyframes starGlow{from{opacity:.6;transform:scale(.9)}to{opacity:1;transform:scale(1.1)}}
@@ -1679,9 +1713,12 @@ aside{display:flex;flex-direction:column;gap:18px}
         <button class="btn3d coll-act" id="btnColl" style="margin-top:0">🗂️ 收藏册</button>
         <button class="btn3d coll-act" id="btnBag" style="margin-top:0">🎒 战利品</button>
       </div>
-      <div style="display:flex;gap:8px;margin-top:8px">
-        <div class="coin-display" style="flex:1;justify-content:center"><span class="coin-icon">🪙</span><span id="hudCoins">0</span> 猫币</div>
-        <button class="btn3d food" id="btnShop" style="flex:1">🏪 商店</button>
+      <div style="display:flex;gap:8px;margin-top:10px;align-items:flex-start">
+        <div style="position:relative;flex:1;min-width:0">
+          <button class="btn3d coll-act" id="btnBeauty" style="margin-top:0;width:100%;height:35px">✨ 美容沙龙</button>
+          <div class="beauty-hint" id="beautyHint">🐱 猫窝 Lv.5 解锁</div>
+        </div>
+        <button class="btn3d food" id="btnShop" style="margin-top:0;flex:none;width:calc(50% - 4px);height:35px">🏪 商店<span class="shop-coin" id="shopCoinBtn">🪙0</span></button>
       </div>
     </aside>
   </main>
@@ -1759,6 +1796,46 @@ aside{display:flex;flex-direction:column;gap:18px}
       <div class="shop-grid" id="shopGrid"></div>
       <div class="modal-btns">
         <button class="btn3d primary" id="shopClose">关了</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- 美容沙龙 -->
+<div id="beautyModal">
+  <div class="shop-wrap">
+    <div class="shop-toast" id="beautyToast"></div>
+    <div class="modal-card">
+      <div style="display:flex;justify-content:space-between;align-items:center">
+        <h2>✨ 美容沙龙</h2>
+        <div class="coin-display"><span class="coin-icon">🪙</span><span id="beautyCoins">0</span></div>
+      </div>
+      <div class="shop-tabs" id="beautyTabs">
+        <div class="shop-tab active" data-bt="eye">👁 眼睛瞳孔</div>
+        <div class="shop-tab" data-bt="skin">🎨 毛色</div>
+        <div class="shop-tab" data-bt="neck">📿 项链</div>
+      </div>
+      <div class="beauty-body">
+        <div class="beauty-cat-pane">
+          <div id="beautyCat"></div>
+          <div class="beauty-cat-tip">✨ 预览喵</div>
+        </div>
+        <div class="beauty-right">
+          <div class="beauty-side" id="beautySide" style="display:none">
+            <span class="side-chip active" data-side="L">左眼</span>
+            <span class="side-chip" data-side="R">右眼</span>
+          </div>
+          <div class="beauty-note" id="beautyNote"></div>
+          <div class="shop-grid" id="beautyGrid"></div>
+        </div>
+      </div>
+      <div class="beauty-confirm" id="beautyConfirm">
+        <span id="beautyConfirmText"></span>
+        <button class="btn3d primary" id="beautyConfirmYes">确认购买</button>
+        <button class="btn3d" id="beautyConfirmNo">取消</button>
+      </div>
+      <div class="modal-btns">
+        <button class="btn3d primary" id="beautyClose">好了</button>
       </div>
     </div>
   </div>
@@ -1893,7 +1970,7 @@ aside{display:flex;flex-direction:column;gap:18px}
 const SLOT_BASE="moranCatSave.v2.s";   /* 存档槽位：.s1 .s2 .s3 .s4（第 4 号是稀有猫舍） */
 const OLD_KEY="moranCatSave.v2";
 const ACCOUNT_KEY="moranCatAccount.v1";  /* 账号级「铲屎官等级」= 养过的猫里最高等级 */
-const GAME_VERSION="2.1.1";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
+const GAME_VERSION="2.3.0";   /* 游戏版本号：每次改代码后手动递增，用于突破缓存 + 显示（大门显示 V+此值） */
 /* 版本守卫：检测到版本变化时——
    1) http/https 下带 ?v=版本号 重新加载一次页面，强制绕过浏览器缓存的旧 HTML；
    2) file:// 直接打开时不需要刷新（本地文件不缓存），只记录新版本并在进入游戏后提示「已更新」。
@@ -2045,6 +2122,49 @@ var TREAT_EFFECTS={
   catnip:{mood:30,duration:4000,msg:"喵～～～好嗨哟～"}
 };
 
+/* ================= 美容沙龙配置 ================= */
+var BEAUTY_UNLOCK_LV=5;      /* 猫窝等级达到 5 级解锁 */
+var EYE_PRICE=100;           /* 虹膜颜色：每个 100（瞳孔自动随虹膜加深） */
+var HETERO_PRICE=300;        /* 异色瞳：买断后可左右眼分别选色 */
+var SKIN_PRICE=200;          /* 毛色：每个 200 */
+var EYE_COLORS=[
+  {c:"#E5A83C",n:"琥珀"},{c:"#7FA05B",n:"草绿"},{c:"#5E93C4",n:"海蓝"},{c:"#4FB8B0",n:"湖绿"},
+  {c:"#9B7FD4",n:"紫罗兰"},{c:"#E08BB5",n:"樱粉"},{c:"#D46A6A",n:"赤红"},{c:"#D4AF37",n:"鎏金"},
+  {c:"#E8823C",n:"暖橙"},{c:"#A8D8E8",n:"冰蓝"}
+];
+var SKIN_COLORS=[
+  {c:"#F5EAD5",n:"奶油"},{c:"#E9BC8C",n:"蜜色"},{c:"#C98A5B",n:"焦糖"},{c:"#8A5A3C",n:"可可"},
+  {c:"#AEBBC7",n:"蓝灰"},{c:"#6A6A74",n:"烟灰"},{c:"#F2C6CE",n:"樱花"},{c:"#B8D8C8",n:"薄荷"},
+  {c:"#9FC4E8",n:"天蓝"},{c:"#F2B279",n:"杏子"},
+  /* 双色渐变款：存档存 id，渲染时生成 SVG 线性渐变 */
+  {id:"sk_straw",  n:"草莓奶昔",  stops:["#F7E8D0","#F2A6BC"]},
+  {id:"sk_mint",   n:"抹茶奶盖",  stops:["#F5EAD5","#9CC8A8"]},
+  {id:"sk_sky",    n:"海盐天空",  stops:["#EAF4F8","#8FBFE8"]},
+  {id:"sk_sunset", n:"落日余晖",  stops:["#F6C890","#D46A6A"]},
+  {id:"sk_lav",    n:"薰衣草",    stops:["#EDE6F5","#A88BD8"]},
+  {id:"sk_mocha",  n:"焦糖玛奇朵",stops:["#E9C99C","#8A5A3C"]},
+  {id:"sk_moss",   n:"青苔",      stops:["#CDE4D2","#6B8F71"]},
+  {id:"sk_ocean",  n:"深海",      stops:["#9FC4E8","#3E5C8A"]},
+  /* 多色渐变款 */
+  {id:"sk_unicorn",n:"独角兽",    stops:["#F7E8D0","#F2A6BC","#B49BE0"]},
+  {id:"sk_autumn", n:"枫叶",      stops:["#E9BC8C","#D46A6A","#8A5A3C"]},
+  {id:"sk_galaxy", n:"星云",      stops:["#2E3A5E","#7A5FB5","#E08BB5"]},
+  {id:"sk_rainbow",n:"马卡龙彩虹",stops:["#F2A6BC","#F2C14E","#8FD0B8","#9FC4E8"]}
+];
+var NECKLACES=[
+  {id:"bell",     e:"🔔",n:"铃铛项圈",  price:90, band:"#C6584E",w:6},
+  {id:"ruby",     e:"♦️",n:"红宝石项链",price:120,band:"#D4AF37",gem:"#D46A6A"},
+  {id:"sapphire", e:"🔹",n:"蓝宝石项链",price:120,band:"#C9D2E2",gem:"#5E93C4"},
+  {id:"emerald",  e:"🟢",n:"绿宝石项链",price:120,band:"#D4AF37",gem:"#5FA86B"},
+  {id:"heart",    e:"💗",n:"爱心吊坠",  price:150,band:"#E08BB5",w:4},
+  {id:"star",     e:"⭐",n:"星星项链",  price:140,band:"#F2C14E"},
+  {id:"moon",     e:"🌙",n:"月牙吊坠",  price:160,band:"#C9D2E2"},
+  {id:"candy",    e:"🍬",n:"彩豆项链",  price:150},
+  {id:"pearl",    e:"⚪",n:"珍珠项链",  price:180,band:"#F7F4EC",w:3},
+  {id:"punk",     e:"🖤",n:"铆钉项圈",  price:280,band:"#3A3A44",w:8},
+  {id:"gold",     e:"🥇",n:"大金链子",  price:500,band:"#F2C14E",w:7,gem:"#E8A93C"}
+];
+
 /* 传说 5 · 稀有 10 · 精良 15 · 普通 20（共 50 种） */
 var FINDABLE=[
   {e:"🔑",n:"神秘的小钥匙",r:"gold"},{e:"🔮",n:"月光宝盒",r:"gold"},{e:"💎",n:"永恒钻石",r:"gold"},{e:"🏆",n:"黄金奖杯",r:"gold"},{e:"👑",n:"猫王的王冠",r:"gold"},
@@ -2079,12 +2199,89 @@ function collTotal(){
 const el={};
 
 /* ================= 猫咪 SVG（正面） ================= */
-function catSVG(breed,uid){
+/* 美容：把 hex 颜色按系数变暗（瞳孔自动随虹膜加深） */
+function shadeHex(hex,f){
+  try{
+    const n=parseInt(hex.slice(1),16);
+    const c=v=>Math.max(0,Math.min(255,Math.round(v*f)));
+    return "#"+[c(n>>16),c((n>>8)&255),c(n&255)].map(v=>v.toString(16).padStart(2,"0")).join("");
+  }catch(e){return hex;}
+}
+/* 美容：项链 SVG（画在胸前，pearl 用九颗珠子沿弧排布，其余为带+吊坠） */
+function necklaceSVG(id){
+  const N=NECKLACES.find(n=>n.id===id);
+  if(!N)return "";
+  const arcXY=(i,n,r)=>{const t=0.10+0.80*i/(n-1),u=1-t;return [u*u*78+2*t*u*110+t*t*142, u*u*124+2*t*u*146+t*t*124-r];};
+  if(N.id==="pearl"){
+    let pearls="";
+    for(let i=0;i<9;i++){
+      const t=0.12+0.76*i/8,u=1-t;
+      const x=u*u*78+2*t*u*110+t*t*142, y=u*u*124+2*t*u*146+t*t*124;
+      pearls+=`<circle cx="${x.toFixed(1)}" cy="${y.toFixed(1)}" r="3.1" fill="#F7F4EC" stroke="rgba(150,150,160,.45)" stroke-width=".6"/>`;
+    }
+    return `<g class="necklace-g">${pearls}</g>`;
+  }
+  if(N.id==="gold"){   /* 大金链子：粗金珠链 + 金币吊坠 */
+    let beads="";
+    for(let i=0;i<11;i++){
+      const p=arcXY(i,11,0);
+      beads+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="4.1" fill="#F2C14E" stroke="#C99B2E" stroke-width="1"/>`
+            +`<circle cx="${(p[0]-1.3).toFixed(1)}" cy="${(p[1]-1.4).toFixed(1)}" r="1.2" fill="#FFF3C4"/>`;
+    }
+    const coin=`<circle cx="110" cy="147" r="6.5" fill="#F2C14E" stroke="#C99B2E" stroke-width="1.4"/>`
+              +`<circle cx="110" cy="147" r="4.5" fill="none" stroke="#D9A82E" stroke-width=".8"/>`
+              +`<text x="110" y="150" text-anchor="middle" font-size="7" font-weight="bold" fill="#8A6A1E">$</text>`;
+    return `<g class="necklace-g">${beads}${coin}</g>`;
+  }
+  if(N.id==="candy"){  /* 彩豆项链：四色糖豆沿弧排布 */
+    const cols=["#F2A6BC","#9FC4E8","#F2C14E","#8FD0B8"];
+    let beads="";
+    for(let i=0;i<11;i++){
+      const p=arcXY(i,11,0);
+      beads+=`<circle cx="${p[0].toFixed(1)}" cy="${p[1].toFixed(1)}" r="3.4" fill="${cols[i%4]}" stroke="rgba(0,0,0,.12)" stroke-width=".6"/>`;
+    }
+    return `<g class="necklace-g">${beads}</g>`;
+  }
+  if(N.id==="punk"){   /* 铆钉项圈：黑色宽带 + 三枚银色铆钉 */
+    const band=`<path d="M78 124 Q110 146 142 124" fill="none" stroke="#3A3A44" stroke-width="8" stroke-linecap="round"/>`;
+    const spikes=[[89,130],[110,139],[131,130]].map(p=>
+      `<polygon points="${p[0]-3.2},${p[1]-2.5} ${p[0]+3.2},${p[1]-2.5} ${p[0]},${p[1]+5.5}" fill="#D9DEE8" stroke="#9AA4B5" stroke-width=".7"/>`).join("");
+    return `<g class="necklace-g">${band}${spikes}</g>`;
+  }
+  const band=`<path d="M78 124 Q110 146 142 124" fill="none" stroke="${N.band}" stroke-width="${N.w||5}" stroke-linecap="round"/>`;
+  let pend="";
+  if(N.id==="bell")pend=`<circle cx="110" cy="142" r="5.5" fill="#F2C14E" stroke="#C99B2E" stroke-width="1.2"/><path d="M107 142 h6" stroke="#C99B2E" stroke-width="1.2"/><circle cx="110" cy="144.5" r="1" fill="#8A6A1E"/>`;
+  else if(N.id==="heart")pend=`<path d="M110 137.5 c-1.8 -2.6 -5.5 -2 -5.5 1 c0 2.2 2.6 4 5.5 6.2 c2.9 -2.2 5.5 -4 5.5 -6.2 c0 -3 -3.7 -3.6 -5.5 -1 Z" fill="#E3766F" stroke="#C95F58" stroke-width=".8"/>`;
+  else if(N.id==="star")pend=`<polygon points="110,136.8 111.7,140.4 115.6,140.8 112.7,143.5 113.5,147.3 110,145.3 106.5,147.3 107.3,143.5 104.4,140.8 108.3,140.4" fill="#F2C14E" stroke="#C99B2E" stroke-width=".7"/>`;
+  else if(N.id==="moon")pend=`<path d="M111 134.5 A6.5 6.5 0 0 0 111 147.5 A7 7 0 0 1 111 134.5 Z" fill="#E3E9F4" stroke="#AAB4C8" stroke-width=".8"/><circle cx="116.5" cy="137.5" r="1" fill="#F2C14E"/>`;
+  else if(N.gem)pend=`<circle cx="110" cy="141" r="4.6" fill="${N.gem}" stroke="rgba(255,255,255,.75)" stroke-width="1"/><circle cx="108.6" cy="139.6" r="1.3" fill="#fff" opacity=".85"/>`;
+  return `<g class="necklace-g">${band}${pend}</g>`;
+}
+/* 美容：毛色值解析——纯色返回 hex；双色/多色渐变款（存 id）生成 SVG 线性渐变并返回 url 引用 */
+function skinFillOf(skinVal,uid){
+  if(!skinVal)return {fill:null,defs:""};
+  if(skinVal.charAt(0)==="#")return {fill:skinVal,defs:""};
+  const sc=SKIN_COLORS.find(k=>k.id===skinVal);
+  if(!sc||!sc.stops)return {fill:null,defs:""};
+  const gid="skg"+uid;
+  const stops=sc.stops.map((s,i)=>`<stop offset="${(i/(sc.stops.length-1)*100).toFixed(0)}%" stop-color="${s}"/>`).join("");
+  return {fill:`url(#${gid})`,defs:`<defs><linearGradient id="${gid}" x1="0" y1="0" x2="0" y2="1">${stops}</linearGradient></defs>`};
+}
+function catSVG(breed,uid,beauty){
   const P=BREEDS[breed];
+  /* 美容覆盖：毛色（皮肤）替换基础底色，花纹/重点色/肚皮保留品种特征；双色/多色毛色走渐变 */
+  const skf=skinFillOf(beauty&&beauty.skin,uid);
+  const skinF=skf.fill;
+  const body=skinF||P.body;
   const pc=P.patches?P.patches.color:P.dark;
-  const earL=P.earL||P.points||P.body, earR=P.earR||P.points||P.body;
-  const tailCol=P.tail||P.dark||P.body;
-  const pawFill=P.points||P.body;
+  const earL=skinF||(P.earL||P.points||P.body), earR=skinF||(P.earR||P.points||P.body);
+  const tailCol=skinF||P.tail||P.dark||P.body;
+  const pawFill=skinF||P.points||P.body;
+  /* 美容覆盖：左右眼虹膜可分别设色（异色瞳），瞳孔自动随虹膜加深；未美容时保持品种默认 */
+  const irisL=(beauty&&beauty.eyeL)||P.eye;
+  const irisR=(beauty&&beauty.eyeR)||P.eye;
+  const pupL=(beauty&&beauty.eyeL)?shadeHex(irisL,.42):"#33383F";
+  const pupR=(beauty&&beauty.eyeR)?shadeHex(irisR,.42):"#33383F";
   const blushOp=breed==="black"?0.28:0.45;
   let defs="",mask="";
   if(P.points){
@@ -2103,8 +2300,8 @@ function catSVG(breed,uid){
     </g>`:"";
   const tailW=P.fluff?19:15;
   /* 长毛（挪威森林猫）：头后一圈柔软毛晕 + 下巴一圈围脖 */
-  const fluffHalo=P.fluff?`<circle cx="110" cy="92" r="51" fill="${P.body}" opacity=".4"/>`:"";
-  const fluffRuff=P.fluff?`<g fill="${P.body}">
+  const fluffHalo=P.fluff?`<circle cx="110" cy="92" r="51" fill="${body}" opacity=".4"/>`:"";
+  const fluffRuff=P.fluff?`<g fill="${body}">
     <ellipse cx="70" cy="122" rx="8" ry="9"/><ellipse cx="88" cy="130" rx="9" ry="10"/><ellipse cx="110" cy="134" rx="10" ry="10"/><ellipse cx="132" cy="130" rx="9" ry="10"/><ellipse cx="150" cy="122" rx="8" ry="9"/>
   </g>`:"";
   /* 折耳（苏格兰折耳猫）：耳朵向前下折，紧贴头顶 */
@@ -2114,11 +2311,11 @@ function catSVG(breed,uid){
     :
     `<g class="ear-l-g"><path d="M74 64 L82 24 L104 52 Z" fill="${earL}"/><path d="M80 57 L84 36 L97 51 Z" fill="#F2C6C6"/></g>
      <g class="ear-r-g"><path d="M146 64 L138 24 L116 52 Z" fill="${earR}"/><path d="M140 57 L136 36 L123 51 Z" fill="#F2C6C6"/></g>`;
-  return `<svg class="cat-svg" viewBox="0 0 220 200">${defs}
+  return `<svg class="cat-svg" viewBox="0 0 220 200">${defs}${skf.defs}
     <ellipse cx="110" cy="191" rx="48" ry="8" fill="rgba(96,120,138,.14)"/>
     <g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="${tailCol}" stroke-width="${tailW}" stroke-linecap="round"/></g>
     <g class="body-g">
-      <ellipse cx="110" cy="160" rx="42" ry="32" fill="${P.body}"/>
+      <ellipse cx="110" cy="160" rx="42" ry="32" fill="${body}"/>
       ${P.patches?`<g clip-path="url(#bd${uid})">${P.patches.body.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}" fill="${b[4]||pc}"/>`).join("")}</g>`:""}
       <ellipse cx="110" cy="167" rx="25" ry="21" fill="${P.belly}"/>
       <g class="paw-down">
@@ -2133,16 +2330,16 @@ function catSVG(breed,uid){
     <g class="head-g">
       ${fluffHalo}
       ${ears}
-      <circle cx="110" cy="92" r="46" fill="${P.body}"/>
+      <circle cx="110" cy="92" r="46" fill="${body}"/>
       ${P.patches?`<g clip-path="url(#hd${uid})">${P.patches.head.map(b=>`<ellipse cx="${b[0]}" cy="${b[1]}" rx="${b[2]}" ry="${b[3]}" fill="${b[4]||pc}"/>`).join("")}</g>`:""}
       ${mask}
       ${fluffRuff}
       <ellipse cx="110" cy="109" rx="22" ry="15" fill="${P.muzzle}"/>
       <g class="eyes-open">
-        <ellipse cx="92" cy="90" rx="8" ry="10" fill="${P.eye}"/>
-        <ellipse cx="128" cy="90" rx="8" ry="10" fill="${P.eye}"/>
-        <ellipse class="pupil" cx="92" cy="91" rx="4" ry="7" fill="#33383F"/>
-        <ellipse class="pupil" cx="128" cy="91" rx="4" ry="7" fill="#33383F"/>
+        <ellipse cx="92" cy="90" rx="8" ry="10" fill="${irisL}"/>
+        <ellipse cx="128" cy="90" rx="8" ry="10" fill="${irisR}"/>
+        <ellipse class="pupil" cx="92" cy="91" rx="4" ry="7" fill="${pupL}"/>
+        <ellipse class="pupil" cx="128" cy="91" rx="4" ry="7" fill="${pupR}"/>
         <circle cx="95" cy="86" r="2.2" fill="#fff" opacity=".9"/>
         <circle cx="131" cy="86" r="2.2" fill="#fff" opacity=".9"/>
       </g>
@@ -2182,15 +2379,19 @@ function catSVG(breed,uid){
         <path d="M136 102 L162 98"/><path d="M136 108 L162 112"/>
       </g>
     </g>
+    ${necklaceSVG(beauty&&beauty.neck)}
   </svg>`;
 }
 
 /* ================= 猫咪背面视角（后脑勺+背部） ================= */
-function catSVGBack(breed,uid){
+function catSVGBack(breed,uid,beauty){
   const P=BREEDS[breed];
+  const skf=skinFillOf(beauty&&beauty.skin,uid);
+  const skinF=skf.fill;
+  const body=skinF||P.body;
   const pc=P.patches?P.patches.color:P.dark;
-  const earL=P.earL||P.points||P.body, earR=P.earR||P.points||P.body;
-  const tailCol=P.tail||P.dark||P.body;
+  const earL=skinF||(P.earL||P.points||P.body), earR=skinF||(P.earR||P.points||P.body);
+  const tailCol=skinF||P.tail||P.dark||P.body;
   let defs="",bodyPatch="",headPatch="";
   if(P.patches){
     defs=`<defs>
@@ -2210,18 +2411,18 @@ function catSVGBack(breed,uid){
     <ellipse cx="76" cy="174" rx="19" ry="16" fill="${P.dark}" opacity=".28"/>
     <ellipse cx="144" cy="174" rx="19" ry="16" fill="${P.dark}" opacity=".28"/>`;
   const tailW=P.fluff?19:15;
-  const fluffHalo=P.fluff?`<circle cx="110" cy="92" r="51" fill="${P.body}" opacity=".4"/>`:"";
+  const fluffHalo=P.fluff?`<circle cx="110" cy="92" r="51" fill="${body}" opacity=".4"/>`:"";
   const ears=P.fold?
     `<g class="ear-l-g"><path d="M78 54 Q68 56 76 70 Q80 74 90 69 Q94 62 88 54 Z" fill="${earL}"/></g>
      <g class="ear-r-g"><path d="M142 54 Q152 56 144 70 Q140 74 130 69 Q126 62 132 54 Z" fill="${earR}"/></g>`
     :
     `<g class="ear-l-g"><path d="M74 64 L82 24 L104 52 Z" fill="${earL}"/></g>
      <g class="ear-r-g"><path d="M146 64 L138 24 L116 52 Z" fill="${earR}"/></g>`;
-  return `<svg class="cat-svg" viewBox="0 0 220 200">${defs}
+  return `<svg class="cat-svg" viewBox="0 0 220 200">${defs}${skf.defs}
     <ellipse cx="110" cy="191" rx="48" ry="8" fill="rgba(96,120,138,.14)"/>
     <g class="tail-g"><path d="M148 168 Q196 162 188 112" fill="none" stroke="${tailCol}" stroke-width="${tailW}" stroke-linecap="round"/></g>
     <g class="body-g">
-      <ellipse cx="110" cy="160" rx="42" ry="32" fill="${P.body}"/>
+      <ellipse cx="110" cy="160" rx="42" ry="32" fill="${body}"/>
       ${bodyPatch}
       ${haunch}
       <ellipse cx="110" cy="132" rx="20" ry="9" fill="${P.dark}" opacity=".18"/>
@@ -2230,7 +2431,7 @@ function catSVGBack(breed,uid){
     <g class="head-g">
       ${fluffHalo}
       ${ears}
-      <circle cx="110" cy="92" r="46" fill="${P.body}"/>
+      <circle cx="110" cy="92" r="46" fill="${body}"/>
       ${headPatch}
       ${mask}
       <path d="M72 118 Q110 134 148 118 L148 128 Q110 142 72 128 Z" fill="${P.dark}" opacity=".14"/>
@@ -3336,23 +3537,25 @@ async function evFindItem(){
     updateHUD();save();
   }
 }
-/* 家里随机出现的小动物（数据驱动）：是飞是爬按种类匹配，蜗牛速度极慢 */
+/* 家里随机出现的小动物（数据驱动）：是飞是爬按种类匹配，蜗牛速度极慢
+   bug:true=虫子类，抓住后额外进战利品猎物栏，可出售（价格按稀有度查 BUG_PRICE） */
+var BUG_PRICE={white:5,green:20,purple:50,gold:100};
 var CRITTERS={
   mouse:   {e:"🐭",n:"小老鼠",r:"white",cls:"mouse-run",animMs:1300,wait:1000,mood:10,xp:6,
             toast:"有老鼠！{name} 压低身子猛扑过去！",init:{top:"58%",left:"6%"},pos:[62,55],puff:["🐭","⭐"],cheer:1600},
-  butterfly:{e:"🦋",n:"蝴蝶",r:"green",cls:"butterfly-fly",animMs:3000,wait:1400,mood:8,xp:5,
+  butterfly:{e:"🦋",n:"蝴蝶",r:"green",cls:"butterfly-fly",animMs:3000,wait:1400,mood:8,xp:5,bug:true,
             toast:"有蝴蝶！{name} 蹦跳着去追～",pos:[48,42],puff:["🦋","✨","🌸"],cheer:1600},
-  beetle:  {e:"🪲",n:"甲虫",r:"purple",cls:"critter-crawl",animMs:2600,wait:1600,mood:6,xp:4,
+  beetle:  {e:"🪲",n:"甲虫",r:"purple",cls:"critter-crawl",animMs:2600,wait:1600,mood:6,xp:4,bug:true,
             toast:"发现甲虫！{name} 悄悄靠近…",pos:[50,72],puff:["🪲","⭐","✨"],cheer:1600},
   ant:     {e:"🐜",n:"蚂蚁",r:"white",cls:"critter-crawl",dur:"3.2s",animMs:3400,fs:15,wait:1500,mood:5,xp:3,
             toast:"一只小蚂蚁在赶路……{name} 蹲下来研究了半天",pos:[52,73],puff:["🐜","⭐"],cheer:1400},
-  ladybug: {e:"🐞",n:"瓢虫",r:"purple",cls:"critter-crawl",dur:"2.8s",animMs:3000,fs:18,wait:1400,mood:7,xp:4,
+  ladybug: {e:"🐞",n:"瓢虫",r:"purple",cls:"critter-crawl",dur:"2.8s",animMs:3000,fs:18,wait:1400,mood:7,xp:4,bug:true,
             toast:"瓢虫！{name} 目不转睛地盯着…",pos:[50,72],puff:["🐞","⭐","✨"],cheer:1500},
-  bee:     {e:"🐝",n:"蜜蜂",r:"green",cls:"bee-fly",animMs:2200,wait:1100,mood:8,xp:5,
+  bee:     {e:"🐝",n:"蜜蜂",r:"green",cls:"bee-fly",animMs:2200,wait:1100,mood:8,xp:5,bug:true,
             toast:"有蜜蜂！{name} 跳起来去拍～",pos:[46,40],puff:["🐝","✨","⭐"],cheer:1600},
   snail:   {e:"🐌",n:"蜗牛",r:"white",cls:"critter-crawl",dur:"7.5s",animMs:7800,fs:20,wait:2400,mood:5,xp:3,
             toast:"蜗牛慢吞吞地路过…{name} 耐心等它爬近",pos:[55,74],puff:["🐌","✨"],cheer:1400},
-  gecko:   {e:"🦎",n:"壁虎",r:"green",cls:"critter-crawl",dur:"2s",animMs:2200,fs:19,wait:1300,mood:7,xp:4,
+  gecko:   {e:"🦎",n:"壁虎",r:"green",cls:"critter-crawl",dur:"2s",animMs:2200,fs:19,wait:1300,mood:7,xp:4,bug:true,
             toast:"壁虎窜过墙角！{name} 猛追两步～",pos:[52,70],puff:["🦎","⭐","✨"],cheer:1500}
 };
 async function evCritter(key){
@@ -3376,7 +3579,16 @@ async function evCritter(key){
     puff(el.catWrap,0,-40,c.puff,3);
     setCheer(c.cheer,true);
     var keep=await offerItem({e:c.e,n:c.n,r:c.r});
-    if(g===gen&&keep)collectItem({e:c.e,n:c.n,r:c.r});
+    if(g===gen&&keep){
+      collectItem({e:c.e,n:c.n,r:c.r});
+      /* 虫子类：实物进战利品猎物栏（图鉴计数已在 collectItem 里 +1，这里不再重复） */
+      if(c.bug){
+        var bp=BUG_PRICE[c.r]||5;
+        addCatchItem({id:newId(),type:"prey",e:c.e,n:c.n,g:c.r,sz:"标准",price:bp,
+                      day:Math.floor(S.min/1440)+1},true);
+        toast(c.e+" "+c.n+" 已放进战利品，可以卖 🪙"+bp);
+      }
+    }
     if(g===gen){
       S.mood=clamp(S.mood+c.mood);
       addXp(c.xp);
@@ -3887,6 +4099,203 @@ function buyItem(it){
     renderShop();updateHUD();save();
   }
 }
+
+/* ================= 美容沙龙 =================
+   数据存 S.beauty：eyes/skins/necks=已拥有的颜色和款式；eyeL/eyeR=左右眼虹膜；
+   skin=当前毛色；neck=当前佩戴项链；hetero=异色瞳生效中；heteroOwned=异色瞳买断。
+   价格：虹膜色 100 / 异色瞳 300 / 毛色 200 / 项链按款式。
+   购买流程：点击未拥有项 → 猫身上实时预览 + 确认条 → 确认才扣款；
+   取消/关窗自动还原；已拥有项点击即时切换（免费）。 */
+var beautyTab="eye",beautySide="L",beautyPreview=null;
+function beautyOf(){
+  if(!S.beauty||typeof S.beauty!=="object")
+    S.beauty={eyes:[],skins:[],necks:[],hetero:false,heteroOwned:false,eyeL:null,eyeR:null,skin:null,neck:null};
+  return S.beauty;
+}
+function beautyUnlocked(){return (S.catHouseLevel||1)>=BEAUTY_UNLOCK_LV;}
+function updateBeautyBtn(){
+  if(!el.btnBeauty)return;
+  var ok=beautyUnlocked();
+  el.btnBeauty.classList.toggle("locked",!ok);
+  el.beautyHint.textContent=ok?"✨ 已解锁":"🐱 猫窝 Lv."+BEAUTY_UNLOCK_LV+" 解锁";
+}
+function beautyToast(msg){
+  if(!el.beautyToast)return;
+  el.beautyToast.textContent=msg;el.beautyToast.classList.add("on");
+  clearTimeout(beautyToast._t);beautyToast._t=setTimeout(()=>el.beautyToast.classList.remove("on"),1800);
+}
+/* ---------- 预览/确认：点击未拥有项先在猫身上预览，确认才扣款 ---------- */
+function beautySnapshot(){var b=beautyOf();return {hetero:b.hetero,eyeL:b.eyeL,eyeR:b.eyeR,skin:b.skin,neck:b.neck};}
+function beautyRestore(s){var b=beautyOf();b.hetero=s.hetero;b.eyeL=s.eyeL;b.eyeR=s.eyeR;b.skin=s.skin;b.neck=s.neck;buildCat();}
+function cancelPreview(){
+  if(!beautyPreview)return;
+  beautyRestore(beautyPreview.prev);
+  beautyPreview=null;
+  el.beautyConfirm.classList.remove("on");
+  renderBeauty();
+}
+function startPreview(type,value,price,label){
+  cancelPreview();                       /* 上一个预览未确认则先还原 */
+  var b=beautyOf();
+  beautyPreview={type:type,value:value,price:price,label:label,prev:beautySnapshot()};
+  if(type==="eye"){
+    if(b.hetero){if(beautySide==="R")b.eyeR=value;else b.eyeL=value;}
+    else{b.eyeL=value;b.eyeR=value;}
+  }else if(type==="hetero"){
+    b.hetero=true;
+    if(!b.eyeL)b.eyeL=EYE_COLORS[0].c;
+    if(!b.eyeR||b.eyeR===b.eyeL)         /* 预览时右眼先给个对比色，看着才像异色瞳 */
+      b.eyeR=(b.eyeL!==EYE_COLORS[2].c)?EYE_COLORS[2].c:EYE_COLORS[3].c;
+  }else if(type==="skin")b.skin=value;
+  else if(type==="neck")b.neck=value;
+  buildCat();
+  el.beautyConfirmText.textContent="预览中 · "+label+"，确认购买吗？";
+  el.beautyConfirmYes.textContent="🪙 "+price+" 确认购买";
+  el.beautyConfirm.classList.add("on");
+  renderBeauty();
+}
+function confirmBeautyBuy(){
+  if(!beautyPreview)return;
+  var p=beautyPreview,b=beautyOf();
+  if((S.catCoins||0)<p.price){beautyToast("猫币不够啦！还差 🪙"+(p.price-(S.catCoins||0)));return;}
+  S.catCoins-=p.price;
+  if(p.type==="eye"){b.eyes.push(p.value);bubble("新眼睛真好看喵～",true);}
+  else if(p.type==="hetero"){b.heteroOwned=true;bubble("左右眼不一样，好特别！",true);}
+  else if(p.type==="skin"){b.skins.push(p.value);bubble("新毛色真好看喵！",true);}
+  else if(p.type==="neck"){b.necks.push(p.value);bubble("好看吗？这是我的新项链！",true);}
+  beautyPreview=null;
+  el.beautyConfirm.classList.remove("on");
+  toast("购买成功！"+p.label);
+  puff(el.catWrap,-16,-62,["✨","🪙","💗"],3);
+  snd("pop");
+  renderBeauty();updateHUD();save();
+}
+/* 通用：把眼睛色应用到当前作用侧（异色瞳时选左/右，否则双眼） */
+function applyEyeColor(c){
+  var b=beautyOf();
+  if(b.hetero){
+    if(beautySide==="R")b.eyeR=c;else b.eyeL=c;
+    if(b.eyeL&&b.eyeR)  /* 两边都有色且不同 = 异色瞳生效 */
+      bubble(b.eyeL!==b.eyeR?"喵呜～我的眼睛变成两种颜色啦！":"两边颜色一样也不错～",true);
+  }else{
+    b.eyeL=c;b.eyeR=c;
+  }
+  buildCat();renderBeauty();updateHUD();save();
+}
+function renderBeauty(){
+  /* 窗口左侧的预览猫：实时反映当前（含预览中）的美容状态 */
+  el.beautyCat.innerHTML=catSVG(S.breed,S.breed+"bc",beautyOf());
+  el.beautyCoins.textContent=S.catCoins||0;
+  var b=beautyOf();
+  el.beautySide.style.display=(beautyTab==="eye"&&b.hetero)?"flex":"none";
+  el.beautyNote.textContent=
+    beautyTab==="eye"?"瞳孔颜色会随虹膜自动加深；异色瞳买断后可左右眼分别选色":
+    beautyTab==="skin"?"更换毛色会替换底色，双色/多色渐变毛色同样生效；花纹与重点色保留品种特征，可随时免费恢复本色":
+    "佩戴后立刻生效，取下免费；不同款式价格不同";
+  el.beautyGrid.innerHTML="";
+  var pend=beautyPreview;   /* 当前预览中的项（用于给卡片打"预览中"标记） */
+  if(beautyTab==="eye"){
+    /* 异色瞳：买断(300) + 免费开关 */
+    var dh=document.createElement("div");
+    dh.className="shop-item beauty-cell"+(b.hetero?" equipped":"")+(pend&&pend.type==="hetero"?" sel":"");
+    dh.innerHTML='<span class="bs-eye hetero"></span><span class="si-n">异色瞳</span>'
+      +((pend&&pend.type==="hetero")?'<span class="si-owned">预览中 · 待确认</span>'
+      :b.hetero?'<span class="si-owned">✅ 已拥有 · 点击关闭</span>'
+      :b.heteroOwned?'<span class="si-owned">✅ 已拥有 · 点击开启</span>'
+      :'<span class="si-price">🪙 '+HETERO_PRICE+'</span>');
+    dh.onclick=function(){
+      cancelPreview();
+      if(b.hetero){                      /* 生效中：免费关闭（不依赖买断标记，兼容旧档） */
+        b.hetero=false;
+        if(b.eyeR)b.eyeL=b.eyeR;         /* 关闭时右眼并入左眼 */
+        buildCat();renderBeauty();updateHUD();save();
+      }else if(b.heteroOwned){           /* 已买断：免费开启 */
+        b.hetero=true;
+        if(!b.eyeL)b.eyeL=EYE_COLORS[0].c;
+        if(!b.eyeR||b.eyeR===b.eyeL)b.eyeR=EYE_COLORS[2].c;
+        buildCat();renderBeauty();updateHUD();save();
+      }else{
+        startPreview("hetero",null,HETERO_PRICE,"异色瞳");
+      }
+    };
+    el.beautyGrid.appendChild(dh);
+    /* 恢复本色（免费） */
+    var d0=document.createElement("div");
+    d0.className="shop-item beauty-cell free";
+    d0.innerHTML='<span class="bs-eye" style="background:#EDEDF0"><i style="background:#33383F"></i></span>'
+      +'<span class="si-n">恢复本色</span><span class="si-owned">免费</span>';
+    d0.onclick=function(){b.eyeL=null;b.eyeR=null;b.hetero=false;buildCat();renderBeauty();updateHUD();save();bubble("眼睛变回去啦～",true);};
+    el.beautyGrid.appendChild(d0);
+    /* 颜色盘 */
+    EYE_COLORS.forEach(function(ec){
+      var owned=b.eyes.indexOf(ec.c)>=0;
+      var cur=(beautySide==="R"?b.eyeR:b.eyeL)===ec.c||(!b.hetero&&b.eyeL===ec.c);
+      var isPend=pend&&pend.type==="eye"&&pend.value===ec.c;
+      var d=document.createElement("div");
+      d.className="shop-item beauty-cell"+(owned?(cur?" equipped":""):"")+(isPend?" sel":"");
+      d.innerHTML='<span class="bs-eye" style="background:'+ec.c+'"><i style="background:'+shadeHex(ec.c,.42)+'"></i></span>'
+        +'<span class="si-n">'+ec.n+'</span>'
+        +(owned?'<span class="si-owned">'+(cur?"佩戴中":"已拥有")+'</span>'
+        :isPend?'<span class="si-owned">预览中 · 待确认</span>'
+        :'<span class="si-price">🪙 '+EYE_PRICE+'</span>');
+      d.onclick=function(){
+        if(owned){cancelPreview();applyEyeColor(ec.c);}
+        else startPreview("eye",ec.c,EYE_PRICE,ec.n+"眼睛");
+      };
+      el.beautyGrid.appendChild(d);
+    });
+    return;
+  }
+  if(beautyTab==="skin"){
+    var d0s=document.createElement("div");
+    d0s.className="shop-item beauty-cell free";
+    d0s.innerHTML='<span class="bs-skin" style="background:repeating-linear-gradient(45deg,#EDEDF0,#EDEDF0 4px,#DDE4EA 4px,#DDE4EA 8px)"></span>'
+      +'<span class="si-n">恢复本色</span><span class="si-owned">免费</span>';
+    d0s.onclick=function(){b.skin=null;buildCat();renderBeauty();updateHUD();save();bubble("变回原来的毛色啦～",true);};
+    el.beautyGrid.appendChild(d0s);
+    SKIN_COLORS.forEach(function(sc){
+      var sv=sc.id||sc.c;   /* 纯色存 hex（兼容旧档），双色/多色存 id */
+      var owned=b.skins.indexOf(sv)>=0;
+      var cur=b.skin===sv;
+      var isPend=pend&&pend.type==="skin"&&pend.value===sv;
+      var bg=sc.stops?("linear-gradient(135deg,"+sc.stops.join(",")+")"):sc.c;
+      var d=document.createElement("div");
+      d.className="shop-item beauty-cell"+(owned?(cur?" equipped":""):"")+(isPend?" sel":"");
+      d.innerHTML='<span class="bs-skin" style="background:'+bg+'"></span>'
+        +'<span class="si-n">'+sc.n+'</span>'
+        +(owned?'<span class="si-owned">'+(cur?"佩戴中":"已拥有")+'</span>'
+        :isPend?'<span class="si-owned">预览中 · 待确认</span>'
+        :'<span class="si-price">🪙 '+SKIN_PRICE+'</span>');
+      d.onclick=function(){
+        if(owned){cancelPreview();b.skin=sv;buildCat();renderBeauty();updateHUD();save();bubble("新毛色真好看喵！",true);}
+        else startPreview("skin",sv,SKIN_PRICE,sc.n+"毛色");
+      };
+      el.beautyGrid.appendChild(d);
+    });
+    return;
+  }
+  /* 项链 */
+  NECKLACES.forEach(function(nk){
+    var owned=b.necks.indexOf(nk.id)>=0;
+    var cur=b.neck===nk.id;
+    var isPend=pend&&pend.type==="neck"&&pend.value===nk.id;
+    var d=document.createElement("div");
+    d.className="shop-item beauty-cell"+(owned?(cur?" equipped":""):"")+(isPend?" sel":"");
+    d.innerHTML='<svg class="bs-neck" viewBox="72 112 76 42"><rect x="72" y="112" width="76" height="42" rx="6" fill="#FDF7F0"/>'+necklaceSVG(nk.id)+'</svg>'
+      +'<span class="si-n">'+nk.n+'</span>'
+      +(cur?'<span class="si-owned">佩戴中 · 点击取下</span>'
+      :owned?'<span class="si-owned">✅ 已拥有 · 点击佩戴</span>'
+      :isPend?'<span class="si-owned">预览中 · 待确认</span>'
+      :'<span class="si-price">🪙 '+nk.price+'</span>');
+    d.onclick=function(){
+      if(cur){cancelPreview();b.neck=null;buildCat();renderBeauty();updateHUD();save();bubble("先摘下来休息一下～",true);}
+      else if(owned){cancelPreview();b.neck=nk.id;buildCat();renderBeauty();updateHUD();save();bubble("好看吗？这是我的新项链！",true);}
+      else startPreview("neck",nk.id,nk.price,nk.n);
+    };
+    el.beautyGrid.appendChild(d);
+  });
+}
+function PICK_DEFAULT_EYE(){return EYE_COLORS[0].c;}
 /* 消耗品使用（带动作锁） */
 async function useTreat(it){
   var eff=TREAT_EFFECTS[it.id];
@@ -3990,16 +4399,18 @@ function updateBagBtn(){
   el.btnBag.textContent="🎒 战利品"+(n?" · "+n:"");
 }
 function bagStat(){ return S.bagStat=S.bagStat||{fish:0,prey:0,sold:0,earned:0,best:null}; }
-function addCatchItem(it){
+function addCatchItem(it,noColl){
   S.bag=S.bag||[];
   S.bag.unshift(it);
   var st=bagStat();
   if(it.type==="prey")st.prey=(st.prey||0)+1; else st.fish=(st.fish||0)+1;
   if(!st.best||it.price>st.best.price)st.best={e:it.e,n:it.n,price:it.price,g:it.g};
   /* 同步收录进收藏册：按种类去重，n 为终身捕获数，出售/喂食不影响收录 */
-  S.collection=S.collection||{};
-  if(!S.collection[it.n])S.collection[it.n]={e:it.e,n:0,r:it.g||"white"};
-  S.collection[it.n].n++;
+  if(!noColl){
+    S.collection=S.collection||{};
+    if(!S.collection[it.n])S.collection[it.n]={e:it.e,n:0,r:it.g||"white"};
+    S.collection[it.n].n++;
+  }
   updateCollBtn();
   updateBagBtn();
 }
@@ -4931,7 +5342,8 @@ function updateHUD(){
   updateWatchTVBtn();
   updateFishingHuntBtn();
   updateBrokenUI();
-  el.hudCoins.textContent=S.catCoins||0;
+  el.shopCoinBtn.textContent="🪙"+(S.catCoins||0);   /* 猫币余额整合进商店按钮（原独立猫币栏位改为美容按钮） */
+  updateBeautyBtn();
   el.catWrap.style.width=(day<2?136:168)+"px";
   renderCatClass();
   renderEnv();
@@ -4950,7 +5362,8 @@ function newCat(name,breed){
     collection:{},catCoins:0,ownedItems:{},catHouseLevel:1,
     brokenFurniture:{},
     bag:[],bagStat:{fish:0,prey:0,sold:0,earned:0,best:null},
-    sick:false,sickSince:0,visit:null,nextLost:14*60};
+    sick:false,sickSince:0,visit:null,nextLost:14*60,
+    beauty:{eyes:[],skins:[],necks:[],hetero:false,heteroOwned:false,eyeL:null,eyeR:null,skin:null,neck:null}};
 }
 /* 来访状态修补：坏档/旧档一律丢弃，且每次读档把离场时间往后延 8 分钟 */
 function sanitizeVisit(v,s){
@@ -5031,6 +5444,18 @@ function sanitize(s){
     }
   }
   o.catHouseLevel=num(o.catHouseLevel,1,1,HOUSE_LEVELS.length);
+  /* 美容数据清洗：非法颜色/项链一律丢弃，防止坏档渲染异常 */
+  var hexOK=function(c){return typeof c==="string"&&/^#[0-9A-Fa-f]{6}$/.test(c);};
+  var nb=o.beauty&&typeof o.beauty==="object"?o.beauty:{};
+  var arr=function(v,ok){return Array.isArray(v)?v.filter(function(x){return ok(x);}):[];};
+  o.beauty={
+    eyes:arr(nb.eyes,hexOK),skins:arr(nb.skins,hexOK),
+    necks:arr(nb.necks,function(id){return NECKLACES.some(function(n){return n.id===id;});}),
+    hetero:!!nb.hetero,heteroOwned:!!nb.heteroOwned||!!nb.hetero,
+    eyeL:hexOK(nb.eyeL)?nb.eyeL:null,eyeR:hexOK(nb.eyeR)?nb.eyeR:null,
+    skin:(hexOK(nb.skin)||SKIN_COLORS.some(function(k){return k.id===nb.skin;}))?nb.skin:null,
+    neck:(typeof nb.neck==="string"&&NECKLACES.some(function(n){return n.id===nb.neck;}))?nb.neck:null
+  };
   /* 战利品袋：清洗成受信任的结构，坏数据直接丢弃 */
   if(!Array.isArray(o.bag))o.bag=[];
   o.bag=o.bag.filter(function(it){return it&&typeof it==="object"&&typeof it.n==="string"&&it.n;})
@@ -5055,19 +5480,32 @@ function sanitize(s){
 }
 function slotKey(i){return SLOT_BASE+"."+i;}
 function save(){
-  if(noSave)return;
-  try{localStorage.setItem(slotKey(slotIdx),JSON.stringify(S));}catch(e){}
+  if(noSave||!S)return;
+  try{
+    var k=slotKey(slotIdx);
+    var cur=localStorage.getItem(k);
+    /* 自动备份：覆盖主档前，把当前主档（若有效）留一份到 .bak，误删/坏档可恢复 */
+    if(cur&&cur!=="null")localStorage.setItem(k+".bak",cur);
+    localStorage.setItem(k,JSON.stringify(S));
+  }catch(e){}
 }
 function loadSlot(i){
   try{
-    const raw=localStorage.getItem(slotKey(i));
-    if(!raw)return null;
+    var raw=localStorage.getItem(slotKey(i));
+    if(raw==="null")raw=null;
+    if(!raw){
+      /* 主档丢失/被写坏 → 尝试从备份自动还原 */
+      var bak=localStorage.getItem(slotKey(i)+".bak");
+      if(!bak)return null;
+      localStorage.setItem(slotKey(i),bak);
+      raw=bak;
+    }
     const s=JSON.parse(raw);
     if(!s||typeof s!=="object"||!s.breed)return null;
     return sanitize(s);
   }catch(e){return null;}
 }
-function clearSlot(i){try{localStorage.removeItem(slotKey(i));}catch(e){}}
+function clearSlot(i){try{localStorage.removeItem(slotKey(i));localStorage.removeItem(slotKey(i)+".bak");}catch(e){}}
 /* 账号级「铲屎官等级」= 养过的所有猫里达到过的最高等级（跨槽位持久化，删猫也不掉） */
 function getAccount(){
   try{const a=JSON.parse(localStorage.getItem(ACCOUNT_KEY)||"{}");return a&&typeof a==="object"?a:{};}
@@ -5183,9 +5621,10 @@ function renderGate(){
 
 /* ================= 开局 / 读档 ================= */
 function buildCat(){
+  const bt=(S&&S.beauty)?S.beauty:null;
   el.catFlip.innerHTML=
-    `<div class="cat-view cat-front">${catSVG(S.breed,S.breed+"f")}</div>`+
-    `<div class="cat-view cat-back">${catSVGBack(S.breed,S.breed+"b")}</div>`;
+    `<div class="cat-view cat-front">${catSVG(S.breed,S.breed+"f",bt)}</div>`+
+    `<div class="cat-view cat-back">${catSVGBack(S.breed,S.breed+"b",bt)}</div>`;
 }
 function enterGame(fresh){
   /* 进入任何一只猫之前，先把上一只猫残留的临时状态全部清干净，
@@ -5314,6 +5753,31 @@ function bind(){
   el.btnShop.onclick=()=>{renderShop();el.shopModal.classList.add("on");};
   el.shopClose.onclick=()=>{el.shopModal.classList.remove("on");};
   el.shopModal.onclick=e=>{if(e.target===el.shopModal)el.shopModal.classList.remove("on");};
+  el.btnBeauty.onclick=()=>{
+    if(!beautyUnlocked()){toast(`🐱 猫窝升到 Lv.${BEAUTY_UNLOCK_LV} 解锁美容沙龙，先去商店升级猫窝吧！`);return;}
+    cancelPreview();                       /* 重开窗口时清掉未确认的预览 */
+    renderBeauty();el.beautyModal.classList.add("on");
+  };
+  el.beautyClose.onclick=()=>{cancelPreview();el.beautyModal.classList.remove("on");};
+  el.beautyModal.onclick=e=>{if(e.target===el.beautyModal){cancelPreview();el.beautyModal.classList.remove("on");}};
+  el.beautyConfirmYes.onclick=confirmBeautyBuy;
+  el.beautyConfirmNo.onclick=cancelPreview;
+  document.querySelectorAll("#beautyTabs .shop-tab").forEach(function(tab){
+    tab.onclick=function(){
+      document.querySelectorAll("#beautyTabs .shop-tab").forEach(function(t){t.classList.remove("active");});
+      tab.classList.add("active");
+      beautyTab=tab.getAttribute("data-bt")||"eye";
+      renderBeauty();
+    };
+  });
+  document.querySelectorAll("#beautySide .side-chip").forEach(function(ch){
+    ch.onclick=function(){
+      document.querySelectorAll("#beautySide .side-chip").forEach(c=>c.classList.remove("active"));
+      ch.classList.add("active");
+      beautySide=ch.getAttribute("data-side")||"L";
+      renderBeauty();
+    };
+  });
   el.btnBag.onclick=()=>{renderBag();el.bagModal.classList.add("on");};
   el.bagClose.onclick=()=>{el.bagModal.classList.remove("on");};
   el.bagModal.onclick=e=>{if(e.target===el.bagModal)el.bagModal.classList.remove("on");};
@@ -5326,9 +5790,10 @@ function bind(){
       renderBag();
     };
   });
-  document.querySelectorAll(".shop-tab").forEach(function(tab){
+  /* 注意：限定 #shopModal，避免覆盖美容沙龙(#beautyTabs)同名 .shop-tab 的绑定 */
+  document.querySelectorAll("#shopModal .shop-tab").forEach(function(tab){
     tab.onclick=function(){
-      document.querySelectorAll(".shop-tab").forEach(function(t){t.classList.remove("active");});
+      document.querySelectorAll("#shopModal .shop-tab").forEach(function(t){t.classList.remove("active");});
       tab.classList.add("active");
       shopCat=tab.getAttribute("data-cat");
       renderShop();
@@ -5393,7 +5858,9 @@ function syncSceneHeight(){
 function init(){
   ["startOverlay","gateOverlay","gateSlots","gateVer","gateBackLink","pendingSlot","startTitle","startSub","delModal","delSub","delCancel","delConfirm","collModal","collGrid","collClose","collProgress","collTypes","collTotalN","btnColl","btnMed","sickBadge","evCard","evEmoji","evName","evKeep","evDrop","lostBanner","btnFind","app","breedGrid","startBtn","nameInput","scene","room",
    "repairModal","repairSub","repairCancel","repairConfirm",
-   "shopModal","shopGrid","shopCoins","shopClose","btnShop","hudCoins","shopToast",
+   "shopModal","shopGrid","shopCoins","shopClose","btnShop","shopCoinBtn","shopToast",
+   "btnBeauty","beautyHint","beautyModal","beautyTabs","beautySide","beautyNote","beautyGrid","beautyCoins","beautyClose",
+   "beautyCat","beautyConfirm","beautyConfirmText","beautyConfirmYes","beautyConfirmNo",
    "sky","sun","moon","fullmoon","stars","nightTint","glowOverlay","weatherLayer","fogLayer","lightningFlash","rainbowArc","particleLayer","catWrap","catShadow","catFlip","bubble","teaser","floor","friendCat",
    "friendShadow","friendFlip","friendTag",
    "foodBowl","waterBowl","foodFill","waterFill","litterBox","toasts","hudName","hudBreed","hudAge","hudLv",
